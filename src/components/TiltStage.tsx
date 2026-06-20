@@ -21,10 +21,10 @@ export default function TiltStage({ children }: { children: ReactNode }) {
     let raf = 0;
 
     const apply = () => {
-      const rotX = scroll * 9 + my * -4;
-      const rotY = mx * 6;
-      const lift = scroll * 46;
-      el.style.transform = `perspective(1400px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) translateY(${lift.toFixed(1)}px)`;
+      const rotX = scroll * 8 + my * -2;
+      const rotY = mx * 3;
+      const lift = scroll * 40;
+      el.style.transform = `perspective(1600px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) translateY(${lift.toFixed(1)}px)`;
       raf = 0;
     };
     const schedule = () => { if (!raf) raf = requestAnimationFrame(apply); };
