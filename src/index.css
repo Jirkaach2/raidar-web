@@ -983,3 +983,44 @@ img { display: block; max-width: 100%; }
   .aw-team-grid, .aw-spy-body { grid-template-columns: 1fr; }
   .aw-tools { grid-template-columns: 120px 1fr; }
 }
+
+/* ════════════════════════════════════════════════════════
+   Live Map (v2 — ocean + island + grid + controls)
+   ════════════════════════════════════════════════════════ */
+.aw-map-screen { position: absolute; inset: 0; }
+.aw-mapcanvas { position: absolute; inset: 0; overflow: hidden; background: radial-gradient(120% 120% at 50% 40%, #1d4456, #122c3a 70%, #0e2230); }
+.aw-island { position: absolute; top: 16px; left: 26px; right: 26px; bottom: 16px; width: auto; height: auto; filter: drop-shadow(0 6px 18px rgba(0,0,0,0.5)); }
+.aw-glabel, .aw-nlabel { position: absolute; font-family: var(--font-mono); font-size: 6px; letter-spacing: 0.5px; color: rgba(150,200,210,0.55); pointer-events: none; }
+.aw-glabel { left: 26px; right: 26px; display: flex; justify-content: space-between; }
+.aw-glabel-top { top: 4px; } .aw-glabel-bot { bottom: 4px; }
+.aw-nlabel { top: 16px; bottom: 16px; display: flex; flex-direction: column; justify-content: space-between; }
+.aw-nlabel-l { left: 6px; } .aw-nlabel-r { right: 6px; }
+.aw-shopdot { position: absolute; width: 7px; height: 7px; border-radius: 2px; transform: translate(-50%,-50%); background: #e0a64a; box-shadow: 0 0 6px rgba(224,166,74,0.7); border: 1px solid rgba(10,20,16,0.6); }
+.aw-ticker { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.8px; color: var(--color-info); background: rgba(11,13,17,0.92); border: 1px solid rgba(88,198,232,0.4); padding: 6px 14px; border-radius: 999px; box-shadow: 0 0 14px rgba(88,198,232,0.2); animation: aw-tick 0.5s var(--ease) both; }
+.aw-ticker b { color: var(--color-text); }
+@keyframes aw-tick { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+.aw-mappill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--color-accent-bright); border: 1px solid var(--color-accent-dim); background: rgba(206,66,43,0.1); padding: 5px 11px; border-radius: 6px; width: fit-content; }
+.aw-mapchips { display: flex; flex-direction: column; gap: 4px; }
+.aw-mapchips span { font-family: var(--font-mono); font-size: 8px; color: var(--color-text-muted); background: rgba(11,13,17,0.8); border: 1px solid var(--color-border); padding: 4px 8px; border-radius: 5px; width: fit-content; }
+.aw-fl-br { position: absolute; right: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+.aw-zoom { display: flex; flex-direction: column; gap: 5px; }
+.aw-zbtn { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--color-border-strong); background: rgba(11,13,17,0.85); color: var(--color-text-muted); cursor: pointer; transition: all 140ms var(--ease); }
+.aw-zbtn:hover { color: var(--color-text); border-color: var(--color-accent-dim); }
+.aw-zbtn.active { color: var(--color-accent-bright); border-color: var(--color-accent-dim); background: rgba(206,66,43,0.12); }
+
+/* ── Spy improvements ── */
+.aw-spy-search { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--color-text-dim); border: 1px solid var(--color-border); border-radius: 7px; padding: 8px 9px; margin-bottom: 7px; }
+.aw-spy-hourly { display: flex; align-items: flex-end; gap: 2px; height: 58px; padding-bottom: 14px; }
+.aw-spy-hcol { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; position: relative; }
+.aw-spy-hbar { width: 100%; border-radius: 1px 1px 0 0; transition: height 0.3s var(--ease); }
+.aw-spy-hl { position: absolute; bottom: -12px; font-family: var(--font-mono); font-size: 6px; color: var(--color-text-dim); }
+.aw-heat-hours { display: flex; padding-left: 29px; justify-content: space-between; font-family: var(--font-mono); font-size: 6px; color: var(--color-text-dim); margin-bottom: 3px; }
+.aw-spy-note { font-size: 9px; color: var(--color-text-dim); margin-top: 12px; font-style: italic; }
+
+/* ── Market search box + empty ── */
+.aw-vclear { background: none; border: none; color: var(--color-text-dim); cursor: pointer; font-size: 11px; padding: 0 2px; }
+.aw-vclear:hover { color: var(--color-text); }
+.aw-vempty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 36px 20px; color: var(--color-text-dim); text-align: center; }
+.aw-vempty svg { opacity: 0.5; }
+.aw-vempty p { font-size: 12px; }
