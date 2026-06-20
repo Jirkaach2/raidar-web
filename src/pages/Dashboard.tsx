@@ -119,11 +119,18 @@ export default function Dashboard() {
   const status = sub?.status || 'active';
   const initial = (user?.name || user?.email || 'R')[0].toUpperCase();
 
+  // Steam-linked accounts have no real inbox; we store provider/steamId in prefs.
+  const prefs = (user?.prefs || {}) as Record<string, unknown>;
+  const isSteam = prefs.provider === 'steam';
+  const steamAvatar = typeof prefs.steamAvatar === 'string' ? prefs.steamAvatar : '';
+
   return (
     <div className="dash">
       <div className="dash-head">
         <div className="dash-greet">
-          <span className="dash-avatar">{initial}</span>
+          <span className="dash-avatar">
+            {steamAvatar ? <img src={steamAvatar} alt="" className="dash-avatar-img" /> : initial}
+          </span>
           <div>
             <h1>Your dashboard</h1>
             <p className="muted">Welcome back, {user?.name || user?.email}.</p>
@@ -133,7 +140,7 @@ export default function Dashboard() {
       </div>
 
       {!isConfigured && <div className="auth-notice">Appwrite isn’t configured. Set the <code>VITE_APPWRITE_*</code> env vars to enable plans.</div>}
-      {user && !user.emailVerification && (
+      {user && !user.emailVerification && !isSteam && (
         <div className="verify-banner">
           <span className="verify-banner-ic"><MailWarning size={18} /></span>
           <div className="verify-banner-text">
@@ -174,7 +181,7 @@ export default function Dashboard() {
         <div className="dash-stats">
           <div className="dash-stat"><span className="dash-stat-ic"><Server size={16} /></span><div><div className="dash-stat-v">{currentPlan ? (currentPlan.servers < 0 ? '∞' : currentPlan.servers) : 1}</div><div className="dash-stat-l">Linked servers</div></div></div>
           <div className="dash-stat"><span className="dash-stat-ic"><CalendarDays size={16} /></span><div><div className="dash-stat-v">{user?.$createdAt ? new Date(user.$createdAt).toLocaleDateString() : '—'}</div><div className="dash-stat-l">Member since</div></div></div>
-          <div className="dash-stat"><span className="dash-stat-ic"><Mail size={16} /></span><div><div className="dash-stat-v dash-stat-email">{user?.email}</div><div className="dash-stat-l">Account email</div></div></div>
+          <div className="dash-stat"><span className="dash-stat-ic"><Mail size={16} /></span><div><div className="dash-stat-v dash-stat-email">{isSteam ? (user?.name || 'Steam account') : user?.email}</div><div className="dash-stat-l">{isSteam ? 'Signed in with Steam' : 'Account email'}</div></div></div>
         </div>
       </div>
 

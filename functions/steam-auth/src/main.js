@@ -141,6 +141,9 @@ export default async ({ req, res, log, error }) => {
       try {
         await users.updateName(userId, personaName);
         await users.updatePrefs(userId, { steamId, steamAvatar: avatar, provider: 'steam' });
+        // Steam vouches for identity and there is no real inbox to confirm, so
+        // treat the account as verified — this suppresses the email-verify nudge.
+        await users.updateEmailVerification(userId, true);
       } catch (e) { log(`profile update skipped: ${e.message}`); }
 
       // Mint a custom token the browser can exchange for a session.
