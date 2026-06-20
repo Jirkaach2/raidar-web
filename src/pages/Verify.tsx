@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, XCircle, MailCheck } from 'lucide-react';
+import { account } from '../lib/appwrite';
 import { useAuth } from '../context/AuthContext';
 import Logo from '../components/Logo';
 
@@ -26,7 +27,17 @@ export default function Verify() {
         setState('success');
         setTimeout(() => navigate('/dashboard', { replace: true }), 2500);
       })
-      .catch((err) => {
+      .catch(async (err) => {
+        // A second click on an already-used link fails — but if the account is
+        // in fact verified, show success rather than a scary error.
+        try {
+          const me = await account.get();
+          if (me.emailVerification) {
+            setState('success');
+            setTimeout(() => navigate('/dashboard', { replace: true }), 2000);
+            return;
+          }
+        } catch { /* not signed in — fall through to error */ }
         setState('error');
         setMessage(err instanceof Error ? err.message : 'This verification link is invalid or has expired.');
       });

@@ -1,0 +1,83 @@
+<!--
+  Raidar — branded email verification template.
+
+  Paste this into: Appwrite Console → Auth → Templates → Verification → Message.
+  Appwrite replaces these placeholders automatically:
+    {{user}}      recipient's name
+    {{project}}   project name (Raidar)
+    {{redirect}}  the one-time verification link
+    {{team}}      team / sender name
+
+  Email clients ignore <style> blocks and external CSS, so everything is inline
+  and table-based for maximum compatibility (Gmail, Outlook, Apple Mail).
+-->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0;padding:0;background-color:#0d0d0f;">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;background-color:#141417;border:1px solid #26262b;border-radius:16px;overflow:hidden;">
+
+        <!-- Header / brand bar -->
+        <tr>
+          <td style="padding:28px 32px 20px 32px;border-bottom:1px solid #26262b;">
+            <table role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="vertical-align:middle;">
+                  <span style="display:inline-block;width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#ce422b,#ff6a3d);"></span>
+                </td>
+                <td style="vertical-align:middle;padding-left:12px;">
+                  <span style="font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;letter-spacing:3px;color:#ffffff;">RAIDAR</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="padding:32px;">
+            <h1 style="margin:0 0 16px 0;font-family:Arial,Helvetica,sans-serif;font-size:22px;line-height:1.3;color:#ffffff;font-weight:700;">
+              Verify your email
+            </h1>
+            <p style="margin:0 0 12px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#c4c4cc;">
+              Hi {{user}}, welcome to {{project}}. Confirm your email address to secure your account and unlock your dashboard.
+            </p>
+
+            <!-- CTA button -->
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:28px 0;">
+              <tr>
+                <td align="center" style="border-radius:10px;background:linear-gradient(135deg,#ce422b,#ff6a3d);">
+                  <a href="{{redirect}}" target="_blank"
+                     style="display:inline-block;padding:14px 30px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">
+                    Confirm email address
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0 0 8px 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:#8a8a93;">
+              Or paste this link into your browser:
+            </p>
+            <p style="margin:0 0 24px 0;font-family:'Courier New',monospace;font-size:12px;line-height:1.5;color:#ce6a55;word-break:break-all;">
+              {{redirect}}
+            </p>
+
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:#8a8a93;">
+              This link expires in one hour and can be used once. If you didn’t create a Raidar account, you can safely ignore this email.
+            </p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:20px 32px;border-top:1px solid #26262b;">
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6a6a72;">
+              {{team}} · Tactical intelligence for Rust<br>
+              <a href="https://raidar.tech" style="color:#8a8a93;text-decoration:none;">raidar.tech</a>
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
