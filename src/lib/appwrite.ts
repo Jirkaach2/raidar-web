@@ -15,6 +15,10 @@ export const CHECKOUT_FUNCTION_ID = import.meta.env.VITE_APPWRITE_CHECKOUT_FUNCT
 export const PORTAL_FUNCTION_ID = import.meta.env.VITE_APPWRITE_PORTAL_FUNCTION_ID || 'stripe-portal';
 /** ID of the admin-only user-management / stats Appwrite Function. */
 export const ADMIN_FUNCTION_ID = import.meta.env.VITE_APPWRITE_ADMIN_FUNCTION_ID || 'admin-api';
+/** Public URL of the steam-auth function (its custom domain or *.appwrite.run). */
+export const STEAM_AUTH_URL = import.meta.env.VITE_STEAM_AUTH_URL || '';
+/** True once the Steam login endpoint is configured. */
+export const steamEnabled = Boolean(STEAM_AUTH_URL);
 /** True once a Stripe publishable key is present so paid checkout is available. */
 export const billingEnabled = Boolean(STRIPE_PUBLISHABLE_KEY);
 

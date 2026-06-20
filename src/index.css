@@ -367,6 +367,8 @@ img { display: block; max-width: 100%; }
 .oauth-btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.06); }
 .oauth-btn.discord:hover { border-color: #5865f2; color: #c7ccf8; }
 .oauth-btn.google:hover { border-color: #4285f4; }
+.oauth-btn.steam { grid-column: 1 / -1; }
+.oauth-btn.steam:hover { border-color: #66c0f4; color: #c7e6fb; }
 
 /* ════════════════════════════════════════════════════════
    Dashboard & Admin

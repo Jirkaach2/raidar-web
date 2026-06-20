@@ -1,0 +1,10 @@
+{
+  "name": "raidar-steam-auth",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Appwrite Function: Steam OpenID 2.0 login that mints an Appwrite custom token.",
+  "main": "src/main.js",
+  "dependencies": {
+    "node-appwrite": "^14.0.0"
+  }
+}

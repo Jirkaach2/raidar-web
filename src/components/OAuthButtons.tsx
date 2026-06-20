@@ -1,8 +1,13 @@
 import { useAuth } from '../context/AuthContext';
+import { STEAM_AUTH_URL, steamEnabled } from '../lib/appwrite';
 
 export default function OAuthButtons() {
   const { loginWithOAuth, configured } = useAuth();
   if (!configured) return null;
+
+  const loginWithSteam = () => {
+    window.location.href = `${STEAM_AUTH_URL.replace(/\/$/, '')}?action=login`;
+  };
 
   return (
     <div className="oauth">
@@ -23,6 +28,14 @@ export default function OAuthButtons() {
           </svg>
           Google
         </button>
+        {steamEnabled && (
+          <button type="button" className="oauth-btn steam" onClick={loginWithSteam}>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor">
+              <path d="M11.98 2C6.65 2 2.28 6.05 2.04 11.31l5.36 2.21a2.86 2.86 0 0 1 1.62-.5l2.39-3.46v-.05a3.8 3.8 0 1 1 3.8 3.8h-.09l-3.41 2.43c0 .03 0 .06.01.09a2.86 2.86 0 1 1-5.7-.13l-3.83-1.58A10 10 0 1 0 11.98 2Zm-3.4 15.16.92.38a2.14 2.14 0 0 0 2.83-1.13 2.14 2.14 0 0 0-1.16-2.8l-1.02-.42a2.78 2.78 0 0 1 1.4.05l-.96-.4a2.15 2.15 0 0 0-1.01 4.16l-.99-.41Zm9.36-7.83a2.53 2.53 0 1 0-5.06 0 2.53 2.53 0 0 0 5.06 0Zm-4.42 0a1.9 1.9 0 1 1 3.8 0 1.9 1.9 0 0 1-3.8 0Z"/>
+            </svg>
+            Steam
+          </button>
+        )}
       </div>
     </div>
   );
