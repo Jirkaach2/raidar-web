@@ -5,6 +5,7 @@ import {
   Check, ChevronRight, Download, Wifi, Cpu, Zap, MousePointerClick,
 } from 'lucide-react';
 import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, type Plan } from '../lib/appwrite';
+import { useAuth } from '../context/AuthContext';
 import Reveal from '../components/Reveal';
 import AppWindow from '../components/AppWindow';
 
@@ -30,6 +31,7 @@ const FALLBACK_PLANS: Array<Pick<Plan, 'name' | 'price' | 'tagline' | 'features'
 ];
 
 export default function Landing() {
+  const { user } = useAuth();
   const [plans, setPlans] = useState(FALLBACK_PLANS);
 
   useEffect(() => {
@@ -137,8 +139,8 @@ export default function Landing() {
                   <ul className="price-features">
                     {(p.features || []).map((f) => <li key={f}><Check /> {f}</li>)}
                   </ul>
-                  <Link className={`btn ${p.popular ? '' : 'btn-ghost'}`} to="/register" style={{ width: '100%' }}>
-                    {p.price === 0 ? 'Get started' : `Choose ${p.name}`}
+                  <Link className={`btn ${p.popular ? '' : 'btn-ghost'}`} to={user ? '/dashboard' : '/register'} style={{ width: '100%' }}>
+                    {user ? 'Manage plan' : p.price === 0 ? 'Get started' : `Choose ${p.name}`}
                   </Link>
                 </div>
               </Reveal>
