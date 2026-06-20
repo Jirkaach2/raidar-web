@@ -8,6 +8,7 @@ import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, type Plan }
 import Reveal from '../components/Reveal';
 import AppWindow from '../components/AppWindow';
 import AppTemplates from '../components/AppTemplates';
+import TiltStage from '../components/TiltStage';
 
 const FEATURES = [
   { Icon: Map, title: 'Live Tactical Map', desc: 'Real-time team, monuments, caves, the travelling vendor and every world event — projected on in-game grids with click-through detail panels.' },
@@ -64,8 +65,8 @@ export default function Landing() {
             <span><ShieldCheck size={14} /> Per-member device control</span>
             <span><Cpu size={14} /> No game files touched</span>
           </div>
-          <Reveal variant="scale" delay={120} className="hero-app">
-            <AppWindow />
+          <Reveal variant="blur" delay={120} className="hero-app">
+            <TiltStage><AppWindow /></TiltStage>
           </Reveal>
         </div>
       </header>
