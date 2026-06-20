@@ -1092,3 +1092,108 @@ img { display: block; max-width: 100%; }
 .aw-st-srv { color: var(--color-text); font-weight: 700; }
 .aw-st-clock { color: var(--color-text); min-width: 52px; text-align: right; }
 .aw-st-ic.players { color: var(--color-accent); }
+
+/* ════════════════════════════════════════════════════════
+   More tool content (cupboard / decay / crates / profit /
+   richbase / activity / loadout / lookup)
+   ════════════════════════════════════════════════════════ */
+/* Cupboard */
+.aw-cup-card { border: 1px solid var(--color-border); border-radius: 10px; padding: 12px; background: rgba(0,0,0,0.22); }
+.aw-cup-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px; font-weight: 700; }
+.aw-cup-status { font-family: var(--font-mono); font-size: 9px; font-weight: 700; padding: 3px 9px; border-radius: 5px; }
+.aw-cup-status.ok { color: var(--color-success); background: rgba(111,207,115,0.15); }
+.aw-cup-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; }
+.aw-cup-slot { position: relative; aspect-ratio: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--color-border); border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+.aw-cup-slot.empty { background: rgba(255,255,255,0.015); }
+.aw-cup-slot img { width: 72%; height: 72%; object-fit: contain; }
+.aw-cup-slot span { position: absolute; right: 2px; bottom: 1px; font-family: var(--font-mono); font-size: 7px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px #000; }
+
+/* Decay / crate timers (shared) */
+.aw-decay { border: 1px solid var(--color-border); border-left: 3px solid var(--color-text-dim); border-radius: 8px; padding: 10px 12px; background: rgba(0,0,0,0.22); margin-bottom: 8px; }
+.aw-decay.ok { border-left-color: var(--color-success); } .aw-decay.soon { border-left-color: var(--color-warning); } .aw-decay.dead { border-left-color: var(--color-danger); opacity: 0.7; }
+.aw-decay-h { display: flex; align-items: center; gap: 8px; }
+.aw-decay-name { font-size: 13px; font-weight: 700; }
+.aw-decay-time { margin-left: auto; font-family: var(--font-mono); font-size: 11px; font-weight: 700; }
+.aw-decay-time.ok { color: var(--color-success); } .aw-decay-time.soon { color: var(--color-warning); } .aw-decay-time.dead { color: var(--color-danger); }
+.aw-decay-meta { display: flex; gap: 12px; font-family: var(--font-mono); font-size: 9px; color: var(--color-text-muted); margin: 6px 0; }
+.aw-decay-bar { height: 4px; background: rgba(0,0,0,0.4); border-radius: 2px; overflow: hidden; }
+.aw-decay-bar span { display: block; height: 100%; background: var(--color-success); }
+.aw-decay-bar span.soon { background: var(--color-warning); } .aw-decay-bar span.dead { background: var(--color-danger); }
+
+.aw-crate-tl { border: 1px solid rgba(88,198,232,0.2); border-radius: 8px; padding: 12px; background: linear-gradient(135deg, rgba(88,198,232,0.07), rgba(88,198,232,0.02)); }
+.aw-crate-tl-h { display: flex; align-items: center; font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--color-info); padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid rgba(88,198,232,0.15); }
+.aw-crate-tl-h span { margin-left: auto; font-size: 8px; color: var(--color-text-dim); font-weight: 400; }
+.aw-crate-row { display: flex; align-items: center; justify-content: space-between; font-size: 11px; padding: 5px 0; color: var(--color-text); }
+.aw-crate-s { font-family: var(--font-mono); font-size: 10px; }
+.aw-crate-s.live { color: var(--color-success); font-weight: 700; } .aw-crate-s.soon { color: var(--color-warning); } .aw-crate-s.done { color: var(--color-text-dim); }
+
+/* Profit */
+.aw-profit { border: 1px solid var(--color-border); border-radius: 8px; padding: 11px 12px; background: rgba(0,0,0,0.22); margin-bottom: 9px; }
+.aw-profit-h { display: flex; align-items: center; justify-content: space-between; padding-bottom: 7px; margin-bottom: 8px; border-bottom: 1px dashed rgba(255,255,255,0.08); }
+.aw-profit-via { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
+.aw-profit-via img { width: 16px; height: 16px; }
+.aw-profit-amt { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--color-success); }
+.aw-profit-amt img { width: 15px; height: 15px; }
+.aw-profit-step { font-size: 11px; color: var(--color-text-muted); padding: 5px 0; }
+.aw-profit-tag { font-family: var(--font-mono); font-size: 8px; font-weight: 700; color: var(--color-accent-bright); margin-right: 6px; }
+
+/* Rich bases */
+.aw-rich { border: 1px solid var(--color-border); border-radius: 8px; padding: 11px 12px; background: rgba(255,255,255,0.025); margin-bottom: 9px; }
+.aw-rich-h { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.aw-rich-name { flex: 1; font-size: 12px; font-weight: 600; }
+.aw-rich-val { font-family: var(--font-mono); font-size: 12px; font-weight: 700; }
+.aw-rich-tier { font-family: var(--font-mono); font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 4px; border: 1px solid; }
+.aw-rich-hl { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.aw-rich-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; background: rgba(0,0,0,0.25); border: 1px solid transparent; padding: 3px 7px; border-radius: 5px; }
+.aw-rich-chip.raid { background: rgba(239,107,107,0.14); border-color: rgba(239,107,107,0.3); }
+.aw-rich-chip img { width: 14px; height: 14px; } .aw-rich-chip b { color: var(--color-warning); font-family: var(--font-mono); }
+.aw-rich-bar { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+.aw-rich-bar span { display: block; height: 100%; }
+
+/* Activity */
+.aw-act-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 6px; }
+.aw-act-card { border: 1px solid var(--color-border); border-radius: 8px; padding: 10px; background: rgba(0,0,0,0.22); }
+.aw-act-ch { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+.aw-act-dead { font-family: var(--font-mono); font-size: 7px; color: var(--color-danger); background: rgba(232,69,69,0.16); padding: 1px 4px; border-radius: 3px; margin-left: auto; }
+.aw-act-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--color-text-muted); margin-bottom: 4px; }
+.aw-act-row b { color: var(--color-text); font-family: var(--font-mono); font-size: 10px; } .aw-act-row small { color: var(--color-text-dim); }
+.aw-act-log { display: flex; flex-direction: column; gap: 6px; }
+.aw-act-le { display: flex; align-items: center; gap: 9px; font-size: 11px; padding: 7px 10px; border: 1px solid var(--color-border); border-radius: 7px; background: rgba(0,0,0,0.18); }
+.aw-act-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.aw-act-dot.death { background: var(--color-danger); } .aw-act-dot.online { background: var(--color-success); } .aw-act-dot.cargo { background: var(--color-info); } .aw-act-dot.heli { background: var(--color-warning); } .aw-act-dot.crate { background: #f59e0b; }
+.aw-act-lbl { flex: 1; } .aw-act-lbl em { color: var(--color-text-dim); font-style: normal; }
+.aw-act-time { font-family: var(--font-mono); font-size: 9px; color: var(--color-text-dim); }
+
+/* Loadout */
+.aw-lo-weapon { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 8px; background: rgba(0,0,0,0.25); margin-bottom: 12px; }
+.aw-lo-weapon img { width: 34px; height: 34px; object-fit: contain; }
+.aw-lo-weapon b { display: block; font-size: 13px; } .aw-lo-weapon small { font-family: var(--font-mono); font-size: 9px; color: var(--color-text-muted); }
+.aw-lo-vs { margin-left: auto; font-family: var(--font-mono); font-size: 9px; color: var(--color-text-dim); text-align: right; }
+.aw-lo-hit { margin-bottom: 10px; }
+.aw-lo-hit-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.aw-lo-part { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+.aw-lo-dmg { font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--color-accent-bright); } .aw-lo-dmg small { color: var(--color-text-dim); font-size: 9px; }
+.aw-lo-bar { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+.aw-lo-bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--color-accent), var(--color-accent-bright)); }
+.aw-lo-meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; color: var(--color-text-muted); margin-top: 4px; }
+.aw-lo-lethal { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--color-danger); background: rgba(232,69,69,0.12); border: 1px solid rgba(232,69,69,0.3); padding: 6px 11px; border-radius: 6px; margin-top: 4px; }
+
+/* Player lookup */
+.aw-lk-search { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--color-text-dim); border: 1px solid var(--color-border); border-radius: 7px; padding: 9px 11px; margin-bottom: 12px; }
+.aw-lk-btn { margin-left: auto; font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: #fff; background: var(--color-accent); padding: 4px 12px; border-radius: 5px; }
+.aw-lk-banner { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; padding: 9px 12px; border-radius: 7px; margin-bottom: 10px; }
+.aw-lk-banner.danger { color: var(--color-danger); background: rgba(232,69,69,0.08); border: 1px solid rgba(232,69,69,0.35); }
+.aw-lk-flags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.aw-lk-flag { font-family: var(--font-mono); font-size: 9px; font-weight: 700; color: #fff; padding: 3px 8px; border-radius: 4px; }
+.aw-lk-flag.vac, .aw-lk-flag.game { background: #ef4444; } .aw-lk-flag.report { background: rgba(239,68,68,0.25); border: 1px solid rgba(239,68,68,0.5); color: #ff8a80; }
+.aw-lk-card { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--color-border); border-radius: 8px; background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); margin-bottom: 10px; }
+.aw-lk-av { position: relative; width: 50px; height: 50px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: 22px; color: #fff; border: 2px solid var(--color-danger); }
+.aw-lk-lvl { position: absolute; bottom: -5px; right: -5px; width: 20px; height: 20px; border-radius: 50%; background: #1b2838; border: 2px solid #4ecdc4; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 9px; font-weight: 700; }
+.aw-lk-info { flex: 1; } .aw-lk-info b { font-size: 14px; } .aw-lk-priv { font-family: var(--font-mono); font-size: 8px; color: var(--color-success); background: rgba(111,207,115,0.15); padding: 1px 5px; border-radius: 3px; margin-left: 7px; }
+.aw-lk-hrs { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 10px; color: var(--color-accent-bright); background: rgba(206,66,43,0.12); border: 1px solid var(--color-border); padding: 2px 7px; border-radius: 4px; margin-top: 6px; }
+.aw-lk-risk { font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 5px 9px; border-radius: 6px; }
+.aw-lk-risk.high { color: var(--color-danger); background: rgba(232,69,69,0.12); border: 1px solid rgba(232,69,69,0.3); }
+.aw-lk-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.aw-lk-stats > div { display: flex; flex-direction: column; align-items: center; gap: 2px; background: rgba(255,255,255,0.02); border: 1px solid var(--color-border); padding: 9px; border-radius: 7px; }
+.aw-lk-stats .l { font-size: 8px; letter-spacing: 0.3px; color: var(--color-text-dim); }
+.aw-lk-stats .v { font-family: var(--font-mono); font-size: 15px; font-weight: 700; }

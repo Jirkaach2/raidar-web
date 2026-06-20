@@ -76,6 +76,48 @@ const PRICEWATCH: Array<{ item: string; icon: string; target: string; best: stri
   { item: 'Assault Rifle', icon: 'rifle.ak', target: '≤ 250 scrap', best: '240 scrap', grid: 'K14' },
   { item: 'High Quality Metal', icon: 'metal.refined', target: '≤ 80 scrap', best: '75 scrap', grid: 'C19' },
 ];
+const CUP_ITEMS: Array<[string, string]> = [['wood', '14.2k'], ['stones', '9.8k'], ['metal.fragments', '6.1k'], ['metal.refined', '420'], ['scrap', '380'], ['lowgradefuel', '1.1k'], ['cloth', '900'], ['sulfur', '2.4k'], ['charcoal', '5k'], ['gunpowder', '600']];
+const DECAY_LIST: Array<{ label: string; grid: string; mat: string; hp: number; max: number; left: string; pct: number; danger: string }> = [
+  { label: 'Enemy 2x2', grid: 'D7', mat: 'Stone', hp: 210, max: 500, left: '8h 12m left', pct: 0.42, danger: 'ok' },
+  { label: 'Sheet Door', grid: 'F9', mat: 'Sheet Metal', hp: 55, max: 250, left: '2h 40m left', pct: 0.22, danger: 'soon' },
+  { label: 'Wood Shack', grid: 'K3', mat: 'Wood', hp: 0, max: 250, left: 'DECAYED', pct: 0, danger: 'dead' },
+];
+const CRATE_TL: Array<{ n: string; s: string; state: 'live' | 'soon' | 'done' }> = [
+  { n: 'Crate 1 (Stern/Back)', s: '● LIVE ON DECK', state: 'live' },
+  { n: 'Crate 2 (Mid-Back)', s: 'Spawns in 4:12', state: 'soon' },
+  { n: 'Crate 3 (Mid-Front)', s: 'Spawns in 14:12', state: 'soon' },
+  { n: 'Crate 4 (Bow/Front)', s: 'Spawns in 24:12', state: 'soon' },
+];
+const CRATE_TIMERS: Array<{ label: string; sub: string; time: string; pct: number; danger: string }> = [
+  { label: 'Cargo · Back', sub: 'Cargo Crate', time: '1:42', pct: 0.18, danger: 'soon' },
+  { label: 'Large Oil Rig', sub: 'Hackable Crate', time: '9:30', pct: 0.62, danger: 'ok' },
+];
+const PROFIT: Array<{ via: string; viaIcon: string; profit: string; s1g: string; s1t: string; s2g: string; s2t: string }> = [
+  { via: 'Metal Fragments', viaIcon: 'metal.fragments', profit: '+1.6k', s1g: 'K14', s1t: 'Spend 240 Scrap → Get 6k Metal Frags', s2g: 'C19', s2t: 'Pay 6k Metal Frags → Get 1.8k Scrap' },
+  { via: 'Low Grade Fuel', viaIcon: 'lowgradefuel', profit: '+680', s1g: 'G7', s1t: 'Spend 100 Scrap → Get 2k Low Grade', s2g: 'H9', s2t: 'Pay 2k Low Grade → Get 780 Scrap' },
+];
+const RICH: Array<{ grid: string; name: string; value: string; tier: string; tc: string; pct: number; hl: Array<{ icon: string; qty: string; name: string; raid: boolean }> }> = [
+  { grid: 'D8', name: 'GigaClan Shop', value: '18.4k', tier: 'WHALE', tc: '#ce422b', pct: 92, hl: [{ icon: 'explosive.timed', qty: '12', name: 'C4', raid: true }, { icon: 'rocket.launcher', qty: '4', name: 'Launcher', raid: true }, { icon: 'metal.refined', qty: '4k', name: 'HQM', raid: false }] },
+  { grid: 'K14', name: 'Bandit Surplus', value: '9.1k', tier: 'RICH', tc: '#e8a838', pct: 54, hl: [{ icon: 'rifle.ak', qty: '8', name: 'AK', raid: false }, { icon: 'sulfur', qty: '20k', name: 'Sulfur', raid: false }] },
+  { grid: 'C19', name: 'Hill Traders', value: '4.2k', tier: 'OK', tc: '#6fcf73', pct: 28, hl: [{ icon: 'scrap', qty: '3k', name: 'Scrap', raid: false }] },
+];
+const ACT_STATS: Array<{ name: string; st: string; deaths: number; dph: string; grid: string; moved: string }> = [
+  { name: 'Viktor', st: 'on', deaths: 2, dph: '0.6', grid: 'F12', moved: '3m ago' },
+  { name: 'Dima', st: 'dead', deaths: 5, dph: '1.5', grid: 'H9', moved: 'just now' },
+  { name: 'Sasha', st: 'on', deaths: 1, dph: '0.3', grid: 'G11', moved: '12m ago' },
+];
+const ACT_LOG: Array<{ k: string; label: string; detail: string; time: string }> = [
+  { k: 'death', label: 'Yuri died', detail: 'H9', time: '2m ago' },
+  { k: 'cargo', label: 'Cargo Ship entered', detail: 'D7', time: '6m ago' },
+  { k: 'online', label: 'Dima came online', detail: '', time: '14m ago' },
+  { k: 'heli', label: 'Patrol Heli inbound', detail: '', time: '22m ago' },
+  { k: 'crate', label: 'Locked Crate spawned', detail: 'Launch Site', time: '28m ago' },
+];
+const LOADOUT_HITS: Array<{ part: string; dmg: string; pct: number; mult: string; htk: string }> = [
+  { part: 'HEAD', dmg: '95.0', pct: 100, mult: '×2.0', htk: '1× shot' },
+  { part: 'CHEST', dmg: '47.5', pct: 62, mult: '×1.0', htk: '3× shots' },
+  { part: 'LEGS', dmg: '35.6', pct: 46, mult: '×0.75', htk: '4× shots' },
+];
 
 function bucket(seed: number, d: number, h: number): number {
   const peak = ((seed * 7) % 6) + 18;
@@ -315,11 +357,12 @@ export default function AppWindow() {
                 ))}
               </div>
               <div className="aw-tools-main">
-                {tool === 'cctv' ? <>
+                {tool === 'cctv' && <>
                   <div className="aw-tool-h"><Video size={14} /> CCTV CAMERA CODES</div>
                   <p className="aw-tool-p">Type these into a Computer Station to watch monument cameras.</p>
                   <div className="aw-cctv">{CCTV.map(([mon, code]) => <div className="aw-cctv-row" key={code}><span>{mon}</span><code>{code}</code></div>)}</div>
-                </> : tool === 'recycler' ? <>
+                </>}
+                {tool === 'recycler' && <>
                   <div className="aw-tool-h"><RefreshCw size={14} /> RECYCLER OUTPUT</div>
                   <p className="aw-tool-p">What you get back from recycling components.</p>
                   {RECYCLE.map((r) => (
@@ -329,7 +372,8 @@ export default function AppWindow() {
                       <span className="aw-rec-out">{r.out.map(([ic, q], j) => <span key={j}><img src={icon(ic)} onError={hideErr} alt="" />{q}</span>)}</span>
                     </div>
                   ))}
-                </> : tool === 'pricewatch' ? <>
+                </>}
+                {tool === 'pricewatch' && <>
                   <div className="aw-tool-h"><DollarSign size={14} /> PRICE WATCH</div>
                   <p className="aw-tool-p">Get alerted when a watched item drops below your target.</p>
                   {PRICEWATCH.map((w) => (
@@ -339,7 +383,106 @@ export default function AppWindow() {
                       <span className="aw-pw-best">{w.best} <span className="aw-vgrid">{w.grid}</span></span>
                     </div>
                   ))}
-                </> : (
+                </>}
+                {tool === 'cupboard' && <>
+                  <div className="aw-tool-h"><Home size={14} /> TOOL CUPBOARD</div>
+                  <div className="aw-cup-card">
+                    <div className="aw-cup-h"><span>Main Base TC</span><span className="aw-cup-status ok">PROTECTED · 2d 4h</span></div>
+                    <div className="aw-cup-grid">
+                      {CUP_ITEMS.map(([ic, q]) => <div className="aw-cup-slot" key={ic}><img src={icon(ic)} onError={hideErr} alt="" /><span>{q}</span></div>)}
+                      {Array.from({ length: 26 }).map((_, i) => <div className="aw-cup-slot empty" key={`e${i}`} />)}
+                    </div>
+                  </div>
+                </>}
+                {tool === 'decay' && <>
+                  <div className="aw-tool-h"><Clock size={14} /> TRACKED STRUCTURES</div>
+                  <p className="aw-tool-p">Pin enemy structures and watch their decay window count down.</p>
+                  {DECAY_LIST.map((d) => (
+                    <div className={`aw-decay ${d.danger}`} key={d.label}>
+                      <div className="aw-decay-h"><span className="aw-decay-name">{d.label}</span><span className="aw-vgrid">{d.grid}</span><span className={`aw-decay-time ${d.danger}`}>{d.left}</span></div>
+                      <div className="aw-decay-meta"><span>{d.mat}</span><span>{d.hp} / {d.max} HP</span></div>
+                      <div className="aw-decay-bar"><span className={d.danger} style={{ width: `${d.pct * 100}%` }} /></div>
+                    </div>
+                  ))}
+                </>}
+                {tool === 'crates' && <>
+                  <div className="aw-crate-tl">
+                    <div className="aw-crate-tl-h">⚓ CARGO TIMELINE <span>entered 2:14 ago</span></div>
+                    {CRATE_TL.map((c) => <div className="aw-crate-row" key={c.n}><span>{c.n}</span><span className={`aw-crate-s ${c.state}`}>{c.s}</span></div>)}
+                  </div>
+                  <div className="aw-tool-h" style={{ marginTop: 14 }}><Lock size={14} /> ACTIVE TIMERS</div>
+                  {CRATE_TIMERS.map((t) => (
+                    <div className={`aw-decay ${t.danger}`} key={t.label}>
+                      <div className="aw-decay-h"><span className="aw-decay-name">{t.label}</span><span className={`aw-decay-time ${t.danger}`}>{t.time}</span></div>
+                      <div className="aw-decay-meta"><span>{t.sub}</span></div>
+                      <div className="aw-decay-bar"><span className={t.danger} style={{ width: `${t.pct * 100}%` }} /></div>
+                    </div>
+                  ))}
+                </>}
+                {tool === 'profit' && <>
+                  <div className="aw-tool-h"><Calculator size={14} /> PROFIT SCANNER</div>
+                  <p className="aw-tool-p">Two-step vending arbitrage loops across the map's shops.</p>
+                  {PROFIT.map((p) => (
+                    <div className="aw-profit" key={p.via}>
+                      <div className="aw-profit-h"><span className="aw-profit-via"><img src={icon(p.viaIcon)} onError={hideErr} alt="" /> via {p.via}</span><span className="aw-profit-amt"><img src={icon('scrap')} onError={hideErr} alt="" /> {p.profit} / trip</span></div>
+                      <div className="aw-profit-step"><span className="aw-profit-tag">STEP 1 · {p.s1g} →</span> {p.s1t}</div>
+                      <div className="aw-profit-step"><span className="aw-profit-tag">STEP 2 · {p.s2g} →</span> {p.s2t}</div>
+                    </div>
+                  ))}
+                </>}
+                {tool === 'richbase' && <>
+                  <div className="aw-tool-h"><Compass size={14} /> RICH PLAYER BASES</div>
+                  <p className="aw-tool-p">Player shops ranked by the scrap value of valuables in stock.</p>
+                  {RICH.map((r) => (
+                    <div className="aw-rich" key={r.name}>
+                      <div className="aw-rich-h"><span className="aw-vgrid">{r.grid}</span><span className="aw-rich-name">{r.name}</span><span className="aw-rich-val" style={{ color: r.tc }}>{r.value}</span><span className="aw-rich-tier" style={{ color: r.tc, borderColor: `${r.tc}66`, background: `${r.tc}1a` }}>{r.tier}</span></div>
+                      <div className="aw-rich-hl">{r.hl.map((h, j) => <span key={j} className={`aw-rich-chip ${h.raid ? 'raid' : ''}`}><img src={icon(h.icon)} onError={hideErr} alt="" /><b>{h.qty}×</b> {h.name}</span>)}</div>
+                      <div className="aw-rich-bar"><span style={{ width: `${r.pct}%`, background: r.tc }} /></div>
+                    </div>
+                  ))}
+                </>}
+                {tool === 'activity' && <>
+                  <div className="aw-tool-h"><Activity size={14} /> TEAM STATS · THIS SESSION</div>
+                  <div className="aw-act-stats">
+                    {ACT_STATS.map((m) => (
+                      <div className="aw-act-card" key={m.name}>
+                        <div className="aw-act-ch"><span className={`aw-spy-dot ${m.st === 'on' ? 'on' : 'off'}`} />{m.name}{m.st === 'dead' && <span className="aw-act-dead">DEAD</span>}</div>
+                        <div className="aw-act-row"><span>Deaths</span><b>{m.deaths} <small>({m.dph}/h)</small></b></div>
+                        <div className="aw-act-row"><span>Last seen</span><b>{m.grid}</b></div>
+                        <div className="aw-act-row"><span>Last moved</span><b>{m.moved}</b></div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="aw-tool-h" style={{ marginTop: 14 }}>ACTIVITY LOG</div>
+                  <div className="aw-act-log">
+                    {ACT_LOG.map((e, i) => <div className="aw-act-le" key={i}><span className={`aw-act-dot ${e.k}`} /><span className="aw-act-lbl">{e.label}{e.detail && <em> · {e.detail}</em>}</span><span className="aw-act-time">{e.time}</span></div>)}
+                  </div>
+                </>}
+                {tool === 'loadout' && <>
+                  <div className="aw-tool-h"><Shield size={14} /> LOADOUT & DAMAGE LAB</div>
+                  <div className="aw-lo-weapon"><img src={icon('rifle.ak')} onError={hideErr} alt="" /><div><b>Assault Rifle</b><small>50 dmg · ×2.0 head · 450 rpm</small></div><span className="aw-lo-vs">vs Metal Facemask + Chest</span></div>
+                  {LOADOUT_HITS.map((h) => (
+                    <div className="aw-lo-hit" key={h.part}>
+                      <div className="aw-lo-hit-h"><span className="aw-lo-part">{h.part}</span><span className="aw-lo-dmg">{h.dmg}<small> dmg</small></span></div>
+                      <div className="aw-lo-bar"><span style={{ width: `${h.pct}%` }} /></div>
+                      <div className="aw-lo-meta"><span>{h.mult}</span><span>{h.htk}</span></div>
+                    </div>
+                  ))}
+                  <div className="aw-lo-lethal">☠ One-shot headshot possible</div>
+                </>}
+                {tool === 'lookup' && <>
+                  <div className="aw-tool-h"><Search size={14} /> PLAYER STEAMID LOOKUP</div>
+                  <div className="aw-lk-search"><Search size={12} /> SteamID, SteamID64 or profile URL…<span className="aw-lk-btn">Search</span></div>
+                  <div className="aw-lk-banner danger"><span>⚠ RED FLAGS / BANS CACHED</span></div>
+                  <div className="aw-lk-flags"><span className="aw-lk-flag vac">VAC BANNED</span><span className="aw-lk-flag game">GAME BANS: 1</span><span className="aw-lk-flag report">RUST HACK REPORTED</span></div>
+                  <div className="aw-lk-card">
+                    <div className="aw-lk-av" style={{ background: '#3a4a5a' }}>S<span className="aw-lk-lvl">42</span></div>
+                    <div className="aw-lk-info"><b>SketchyAce</b><span className="aw-lk-priv">public</span><div className="aw-lk-hrs"><Clock size={10} /> RUST: 84 hrs</div></div>
+                    <span className="aw-lk-risk high">HIGH RISK · 82</span>
+                  </div>
+                  <div className="aw-lk-stats"><div><span className="l">K/D</span><span className="v" style={{ color: '#ce422b' }}>7.41</span></div><div><span className="l">HEADSHOT</span><span className="v" style={{ color: '#10b981' }}>61%</span></div><div><span className="l">ACCURACY</span><span className="v" style={{ color: '#06b6d4' }}>44%</span></div></div>
+                </>}
+                {!['cctv', 'recycler', 'pricewatch', 'cupboard', 'decay', 'crates', 'profit', 'richbase', 'activity', 'loadout', 'lookup'].includes(tool) && (
                   <div className="aw-tool-generic">
                     <div className="aw-tg-ico"><ToolIcon size={26} /></div>
                     <h3>{toolMeta?.[1]}</h3>
