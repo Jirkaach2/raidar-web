@@ -22,7 +22,8 @@ export default function SteamCallback() {
       try {
         await account.createSession(userId, secret);
         await refresh();
-        navigate('/dashboard', { replace: true });
+        const needsEmail = params.get('needsEmail') === '1';
+        navigate(needsEmail ? '/auth/steam/complete' : '/dashboard', { replace: true });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Steam sign-in could not be completed.');
       }

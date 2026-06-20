@@ -1437,6 +1437,19 @@ img { display: block; max-width: 100%; }
 }
 .verify-banner-text strong { font-size: 14px; }
 .verify-banner-text .muted { font-size: 13px; }
+.verify-banner--info {
+  border-color: rgba(88, 198, 232, 0.32);
+  background: linear-gradient(180deg, rgba(88, 198, 232, 0.10), rgba(88, 198, 232, 0.04));
+}
+.verify-banner--info .verify-banner-ic { color: var(--color-info); background: rgba(88, 198, 232, 0.14); }
+
+.auth-skip {
+  display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 18px; padding: 6px 10px;
+  background: none; border: none; cursor: pointer;
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.5px; color: var(--color-text-muted);
+  transition: color 160ms var(--ease);
+}
+.auth-skip:hover { color: var(--color-text); }
 
 .auth-card--center { text-align: center; }
 .verify-state {

@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Verify from './pages/Verify';
 import SteamCallback from './pages/SteamCallback';
+import CompleteSteamSignup from './pages/CompleteSteamSignup';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
 import NotFound from './pages/NotFound';
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/auth/steam" element={<SteamCallback />} />
+          <Route path="/auth/steam/complete" element={<CompleteSteamSignup />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/refunds" element={<RefundPolicy />} />

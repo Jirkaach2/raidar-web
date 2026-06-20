@@ -55,7 +55,16 @@ export default async ({ req, res, log, error }) => {
 
   const rawQuery = req.queryString || (req.url || '').split('?').slice(1).join('?') || '';
   const query = parseQuery(rawQuery);
-  const action = query.action || (req.query && req.query.action) || 'login';
+
+  // Action can arrive via the OpenID GET (?action=) or a POST body (SDK call).
+  let body = {};
+  if (req.method === 'POST') {
+    try { body = JSON.parse(req.bodyRaw || req.body || '{}'); } catch { /* ignore */ }
+  }
+  const action = query.action || body.action || 'login';
+
+  const SYNTH_DOMAIN = '@steam.users.raidar.tech';
+  const isSynthEmail = (e) => !e || e.endsWith(SYNTH_DOMAIN);
 
   const fail = (msg) => {
     error(`steam-auth[${VERSION}]: ${msg}`);
@@ -74,6 +83,27 @@ export default async ({ req, res, log, error }) => {
         'openid.claimed_id': 'http://specs.openid.net/auth/2.0/identifier_select',
       });
       return res.redirect(`${STEAM_OPENID}?${params.toString()}`, 302);
+    }
+
+    // ── Authenticated: let a signed-in Steam user attach a real email ──
+    if (action === 'setEmail') {
+      const callerId = req.headers['x-appwrite-user-id'];
+      if (!callerId) return res.json({ error: 'Not authenticated.' }, 401);
+      const email = String(body.email || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.json({ error: 'Enter a valid email address.' }, 400);
+      if (email.endsWith(SYNTH_DOMAIN)) return res.json({ error: 'Please use a real email address.' }, 400);
+
+      const client = new Client().setEndpoint(endpoint).setProject(projectId).setKey(process.env.APPWRITE_API_KEY);
+      const users = new Users(client);
+      try {
+        // Setting a new email clears the verified flag; the client then triggers
+        // the normal verification email so the user confirms ownership.
+        await users.updateEmail(callerId, email);
+        return res.json({ ok: true });
+      } catch (e) {
+        const msg = /already|exists|unique/i.test(e.message) ? 'That email is already in use.' : (e.message || 'Could not save email.');
+        return res.json({ error: msg }, 400);
+      }
     }
 
     // ── 2. Steam returned: verify the assertion ──
@@ -123,16 +153,16 @@ export default async ({ req, res, log, error }) => {
 
       // Upsert: a deterministic, idempotent user id keyed on the SteamID.
       const userId = `steam_${steamId}`;
-      let exists = true;
-      try { await users.get(userId); } catch { exists = false; }
-      if (!exists) {
+      let existing = null;
+      try { existing = await users.get(userId); } catch { /* new user */ }
+      if (!existing) {
         // Steam gives us no email; create with a synthetic, non-routable one so
         // the create call always satisfies Appwrite's identifier requirement.
-        const synthEmail = `${steamId}@steam.users.raidar.tech`;
+        // The user is invited to attach a real email right after (two-step flow).
+        const synthEmail = `${steamId}${SYNTH_DOMAIN}`;
         try {
           await users.create(userId, synthEmail, undefined, undefined, personaName);
         } catch (e) {
-          // Fall back to an id-only user if the email path is rejected.
           log(`create with email failed (${e.message}); retrying id-only`);
           await users.create(userId, undefined, undefined, undefined, personaName);
         }
@@ -141,10 +171,15 @@ export default async ({ req, res, log, error }) => {
       try {
         await users.updateName(userId, personaName);
         await users.updatePrefs(userId, { steamId, steamAvatar: avatar, provider: 'steam' });
-        // Steam vouches for identity and there is no real inbox to confirm, so
-        // treat the account as verified — this suppresses the email-verify nudge.
-        await users.updateEmailVerification(userId, true);
       } catch (e) { log(`profile update skipped: ${e.message}`); }
+
+      // Does this account still lack a real email? If so, the browser will route
+      // the user to a page to add one and verify it.
+      let needsEmail = !existing;
+      try {
+        const fresh = existing || (await users.get(userId));
+        needsEmail = isSynthEmail(fresh.email);
+      } catch { /* fall back to !existing */ }
 
       // Mint a custom token the browser can exchange for a session.
       let token;
@@ -153,8 +188,8 @@ export default async ({ req, res, log, error }) => {
       } catch (e) {
         return fail(`createToken failed: ${e.message}`);
       }
-      const url = `${siteUrl}/auth/steam?userId=${encodeURIComponent(token.userId)}&secret=${encodeURIComponent(token.secret)}`;
-      log(`steam login ok: ${steamId} → ${userId}`);
+      const url = `${siteUrl}/auth/steam?userId=${encodeURIComponent(token.userId)}&secret=${encodeURIComponent(token.secret)}&needsEmail=${needsEmail ? 1 : 0}`;
+      log(`steam login ok: ${steamId} → ${userId} (needsEmail=${needsEmail})`);
       return res.redirect(url, 302);
     }
 

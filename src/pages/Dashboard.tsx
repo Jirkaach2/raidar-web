@@ -123,6 +123,7 @@ export default function Dashboard() {
   const prefs = (user?.prefs || {}) as Record<string, unknown>;
   const isSteam = prefs.provider === 'steam';
   const steamAvatar = typeof prefs.steamAvatar === 'string' ? prefs.steamAvatar : '';
+  const hasRealEmail = !!user?.email && !user.email.endsWith('@steam.users.raidar.tech');
 
   return (
     <div className="dash">
@@ -140,7 +141,7 @@ export default function Dashboard() {
       </div>
 
       {!isConfigured && <div className="auth-notice">Appwrite isn’t configured. Set the <code>VITE_APPWRITE_*</code> env vars to enable plans.</div>}
-      {user && !user.emailVerification && !isSteam && (
+      {user && !user.emailVerification && hasRealEmail && (
         <div className="verify-banner">
           <span className="verify-banner-ic"><MailWarning size={18} /></span>
           <div className="verify-banner-text">
@@ -150,6 +151,16 @@ export default function Dashboard() {
           <button className="btn btn-sm" onClick={resendVerification} disabled={verifyBusy || verifySent}>
             {verifyBusy ? 'Sending…' : verifySent ? 'Sent ✓' : 'Resend email'}
           </button>
+        </div>
+      )}
+      {user && isSteam && !hasRealEmail && (
+        <div className="verify-banner verify-banner--info">
+          <span className="verify-banner-ic"><Mail size={18} /></span>
+          <div className="verify-banner-text">
+            <strong>Add an email</strong>
+            <span className="muted">Link an email to your Steam account for receipts and account recovery.</span>
+          </div>
+          <Link className="btn btn-sm" to="/auth/steam/complete">Add email</Link>
         </div>
       )}
       {notice && <div className="dash-notice">{notice}</div>}
@@ -181,7 +192,7 @@ export default function Dashboard() {
         <div className="dash-stats">
           <div className="dash-stat"><span className="dash-stat-ic"><Server size={16} /></span><div><div className="dash-stat-v">{currentPlan ? (currentPlan.servers < 0 ? '∞' : currentPlan.servers) : 1}</div><div className="dash-stat-l">Linked servers</div></div></div>
           <div className="dash-stat"><span className="dash-stat-ic"><CalendarDays size={16} /></span><div><div className="dash-stat-v">{user?.$createdAt ? new Date(user.$createdAt).toLocaleDateString() : '—'}</div><div className="dash-stat-l">Member since</div></div></div>
-          <div className="dash-stat"><span className="dash-stat-ic"><Mail size={16} /></span><div><div className="dash-stat-v dash-stat-email">{isSteam ? (user?.name || 'Steam account') : user?.email}</div><div className="dash-stat-l">{isSteam ? 'Signed in with Steam' : 'Account email'}</div></div></div>
+          <div className="dash-stat"><span className="dash-stat-ic"><Mail size={16} /></span><div><div className="dash-stat-v dash-stat-email">{hasRealEmail ? user?.email : (user?.name || 'Steam account')}</div><div className="dash-stat-l">{hasRealEmail ? 'Account email' : 'Signed in with Steam'}</div></div></div>
         </div>
       </div>
 
