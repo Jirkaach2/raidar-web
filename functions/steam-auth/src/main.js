@@ -39,7 +39,7 @@ export default async ({ req, res, log, error }) => {
 
   const fail = (msg) => {
     error(`steam-auth: ${msg}`);
-    return res.redirect(`${siteUrl}/login?error=steam`, 302);
+    return res.redirect(`${siteUrl}/login?error=steam&reason=${encodeURIComponent(msg)}`, 302);
   };
 
   try {
@@ -102,7 +102,16 @@ export default async ({ req, res, log, error }) => {
       let exists = true;
       try { await users.get(userId); } catch { exists = false; }
       if (!exists) {
-        await users.create(userId, undefined, undefined, undefined, personaName);
+        // Steam gives us no email; create with a synthetic, non-routable one so
+        // the create call always satisfies Appwrite's identifier requirement.
+        const synthEmail = `${steamId}@steam.users.raidar.tech`;
+        try {
+          await users.create(userId, synthEmail, undefined, undefined, personaName);
+        } catch (e) {
+          // Fall back to an id-only user if the email path is rejected.
+          log(`create with email failed (${e.message}); retrying id-only`);
+          await users.create(userId, undefined, undefined, undefined, personaName);
+        }
       }
       // Keep profile fresh + record the steam linkage in prefs.
       try {
@@ -111,7 +120,12 @@ export default async ({ req, res, log, error }) => {
       } catch (e) { log(`profile update skipped: ${e.message}`); }
 
       // Mint a custom token the browser can exchange for a session.
-      const token = await users.createToken(userId, 64, 60); // 64-char secret, 60s TTL
+      let token;
+      try {
+        token = await users.createToken(userId, 64, 60); // 64-char secret, 60s TTL
+      } catch (e) {
+        return fail(`createToken failed: ${e.message}`);
+      }
       const url = `${siteUrl}/auth/steam?userId=${encodeURIComponent(token.userId)}&secret=${encodeURIComponent(token.secret)}`;
       log(`steam login ok: ${steamId} → ${userId}`);
       return res.redirect(url, 302);

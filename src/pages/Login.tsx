@@ -10,11 +10,13 @@ export default function Login() {
   const location = useLocation() as { state?: { from?: string } };
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(
-    new URLSearchParams(window.location.search).get('error') === 'oauth'
-      ? 'Sign-in with that provider failed or was cancelled.'
-      : '',
-  );
+  const [error, setError] = useState(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const e = sp.get('error');
+    if (e === 'steam') return `Steam sign-in failed${sp.get('reason') ? `: ${sp.get('reason')}` : '.'}`;
+    if (e === 'oauth') return 'Sign-in with that provider failed or was cancelled.';
+    return '';
+  });
   const [busy, setBusy] = useState(false);
 
   const onSubmit = async (e: FormEvent) => {
