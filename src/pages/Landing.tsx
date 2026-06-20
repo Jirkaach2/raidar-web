@@ -7,7 +7,6 @@ import {
 import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, type Plan } from '../lib/appwrite';
 import Reveal from '../components/Reveal';
 import AppWindow from '../components/AppWindow';
-import TiltStage from '../components/TiltStage';
 
 const FEATURES = [
   { Icon: Map, title: 'Live Tactical Map', desc: 'Real-time team, monuments, caves, the travelling vendor and every world event — projected on in-game grids with click-through detail panels.' },
@@ -66,10 +65,10 @@ export default function Landing() {
           </div>
 
           <Reveal variant="rise" delay={120} className="hero-app">
-            <TiltStage><AppWindow /></TiltStage>
+            <AppWindow />
             <div className="demo-hint">
               <MousePointerClick size={14} />
-              Live interactive preview — switch screens on the rail, flip the switches, open the cupboard
+              Live interactive preview — click the rail icons to switch screens, flip the switches, open the cupboard
             </div>
           </Reveal>
         </div>

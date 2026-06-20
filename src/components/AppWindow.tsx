@@ -46,9 +46,14 @@ const TC_ITEMS: Array<[string, string]> = [
   ['lowgradefuel', '1.1k'], ['scrap', '380'], ['cloth', '900'], ['sulfur', '2.4k'],
 ];
 
+const RAIL_LABELS: Record<Page, string> = {
+  map: 'Live Map', team: 'Team', vending: 'Market', devices: 'Smart Devices',
+  tools: 'Tools', spy: 'Rust Spy', settings: 'Settings',
+};
+
 /** Interactive recreation of the Raidar desktop app — switch screens, flip toggles & switches. */
 export default function AppWindow() {
-  const [page, setPage] = useState<Page>('map');
+  const [page, setPage] = useState<Page>('devices');
   const [ov, setOv] = useState<Record<string, boolean>>({
     team: true, roster: true, death: true, shops: true, caves: true, markers: false, events: true, day: true,
   });
@@ -73,7 +78,7 @@ export default function AppWindow() {
         <nav className="aw-rail">
           {RAIL.map((r) => (
             <span key={r.key}>
-              <button className={`aw-rail-ic ${page === r.key ? 'active' : ''}`} onClick={() => setPage(r.key)} aria-label={r.key}>
+              <button className={`aw-rail-ic ${page === r.key ? 'active' : ''}`} onClick={() => setPage(r.key)} aria-label={r.key} title={RAIL_LABELS[r.key]}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{r.path}</svg>
               </button>
               {r.sep && <span className="aw-rail-sep" />}
