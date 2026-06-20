@@ -94,7 +94,21 @@ export default function Docs() {
   }, []);
 
   return (
-    <div className="docs">
+    <div className="docs-page">
+      <header className="docs-hero">
+        <div className="container">
+          <span className="hud-label hud-label--accent">// Field manual</span>
+          <h1>Everything Raidar can do</h1>
+          <p>From the live tactical map to programmable switch automation and the Discord bot — the complete guide to running your wipe.</p>
+          <div className="docs-jump">
+            {SECTIONS.map(({ id, label, Icon }) => (
+              <a key={id} href={`#${id}`}><Icon size={13} /> {label}</a>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      <div className="docs">
       <aside className="docs-side">
         <h4>Documentation</h4>
         <nav>
@@ -341,6 +355,7 @@ export default function Docs() {
           </div>
         </section>
       </article>
+      </div>
     </div>
   );
 }

@@ -2,12 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Map, Siren, ToggleRight, Bot, Bomb, Radar, ShieldCheck,
-  Check, ChevronRight, Download, Wifi, Cpu, Zap,
+  Check, ChevronRight, Download, Wifi, Cpu, Zap, MousePointerClick,
 } from 'lucide-react';
 import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, type Plan } from '../lib/appwrite';
 import Reveal from '../components/Reveal';
 import AppWindow from '../components/AppWindow';
-import AppTemplates from '../components/AppTemplates';
 import TiltStage from '../components/TiltStage';
 
 const FEATURES = [
@@ -51,22 +50,27 @@ export default function Landing() {
             <span className="hud-label hud-label--accent">Rust Intelligence App</span>
           </div>
           <h1 className="reveal reveal-up in-view">Win the wipe<br />with <span>Raidar</span></h1>
-          <p className="lead reveal reveal-up in-view" style={{ transitionDelay: '80ms' }}>
+          <p className="lead reveal reveal-up in-view" style={{ transitionDelay: '70ms' }}>
             A tactical overlay and Discord companion for Rust+. Live map, base alarms, programmable
             switches, shop intel and raid planning — on your desktop and in your team's server.
           </p>
-          <div className="hero-cta reveal reveal-up in-view" style={{ transitionDelay: '160ms' }}>
+          <div className="hero-cta reveal reveal-up in-view" style={{ transitionDelay: '140ms' }}>
             <Link className="btn btn-lg" to="/register"><Download size={17} /> Start free</Link>
             <Link className="btn btn-ghost btn-lg" to="/docs">Read the docs <ChevronRight size={16} /></Link>
           </div>
-          <div className="trust reveal reveal-up in-view" style={{ transitionDelay: '240ms' }}>
+          <div className="trust reveal reveal-up in-view" style={{ transitionDelay: '210ms' }}>
             <span><Radar size={14} /> Live Rust+ sync</span>
             <span><Wifi size={14} /> Instant alerts</span>
             <span><ShieldCheck size={14} /> Per-member device control</span>
             <span><Cpu size={14} /> No game files touched</span>
           </div>
-          <Reveal variant="blur" delay={120} className="hero-app">
+
+          <Reveal variant="rise" delay={120} className="hero-app">
             <TiltStage><AppWindow /></TiltStage>
+            <div className="demo-hint">
+              <MousePointerClick size={14} />
+              Live interactive preview — switch screens on the rail, flip the switches, open the cupboard
+            </div>
           </Reveal>
         </div>
       </header>
@@ -80,7 +84,7 @@ export default function Landing() {
           </Reveal>
           <div className="grid">
             {FEATURES.map(({ Icon, title, desc }, i) => (
-              <Reveal key={title} variant="up" delay={(i % 3) * 90}>
+              <Reveal key={title} variant="rise" delay={(i % 3) * 80}>
                 <div className="feature-card bracketed">
                   <div className="feature-ico"><Icon /></div>
                   <h3>{title}</h3>
@@ -92,20 +96,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="section section-alt" id="templates">
-        <div className="container">
-          <Reveal className="section-head">
-            <span className="hud-label hud-label--accent">// Straight from the app</span>
-            <h2 className="section-title">Built like a command center</h2>
-            <p className="section-sub">Real Raidar surfaces — notifications, team tracking and raid math, all in one tactical HUD.</p>
-          </Reveal>
-          <Reveal variant="up">
-            <AppTemplates />
-          </Reveal>
-        </div>
-      </section>
-
-      <section className="section" id="how">
+      <section className="section section-alt" id="how">
         <div className="container">
           <Reveal className="section-head">
             <span className="hud-label hud-label--accent">// Deployment</span>
@@ -114,7 +105,7 @@ export default function Landing() {
           </Reveal>
           <div className="steps">
             {STEPS.map((s, i) => (
-              <Reveal key={s.n} variant="up" delay={i * 110}>
+              <Reveal key={s.n} variant="rise" delay={i * 100}>
                 <div className="step bracketed">
                   <div className="step-n">{s.n}</div>
                   <h3>{s.title}</h3>
@@ -127,7 +118,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="section section-alt" id="pricing">
+      <section className="section" id="pricing">
         <div className="container">
           <Reveal className="section-head">
             <span className="hud-label hud-label--accent">// Pricing</span>
@@ -136,7 +127,7 @@ export default function Landing() {
           </Reveal>
           <div className="pricing-grid">
             {plans.map((p, i) => (
-              <Reveal key={p.name} variant="up" delay={i * 90}>
+              <Reveal key={p.name} variant="rise" delay={i * 80}>
                 <div className={`price-card ${p.popular ? 'popular' : ''}`}>
                   {p.popular && <div className="price-badge">Most popular</div>}
                   <h3>{p.name}</h3>
