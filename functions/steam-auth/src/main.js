@@ -35,7 +35,26 @@ export default async ({ req, res, log, error }) => {
   const returnTo = `${selfBase}${path}?action=callback`;
 
   const STEAM_OPENID = 'https://steamcommunity.com/openid/login';
-  const action = (req.query && req.query.action) || 'login';
+
+  // Parse a raw query string WITHOUT turning '+' into a space. Steam signs
+  // fields such as `openid.response_nonce` that can contain a literal '+';
+  // URLSearchParams / most parsers decode '+' → ' ', which corrupts the value
+  // and makes Steam's signature check fail. decodeURIComponent preserves it.
+  const parseQuery = (qs) => {
+    const out = {};
+    for (const pair of (qs || '').split('&')) {
+      if (!pair) continue;
+      const i = pair.indexOf('=');
+      const k = decodeURIComponent(i < 0 ? pair : pair.slice(0, i));
+      const v = i < 0 ? '' : decodeURIComponent(pair.slice(i + 1));
+      out[k] = v;
+    }
+    return out;
+  };
+
+  const rawQuery = req.queryString || (req.url || '').split('?').slice(1).join('?') || '';
+  const query = parseQuery(rawQuery);
+  const action = query.action || (req.query && req.query.action) || 'login';
 
   const fail = (msg) => {
     error(`steam-auth: ${msg}`);
@@ -58,23 +77,25 @@ export default async ({ req, res, log, error }) => {
 
     // ── 2. Steam returned: verify the assertion ──
     if (action === 'callback') {
-      const q = req.query || {};
+      const q = query;
       if (q['openid.mode'] !== 'id_res') return fail('unexpected openid mode');
 
-      // Echo every openid.* param back to Steam with mode=check_authentication.
-      const verify = new URLSearchParams();
-      for (const [k, v] of Object.entries(q)) {
-        if (k.startsWith('openid.')) verify.append(k, String(v));
-      }
-      verify.set('openid.mode', 'check_authentication');
+      // Echo every openid.* param back to Steam with mode=check_authentication,
+      // re-encoding with encodeURIComponent so '+' becomes %2B (not a space).
+      const verify = Object.entries(q)
+        .filter(([k]) => k.startsWith('openid.'))
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(k === 'openid.mode' ? 'check_authentication' : v)}`)
+        .join('&');
 
       const vr = await fetch(STEAM_OPENID, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: verify.toString(),
+        body: verify,
       });
       const vt = await vr.text();
-      if (!/is_valid\s*:\s*true/i.test(vt)) return fail('assertion not valid');
+      if (!/is_valid\s*:\s*true/i.test(vt)) {
+        return fail(`assertion not valid (steam: ${vt.replace(/\s+/g, ' ').trim().slice(0, 60)})`);
+      }
 
       // claimed_id → .../openid/id/<steamid64>
       const claimed = String(q['openid.claimed_id'] || '');
