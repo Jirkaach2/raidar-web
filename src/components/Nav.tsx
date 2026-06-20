@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Menu, X, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Logo from './Logo';
 
 export default function Nav() {
   const { user, isAdmin, logout } = useAuth();
@@ -18,11 +20,11 @@ export default function Nav() {
     <nav className="nav">
       <div className="container nav-inner">
         <Link to="/" className="brand" onClick={close}>
-          <img src="/favicon.svg" alt="" /> RAIDAR
+          <Logo /> RAIDAR
         </Link>
 
         <button className="nav-toggle" aria-label="Menu" onClick={() => setOpen((o) => !o)}>
-          ☰
+          {open ? <X size={22} /> : <Menu size={22} />}
         </button>
 
         <div className={`nav-links ${open ? 'open' : ''}`}>
@@ -34,7 +36,7 @@ export default function Nav() {
           {user ? (
             <div className="nav-account">
               <span className="nav-user" title={user.email}>{user.name || user.email}</span>
-              <button className="btn btn-ghost btn-sm" onClick={onLogout}>Sign out</button>
+              <button className="btn btn-ghost btn-sm" onClick={onLogout}><LogOut size={14} /> Sign out</button>
             </div>
           ) : (
             <div className="nav-account">

@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import {
+  Rocket, LayoutGrid, Bot, Settings2, Terminal, Hash, ShieldCheck, HelpCircle, Info,
+} from 'lucide-react';
 
 interface Cmd { name: string; args?: string; desc: string; tag?: 'restricted' | 'owner'; }
 
@@ -28,7 +31,7 @@ const OWNER_CMDS: Cmd[] = [
   { name: '/restart', desc: 'Restart the bot process.', tag: 'owner' },
 ];
 
-const CHANNELS = [
+const CHANNELS: Array<[string, string]> = [
   ['raidar-alarms', 'Base alarms, Smart Alarm triggers and your own TC decay warnings.'],
   ['raidar-events', 'Cargo ship, patrol heli, chinook, deep-sea heli and the travelling vendor.'],
   ['raidar-crates', 'Locked crate spawns and hackable crate openings.'],
@@ -38,15 +41,22 @@ const CHANNELS = [
   ['raidar-bans', 'Steam account ban alerts for tracked players.'],
 ];
 
+const APP_FEATURES = [
+  { img: '/images/markers/cargo.png', title: 'Live tactical map', desc: 'Real-time team, monuments, caves, the travelling vendor and active events, projected on in-game grids.' },
+  { img: '/images/markers/patrol_heli_full.png', title: 'Event tracking', desc: 'Cargo, patrol heli, chinook and crates tracked from spawn to despawn with grid call-outs.' },
+  { img: '/images/markers/locked_crate.webp', title: 'Locked crates', desc: 'Get notified on locked crate spawns and hackable crate openings, anywhere on the map.' },
+  { img: '/images/monuments/oil_rig_large.webp', title: 'Monument intel', desc: 'Every monument mapped with imagery so new players learn the map fast.' },
+];
+
 const SECTIONS = [
-  { id: 'getting-started', label: 'Getting started' },
-  { id: 'app-features', label: 'App features' },
-  { id: 'discord-bot', label: 'Discord bot' },
-  { id: 'bot-setup', label: 'Bot setup' },
-  { id: 'commands', label: 'Command reference' },
-  { id: 'channels', label: 'Notification channels' },
-  { id: 'permissions', label: 'Permissions & whitelisting' },
-  { id: 'faq', label: 'FAQ' },
+  { id: 'getting-started', label: 'Getting started', Icon: Rocket },
+  { id: 'app-features', label: 'App features', Icon: LayoutGrid },
+  { id: 'discord-bot', label: 'Discord bot', Icon: Bot },
+  { id: 'bot-setup', label: 'Bot setup', Icon: Settings2 },
+  { id: 'commands', label: 'Command reference', Icon: Terminal },
+  { id: 'channels', label: 'Notification channels', Icon: Hash },
+  { id: 'permissions', label: 'Permissions', Icon: ShieldCheck },
+  { id: 'faq', label: 'FAQ', Icon: HelpCircle },
 ];
 
 export default function Docs() {
@@ -54,37 +64,29 @@ export default function Docs() {
 
   useEffect(() => {
     const obs = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) setActive(e.target.id);
-        }
-      },
-      { rootMargin: '-40% 0px -55% 0px' },
+      (entries) => { for (const e of entries) if (e.isIntersecting) setActive(e.target.id); },
+      { rootMargin: '-35% 0px -55% 0px' },
     );
-    SECTIONS.forEach((s) => {
-      const el = document.getElementById(s.id);
-      if (el) obs.observe(el);
-    });
+    SECTIONS.forEach((s) => { const el = document.getElementById(s.id); if (el) obs.observe(el); });
     return () => obs.disconnect();
   }, []);
 
   return (
-    <div className="docs container">
+    <div className="docs">
       <aside className="docs-side">
-        <div className="docs-side-inner">
-          <h4>Documentation</h4>
-          <nav>
-            {SECTIONS.map((s) => (
-              <a key={s.id} href={`#${s.id}`} className={active === s.id ? 'active' : ''}>
-                {s.label}
-              </a>
-            ))}
-          </nav>
-        </div>
+        <h4>Documentation</h4>
+        <nav>
+          {SECTIONS.map(({ id, label, Icon }) => (
+            <a key={id} href={`#${id}`} className={active === id ? 'active' : ''}>
+              <Icon /> {label}
+            </a>
+          ))}
+        </nav>
       </aside>
 
       <article className="docs-body">
         <section id="getting-started" className="doc-section">
+          <span className="hud-label hud-label--accent">// Overview</span>
           <h1>Getting started</h1>
           <p>
             Raidar is a tactical overlay and Discord companion for Rust+. It connects to your in-game
@@ -99,18 +101,27 @@ export default function Docs() {
         </section>
 
         <section id="app-features" className="doc-section">
+          <span className="hud-label hud-label--accent">// The desktop app</span>
           <h2>App features</h2>
-          <div className="doc-feature-grid">
-            <div className="doc-feature"><h3>🗺️ Live tactical map</h3><p>Real-time positions for your team, monuments, caves, the travelling vendor and active events, projected on in-game grids.</p></div>
-            <div className="doc-feature"><h3>🚨 Base alarms</h3><p>Smart Alarm triggers fire instantly to the overlay and Discord the moment your base is touched.</p></div>
-            <div className="doc-feature"><h3>🎛️ Device control</h3><p>Toggle Smart Switches from the app or from Discord with a one-tap button panel.</p></div>
-            <div className="doc-feature"><h3>💰 Shop & price intel</h3><p>Track vending machines, watch prices, and see which shops are selling the most in real time.</p></div>
-            <div className="doc-feature"><h3>🧨 Raid planning</h3><p>Raid cost calculator, loot tables and event timers to keep you a step ahead.</p></div>
-            <div className="doc-feature"><h3>🛰️ Spy & ban tracking</h3><p>Watch enemy online/offline status and get alerted when tracked Steam accounts are banned.</p></div>
-          </div>
+          <p>The app is your command center. Everything updates live as your Rust+ server reports it.</p>
+          {APP_FEATURES.map((f) => (
+            <div className="doc-feature-row" key={f.title}>
+              <img src={f.img} alt={f.title} loading="lazy" />
+              <div>
+                <h3>{f.title}</h3>
+                <p>{f.desc}</p>
+              </div>
+            </div>
+          ))}
+          <h3>Also included</h3>
+          <p>
+            Shop &amp; price intel (best-selling shops, price watches), raid cost calculator and loot
+            tables, enemy online/offline spy tracking, and Steam ban alerts for tracked players.
+          </p>
         </section>
 
         <section id="discord-bot" className="doc-section">
+          <span className="hud-label hud-label--accent">// In your server</span>
           <h2>Discord bot</h2>
           <p>
             The Raidar Discord bot mirrors your app into your server. The desktop app routes events
@@ -119,12 +130,14 @@ export default function Docs() {
             anyone needing the app open.
           </p>
           <div className="doc-callout">
-            <strong>One server, one link.</strong> Each Discord server links to a single Rust server.
-            Switching servers in the app updates the link in Discord automatically.
+            <Info />
+            <div><strong>One server, one link.</strong> Each Discord server links to a single Rust server.
+            Switching servers in the app updates the link in Discord automatically.</div>
           </div>
         </section>
 
         <section id="bot-setup" className="doc-section">
+          <span className="hud-label hud-label--accent">// Setup</span>
           <h2>Bot setup</h2>
           <ol className="doc-steps">
             <li><strong>Invite the bot</strong> to your server with the Manage Channels permission.</li>
@@ -133,12 +146,14 @@ export default function Docs() {
             <li>Run <code>/channels</code> to auto-create the Raidar category, then pick a per-feature or single-channel layout.</li>
           </ol>
           <div className="doc-callout">
-            On its first join the bot creates a <strong>Raidar</strong> category with a setup channel
-            explaining the next steps — no manual configuration needed.
+            <Info />
+            <div>On its first join the bot creates a <strong>Raidar</strong> category with a setup channel
+            explaining the next steps — no manual configuration needed.</div>
           </div>
         </section>
 
         <section id="commands" className="doc-section">
+          <span className="hud-label hud-label--accent">// Slash commands</span>
           <h2>Command reference</h2>
           <p>Commands marked <span className="pill pill-restricted">restricted</span> require the control role or server-manage permission.</p>
           <div className="cmd-table">
@@ -149,8 +164,7 @@ export default function Docs() {
               </div>
             ))}
           </div>
-
-          <h3 style={{ marginTop: 28 }}>Owner commands</h3>
+          <h3>Owner commands</h3>
           <p>These are tied to the bot owner’s Discord ID and hidden from everyone else.</p>
           <div className="cmd-table">
             {OWNER_CMDS.map((c) => (
@@ -163,6 +177,7 @@ export default function Docs() {
         </section>
 
         <section id="channels" className="doc-section">
+          <span className="hud-label hud-label--accent">// Routing</span>
           <h2>Notification channels</h2>
           <p>In per-feature mode, Raidar provisions a dedicated channel for each kind of alert:</p>
           <div className="cmd-table">
@@ -173,11 +188,12 @@ export default function Docs() {
               </div>
             ))}
           </div>
-          <p style={{ marginTop: 14 }}>Prefer a single channel? Choose the single-channel layout from the setup message and everything routes to one place.</p>
+          <p style={{ marginTop: 16 }}>Prefer a single channel? Choose the single-channel layout from the setup message and everything routes to one place.</p>
         </section>
 
         <section id="permissions" className="doc-section">
-          <h2>Permissions & whitelisting</h2>
+          <span className="hud-label hud-label--accent">// Access control</span>
+          <h2>Permissions &amp; whitelisting</h2>
           <p>
             Device-control commands (<code>/control</code>, <code>/toggle</code>) are restricted to
             trusted members. From <strong>Raidar → Settings → Discord Integration</strong> you can
@@ -187,6 +203,7 @@ export default function Docs() {
         </section>
 
         <section id="faq" className="doc-section">
+          <span className="hud-label hud-label--accent">// Questions</span>
           <h2>FAQ</h2>
           <div className="doc-faq">
             <details><summary>Do I need to keep the app open?</summary><p>The app routes live events to the bot. For continuous notifications keep it running; commands like <code>/status</code> connect on demand.</p></details>

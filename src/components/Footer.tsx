@@ -1,14 +1,15 @@
 import { Link } from 'react-router-dom';
+import Logo from './Logo';
 
 export default function Footer() {
   return (
     <footer className="footer">
       <div className="container footer-grid">
         <div className="footer-brand">
-          <div className="brand" style={{ fontSize: 17 }}>
-            <img src="/favicon.svg" alt="" style={{ width: 22, height: 22 }} /> RAIDAR
+          <div className="brand" style={{ fontSize: 18 }}>
+            <Logo size={22} /> RAIDAR
           </div>
-          <p>Tactical intelligence for Rust — on your desktop and in your Discord server.</p>
+          <p>Tactical intelligence for Rust — a live map overlay and Discord companion that turns Rust+ into a real-time command center.</p>
         </div>
         <div className="footer-col">
           <h4>Product</h4>

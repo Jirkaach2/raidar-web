@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import OAuthButtons from '../components/OAuthButtons';
+import Logo from '../components/Logo';
 
 export default function Register() {
   const { register, configured } = useAuth();
@@ -34,8 +35,8 @@ export default function Register() {
     <div className="auth-wrap">
       <div className="auth-card">
         <div className="auth-head">
-          <div className="brand" style={{ justifyContent: 'center' }}>
-            <img src="/favicon.svg" alt="" /> RAIDAR
+          <div className="brand">
+            <Logo /> RAIDAR
           </div>
           <h1>Create your account</h1>
           <p>Start free — upgrade your squad whenever you’re ready.</p>

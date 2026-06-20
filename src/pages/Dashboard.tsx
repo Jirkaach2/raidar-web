@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import {
   databases, DB_ID, PLANS_COLLECTION_ID, SUBSCRIPTIONS_COLLECTION_ID,
@@ -169,7 +170,7 @@ export default function Dashboard() {
                     {p.price === 0 ? <span className="price-amt">Free</span> : <><span className="price-amt">${p.price}</span><span className="price-per">/mo</span></>}
                   </div>
                   <ul className="price-features">
-                    {(p.features || []).map((f) => <li key={f}>{f}</li>)}
+                    {(p.features || []).map((f) => <li key={f}><Check /> {f}</li>)}
                   </ul>
                   <button
                     className={`btn ${isCurrent ? 'btn-ghost' : ''}`}

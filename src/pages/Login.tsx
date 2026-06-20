@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import OAuthButtons from '../components/OAuthButtons';
+import Logo from '../components/Logo';
 
 export default function Login() {
   const { login, configured } = useAuth();
@@ -34,8 +35,8 @@ export default function Login() {
     <div className="auth-wrap">
       <div className="auth-card">
         <div className="auth-head">
-          <div className="brand" style={{ justifyContent: 'center' }}>
-            <img src="/favicon.svg" alt="" /> RAIDAR
+          <div className="brand">
+            <Logo /> RAIDAR
           </div>
           <h1>Welcome back</h1>
           <p>Sign in to manage your plan and linked servers.</p>
