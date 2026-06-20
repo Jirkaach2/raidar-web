@@ -1,0 +1,11 @@
+{
+  "name": "raidar-stripe-checkout",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Appwrite Function: creates a Stripe Checkout session for a Raidar plan.",
+  "main": "src/main.js",
+  "dependencies": {
+    "node-appwrite": "^14.0.0",
+    "stripe": "^17.0.0"
+  }
+}

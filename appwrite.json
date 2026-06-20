@@ -1,0 +1,95 @@
+{
+  "projectId": "YOUR_PROJECT_ID",
+  "projectName": "Raidar",
+  "databases": [
+    { "$id": "raidar", "name": "Raidar", "enabled": true }
+  ],
+  "collections": [
+    {
+      "$id": "plans",
+      "databaseId": "raidar",
+      "name": "Plans",
+      "enabled": true,
+      "documentSecurity": false,
+      "$permissions": ["read(\"any\")"],
+      "attributes": [
+        { "key": "name", "type": "string", "size": 128, "required": true, "array": false },
+        { "key": "price", "type": "double", "required": false, "array": false, "default": 0 },
+        { "key": "tagline", "type": "string", "size": 256, "required": false, "array": false, "default": null },
+        { "key": "features", "type": "string", "size": 256, "required": false, "array": true },
+        { "key": "servers", "type": "integer", "required": false, "array": false, "min": -1, "max": 100000, "default": 1 },
+        { "key": "popular", "type": "boolean", "required": false, "array": false, "default": false },
+        { "key": "order", "type": "integer", "required": false, "array": false, "min": 0, "max": 100000, "default": 0 },
+        { "key": "stripePriceId", "type": "string", "size": 128, "required": false, "array": false, "default": null }
+      ],
+      "indexes": [
+        { "key": "order_idx", "type": "key", "attributes": ["order"], "orders": ["ASC"] }
+      ]
+    },
+    {
+      "$id": "subscriptions",
+      "databaseId": "raidar",
+      "name": "Subscriptions",
+      "enabled": true,
+      "documentSecurity": true,
+      "$permissions": ["create(\"users\")"],
+      "attributes": [
+        { "key": "userId", "type": "string", "size": 64, "required": true, "array": false },
+        { "key": "planId", "type": "string", "size": 64, "required": false, "array": false, "default": null },
+        { "key": "planName", "type": "string", "size": 128, "required": false, "array": false, "default": null },
+        { "key": "status", "type": "string", "size": 32, "required": false, "array": false, "default": "active" },
+        { "key": "renewsAt", "type": "datetime", "required": false, "array": false, "default": null },
+        { "key": "stripeCustomerId", "type": "string", "size": 128, "required": false, "array": false, "default": null },
+        { "key": "stripeSubscriptionId", "type": "string", "size": 128, "required": false, "array": false, "default": null }
+      ],
+      "indexes": [
+        { "key": "userId_idx", "type": "key", "attributes": ["userId"], "orders": ["ASC"] },
+        { "key": "stripeSub_idx", "type": "key", "attributes": ["stripeSubscriptionId"], "orders": ["ASC"] }
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "$id": "stripe-checkout",
+      "name": "stripe-checkout",
+      "runtime": "node-18.0",
+      "execute": ["users"],
+      "events": [],
+      "schedule": "",
+      "timeout": 15,
+      "enabled": true,
+      "logging": true,
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "path": "functions/stripe-checkout"
+    },
+    {
+      "$id": "stripe-webhook",
+      "name": "stripe-webhook",
+      "runtime": "node-18.0",
+      "execute": ["any"],
+      "events": [],
+      "schedule": "",
+      "timeout": 15,
+      "enabled": true,
+      "logging": true,
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "path": "functions/stripe-webhook"
+    },
+    {
+      "$id": "stripe-portal",
+      "name": "stripe-portal",
+      "runtime": "node-18.0",
+      "execute": ["users"],
+      "events": [],
+      "schedule": "",
+      "timeout": 15,
+      "enabled": true,
+      "logging": true,
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "path": "functions/stripe-portal"
+    }
+  ]
+}

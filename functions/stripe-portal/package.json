@@ -1,0 +1,11 @@
+{
+  "name": "raidar-stripe-portal",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Appwrite Function: opens the Stripe customer billing portal for a user.",
+  "main": "src/main.js",
+  "dependencies": {
+    "node-appwrite": "^14.0.0",
+    "stripe": "^17.0.0"
+  }
+}
