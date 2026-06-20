@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import {
   Users, List, Skull, ShoppingCart, Mountain, Radio, Zap as ZapIc, Sun as SunIc,
   ChevronDown, Search, Crosshair, Triangle, Hexagon, Moon, Siren, Power, ChevronRight, Send,
+  ToggleRight, ToggleLeft, BellRing, Database, Trash2, Edit2,
 } from 'lucide-react';
 import Logo from './Logo';
 
@@ -39,6 +40,12 @@ const COORDS = Array.from({ length: 13 }, (_, i) => i);
 function icon(s: string) { return `https://cdn.rusthelp.com/images/256/${s.replace(/[._]/g, '-')}.webp`; }
 function hideErr(e: React.SyntheticEvent<HTMLImageElement>) { e.currentTarget.style.visibility = 'hidden'; }
 
+const SWITCHES = [{ name: 'Base Lights', id: 31882 }, { name: 'Turret Power', id: 31904 }, { name: 'Furnace Bank', id: 32011 }];
+const TC_ITEMS: Array<[string, string]> = [
+  ['wood', '14.2k'], ['stones', '9.8k'], ['metal.fragments', '6.1k'], ['metal.refined', '420'],
+  ['lowgradefuel', '1.1k'], ['scrap', '380'], ['cloth', '900'], ['sulfur', '2.4k'],
+];
+
 /** Interactive recreation of the Raidar desktop app — switch screens, flip toggles & switches. */
 export default function AppWindow() {
   const [page, setPage] = useState<Page>('map');
@@ -46,6 +53,7 @@ export default function AppWindow() {
     team: true, roster: true, death: true, shops: true, caves: true, markers: false, events: true, day: true,
   });
   const [sw, setSw] = useState<Record<string, boolean>>({ 'Base Lights': true, 'Turret Power': true, 'Furnace Bank': false });
+  const [openTc, setOpenTc] = useState(false);
   const [vTab, setVTab] = useState<'search' | 'best'>('search');
 
   return (
@@ -143,24 +151,69 @@ export default function AppWindow() {
           )}
 
           {page === 'devices' && (
-            <div className="aw-pad">
-              <div className="aw-screen-h">SMART DEVICES</div>
-              <p className="aw-screen-sub">Look at a device in-game, hold E and Pair.</p>
-              {Object.entries(sw).map(([name, on]) => (
-                <div className="aw-devcard" key={name}>
-                  <span className={`aw-dev-ic ${on ? 'on' : ''}`}><Power size={14} /></span>
-                  <div className="aw-dev-info"><b>{name}</b><small>Smart Switch</small></div>
-                  <button className={`aw-dev-tg ${on ? 'on' : 'off'}`} onClick={() => setSw((s) => ({ ...s, [name]: !s[name] }))}>{on ? 'ON' : 'OFF'}</button>
-                </div>
-              ))}
-              <div className="aw-devcard tc">
-                <span className="aw-dev-ic info"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/></svg></span>
-                <div className="aw-dev-info" style={{ flex: 1 }}>
-                  <div className="aw-tc-top"><b>Tool Cupboard</b><span className="aw-upkeep">2d 4h left</span></div>
-                  <div className="aw-tc-bar"><span style={{ width: '72%' }} /></div>
-                  <small>TC STORAGE · 22/30 SLOTS</small>
+            <div className="aw-pad aw-devpanel">
+              <h2 className="device-title">SMART DEVICES</h2>
+              <p className="device-subtitle">Look at a smart device in-game, hold <b>E</b>, and click "Pair".</p>
+              <div className="device-group-label">THIS SERVER</div>
+
+              {SWITCHES.map(({ name, id }) => {
+                const on = sw[name];
+                return (
+                  <div className={`device-card dev-switch ${on ? 'is-on-card' : ''}`} key={name}>
+                    <div className="device-card-header">
+                      <div className={`device-icon ${on ? 'is-active' : ''}`}>{on ? <ToggleRight /> : <ToggleLeft />}</div>
+                      <div className="device-info">
+                        <div className="device-name-row"><h3 className="device-name">{name}</h3><Edit2 className="dn-edit" /></div>
+                        <div className="device-meta">ID: {id}</div>
+                      </div>
+                      <div className="device-actions">
+                        <button className={`device-toggle ${on ? 'is-on' : 'is-off'}`} onClick={() => setSw((s) => ({ ...s, [name]: !s[name] }))}>{on ? 'ON' : 'OFF'}</button>
+                        <button className="device-delete"><Trash2 /></button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Smart Alarm */}
+              <div className="device-card dev-alarm is-on-card">
+                <div className="device-card-header">
+                  <div className="device-icon"><BellRing /></div>
+                  <div className="device-info">
+                    <div className="device-name-row"><h3 className="device-name">Main Base Alarm</h3></div>
+                    <div className="device-meta">ID: 55021 · Smart Alarm</div>
+                  </div>
+                  <div className="device-actions"><span className="device-indicator is-quiet" /><button className="device-delete"><Trash2 /></button></div>
                 </div>
               </div>
+
+              {/* Storage Monitor — click to view contents */}
+              <div className={`device-card dev-storage is-clickable ${openTc ? 'is-open' : ''}`} onClick={() => setOpenTc((o) => !o)}>
+                <div className="device-card-header">
+                  <div className="device-icon"><Database /></div>
+                  <div className="device-info">
+                    <div className="device-name-row"><h3 className="device-name">Tool Cupboard</h3></div>
+                    <div className="device-meta">ID: 77104 · Storage Monitor · click to {openTc ? 'close' : 'view'}</div>
+                  </div>
+                  <ChevronRight className={`dev-caret ${openTc ? 'open' : ''}`} />
+                </div>
+                <div className="device-tc-info">
+                  <div className="tc-row"><span className="tc-lbl">TC UPKEEP TIMER</span><span className="tc-good">2d 4h left</span></div>
+                  <div className="tc-row"><span className="tc-lbl">TC STORAGE · 22/30 SLOTS</span><span className="tc-pct">73%</span></div>
+                  <div className="device-storage-bar"><div className="storage-fill" style={{ width: '73%' }} /></div>
+                </div>
+                {openTc && (
+                  <div className="tc-contents" onClick={(e) => e.stopPropagation()}>
+                    {TC_ITEMS.map(([ic, qty]) => (
+                      <div className="tc-slot" key={ic as string}>
+                        <img src={icon(ic as string)} onError={hideErr} alt="" />
+                        <span>{qty}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="aw-auto-h"><ZapIc size={12} /> SWITCH AUTOMATIONS</div>
               <div className="aw-autorow"><span className="aw-auto-ic"><Moon size={11} /></span><div><b>Base Lights</b><small>at nightfall <ChevronRight size={8} /> turn ON</small></div><span className="aw-auto-on"><Power size={10} /></span></div>
               <div className="aw-autorow"><span className="aw-auto-ic"><Siren size={11} /></span><div><b>Raid Siren</b><small>on alarm <ChevronRight size={8} /> pulse 30s</small></div><span className="aw-auto-on"><Power size={10} /></span></div>

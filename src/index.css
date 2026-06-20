@@ -459,7 +459,7 @@ img { display: block; max-width: 100%; }
 /* ════════════════════════════════════════════════════════
    Scroll reveal animations
    ════════════════════════════════════════════════════════ */
-.reveal { opacity: 0; transition: opacity 760ms var(--ease), transform 760ms var(--ease), filter 760ms var(--ease), clip-path 900ms var(--ease); will-change: opacity, transform, filter; }
+.reveal { opacity: 0; transition: opacity 760ms var(--ease), transform 760ms var(--ease), filter 760ms var(--ease); will-change: opacity, transform, filter; }
 .reveal-up    { transform: translateY(46px); }
 .reveal-left  { transform: translateX(-56px); }
 .reveal-right { transform: translateX(56px); }
@@ -467,8 +467,9 @@ img { display: block; max-width: 100%; }
 .reveal-fade  { transform: none; }
 .reveal-tilt  { transform: perspective(1400px) rotateX(14deg) translateY(60px); transform-origin: top center; }
 .reveal-blur  { transform: translateY(40px) scale(0.985); filter: blur(16px); }
-.reveal-clip  { clip-path: inset(0 0 100% 0); transform: translateY(30px); }
-.reveal.in-view { opacity: 1; transform: none; filter: none; clip-path: inset(0 0 0 0); }
+.reveal-clip  { clip-path: inset(0 0 100% 0); transform: translateY(30px); transition: opacity 760ms var(--ease), transform 760ms var(--ease), clip-path 900ms var(--ease); }
+.reveal.in-view { opacity: 1; transform: none; filter: none; }
+.reveal-clip.in-view { clip-path: inset(0 0 0 0); }
 @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1 !important; transform: none !important; filter: none !important; clip-path: none !important; } }
 
 .hero-app { margin: 70px auto 0; max-width: 1080px; perspective: 1600px; }
@@ -701,3 +702,57 @@ img { display: block; max-width: 100%; }
   .tpl-grid { grid-template-columns: 1fr; }
 }
 
+
+/* ════════════════════════════════════════════════════════
+   Devices screen — ported from the desktop app's DevicePanel
+   ════════════════════════════════════════════════════════ */
+.aw-devpanel { padding: 16px 18px; }
+.aw-devpanel .device-title { font-family: var(--font-display); font-size: 17px; letter-spacing: 1.8px; font-weight: 600; color: #fff; margin: 0 0 5px; text-shadow: 0 0 14px rgba(206,66,43,0.35); }
+.aw-devpanel .device-subtitle { font-size: 11px; color: var(--color-text-muted); margin: 0 0 14px; line-height: 1.45; }
+.aw-devpanel .device-subtitle b { color: var(--color-text); }
+.aw-devpanel .device-group-label { display: flex; align-items: center; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 1.2px; color: var(--color-text-muted); margin: 4px 0 11px; padding-bottom: 6px; border-bottom: 1px solid var(--color-border); text-transform: uppercase; }
+.aw-devpanel .device-group-label::before { content: ''; width: 11px; height: 2px; border-radius: 2px; margin-right: 8px; background: var(--color-accent); box-shadow: 0 0 8px rgba(206,66,43,0.5); }
+
+.aw-devpanel .device-card { position: relative; background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.008)); border: 1px solid var(--color-border); border-radius: 12px; padding: 12px 13px; display: flex; flex-direction: column; gap: 11px; box-shadow: 0 2px 10px rgba(0,0,0,0.25); transition: all 160ms var(--ease); margin-bottom: 10px; }
+.aw-devpanel .device-card::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 2px; background: var(--color-text-dim); opacity: 0.5; transition: all 160ms var(--ease); }
+.aw-devpanel .dev-switch.is-on-card::before { background: var(--color-success); opacity: 1; box-shadow: 0 0 8px var(--color-success); }
+.aw-devpanel .dev-alarm::before { background: var(--color-accent); opacity: 0.8; box-shadow: 0 0 8px var(--color-accent); }
+.aw-devpanel .dev-storage::before { background: var(--color-info); opacity: 0.8; }
+.aw-devpanel .is-clickable { cursor: pointer; }
+.aw-devpanel .is-clickable:hover { background: rgba(206,66,43,0.07); border-color: var(--color-border-strong); }
+.aw-devpanel .device-card-header { display: flex; align-items: center; gap: 11px; }
+.aw-devpanel .device-icon { width: 36px; height: 36px; background: rgba(0,0,0,0.35); border: 1px solid var(--color-border); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--color-text-dim); flex-shrink: 0; transition: all 160ms var(--ease); }
+.aw-devpanel .device-icon svg { width: 18px; height: 18px; }
+.aw-devpanel .device-icon.is-active { color: var(--color-success); background: rgba(111,207,115,0.12); border-color: rgba(111,207,115,0.4); box-shadow: 0 0 12px rgba(111,207,115,0.2); }
+.aw-devpanel .dev-alarm .device-icon { color: var(--color-accent-bright); }
+.aw-devpanel .dev-storage .device-icon { color: var(--color-info); }
+.aw-devpanel .device-info { flex: 1; min-width: 0; }
+.aw-devpanel .device-name-row { display: flex; align-items: center; gap: 6px; }
+.aw-devpanel .device-name { margin: 0; font-size: 14px; font-weight: 700; color: var(--color-text); }
+.aw-devpanel .dn-edit { width: 12px; height: 12px; color: var(--color-text-dim); opacity: 0; transition: opacity 160ms var(--ease); }
+.aw-devpanel .device-card:hover .dn-edit { opacity: 1; }
+.aw-devpanel .device-meta { font-size: 10px; font-family: var(--font-mono); color: var(--color-text-muted); margin-top: 3px; }
+.aw-devpanel .device-actions { display: flex; align-items: center; gap: 8px; }
+.aw-devpanel .device-toggle { padding: 7px 14px; border-radius: 8px; font-size: 11px; font-weight: 800; letter-spacing: 0.6px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; min-width: 52px; }
+.aw-devpanel .device-toggle.is-on { background: linear-gradient(135deg, var(--color-success), #4fae57); color: #07120a; box-shadow: 0 0 12px rgba(111,207,115,0.5); }
+.aw-devpanel .device-toggle.is-off { background: rgba(239,68,68,0.12); color: #ff6b6b; border-color: rgba(239,68,68,0.4); }
+.aw-devpanel .device-toggle:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.aw-devpanel .device-indicator { width: 12px; height: 12px; border-radius: 50%; }
+.aw-devpanel .device-indicator.is-quiet { background: var(--color-success); box-shadow: 0 0 6px rgba(111,207,115,0.5); }
+.aw-devpanel .device-delete { background: none; border: none; color: var(--color-text-dim); cursor: pointer; padding: 5px; display: flex; border-radius: 6px; transition: all 160ms var(--ease); }
+.aw-devpanel .device-delete svg { width: 15px; height: 15px; }
+.aw-devpanel .device-delete:hover { color: #ff6b6b; background: rgba(239,68,68,0.12); }
+.aw-devpanel .dev-caret { width: 16px; height: 16px; color: var(--color-text-dim); transition: transform 200ms var(--ease); }
+.aw-devpanel .dev-caret.open { transform: rotate(90deg); }
+.aw-devpanel .device-tc-info { background: rgba(0,0,0,0.25); border: 1px solid var(--color-border); border-radius: 9px; padding: 10px; }
+.aw-devpanel .tc-row { display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-family: var(--font-mono); color: var(--color-text-muted); margin-bottom: 7px; }
+.aw-devpanel .tc-good { color: var(--color-success); font-weight: 700; }
+.aw-devpanel .tc-pct { color: var(--color-info); font-weight: 700; }
+.aw-devpanel .device-storage-bar { height: 5px; background: rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.4); }
+.aw-devpanel .storage-fill { height: 100%; background: linear-gradient(90deg, #58c6e8, #3a9fc4); box-shadow: 0 0 8px rgba(88,198,232,0.4); }
+.aw-devpanel .tc-contents { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-top: 4px; animation: fade-in 220ms var(--ease) both; }
+@keyframes fade-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.aw-devpanel .tc-slot { position: relative; aspect-ratio: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--color-border); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+.aw-devpanel .tc-slot img { width: 70%; height: 70%; object-fit: contain; }
+.aw-devpanel .tc-slot span { position: absolute; right: 2px; bottom: 1px; font-family: var(--font-mono); font-size: 7.5px; font-weight: 700; color: var(--color-text); text-shadow: 0 1px 2px #000; }
+@media (max-width: 860px) { .aw-devpanel .tc-contents { grid-template-columns: repeat(4, 1fr); } }
