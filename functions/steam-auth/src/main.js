@@ -21,6 +21,7 @@ import { Client, Users } from 'node-appwrite';
  *   APPWRITE_FUNCTION_API_ENDPOINT / APPWRITE_FUNCTION_PROJECT_ID are auto-injected.
  */
 export default async ({ req, res, log, error }) => {
+  const VERSION = 'v3';
   const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://cloud.appwrite.io/v1';
   const projectId = process.env.APPWRITE_FUNCTION_PROJECT_ID;
   const siteUrl = (process.env.SITE_URL || '').replace(/\/$/, '');
@@ -57,8 +58,8 @@ export default async ({ req, res, log, error }) => {
   const action = query.action || (req.query && req.query.action) || 'login';
 
   const fail = (msg) => {
-    error(`steam-auth: ${msg}`);
-    return res.redirect(`${siteUrl}/login?error=steam&reason=${encodeURIComponent(msg)}`, 302);
+    error(`steam-auth[${VERSION}]: ${msg}`);
+    return res.redirect(`${siteUrl}/login?error=steam&reason=${encodeURIComponent(`[${VERSION}] ${msg}`)}`, 302);
   };
 
   try {
@@ -78,6 +79,7 @@ export default async ({ req, res, log, error }) => {
     // ── 2. Steam returned: verify the assertion ──
     if (action === 'callback') {
       const q = query;
+      log(`steam-auth[${VERSION}] callback: ${Object.keys(q).filter((k) => k.startsWith('openid.')).length} openid params; mode=${q['openid.mode']}; rawlen=${rawQuery.length}`);
       if (q['openid.mode'] !== 'id_res') return fail('unexpected openid mode');
 
       // Echo every openid.* param back to Steam with mode=check_authentication,
@@ -93,8 +95,9 @@ export default async ({ req, res, log, error }) => {
         body: verify,
       });
       const vt = await vr.text();
+      log(`steam-auth[${VERSION}] check_authentication → ${vr.status}: ${vt.replace(/\s+/g, ' ').trim()}`);
       if (!/is_valid\s*:\s*true/i.test(vt)) {
-        return fail(`assertion not valid (steam: ${vt.replace(/\s+/g, ' ').trim().slice(0, 60)})`);
+        return fail(`assertion not valid (http ${vr.status}; steam: ${vt.replace(/\s+/g, ' ').trim().slice(0, 80)})`);
       }
 
       // claimed_id → .../openid/id/<steamid64>
