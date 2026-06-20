@@ -99,6 +99,11 @@ export default function Admin() {
     if (!window.confirm(`Delete the "${p.name}" plan? This can’t be undone.`)) return;
     try { await databases.deleteDocument(DB_ID, PLANS_COLLECTION_ID, p.$id); await load(); } catch (err) { setError(err instanceof Error ? err.message : 'Could not delete the plan.'); }
   };
+  const removeSub = async (s: Subscription) => {
+    if (!window.confirm(`Delete this subscription (${s.planName})? This can’t be undone.`)) return;
+    try { await databases.deleteDocument(DB_ID, SUBSCRIPTIONS_COLLECTION_ID, s.$id); await load(); await loadStats(); }
+    catch (err) { setError(err instanceof Error ? err.message : 'Could not delete the subscription.'); }
+  };
   const subCount = (planId: string) => subs.filter((s) => s.planId === planId).length;
 
   // ── User actions ──
@@ -258,13 +263,14 @@ export default function Admin() {
       {/* ───────── SUBSCRIPTIONS ───────── */}
       {tab === 'subs' && (
         <div className="admin-table">
-          <div className="admin-row admin-row-head admin-row-subs"><span>User ID</span><span>Plan</span><span>Status</span><span>Since</span></div>
+          <div className="admin-row admin-row-head admin-row-subs"><span>User ID</span><span>Plan</span><span>Status</span><span>Since</span><span>Actions</span></div>
           {subs.map((s) => (
             <div className="admin-row admin-row-subs" key={s.$id}>
               <span className="mono">{s.userId}</span>
               <span>{s.planName}</span>
               <span><span className={`status-dot ${s.status}`}>{s.status}</span></span>
               <span>{new Date(s.$createdAt).toLocaleDateString()}</span>
+              <span className="admin-row-actions"><button className="btn btn-ghost btn-sm danger" onClick={() => removeSub(s)}>Delete</button></span>
             </div>
           ))}
           {subs.length === 0 && <div className="admin-row"><span className="muted">No subscriptions yet.</span></div>}

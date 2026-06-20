@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Check } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Check, Server, CalendarDays, Mail, CreditCard, Crown, ShieldCheck, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import {
   databases, DB_ID, PLANS_COLLECTION_ID, SUBSCRIPTIONS_COLLECTION_ID,
@@ -16,28 +16,39 @@ export default function Dashboard() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [portalBusy, setPortalBusy] = useState(false);
   const [params, setParams] = useSearchParams();
 
-  const load = useCallback(async () => {
-    if (!isConfigured || !user) {
-      setLoading(false);
-      return;
+  /** Fetch the user's subscriptions, newest first, and delete any duplicates. */
+  const fetchSub = useCallback(async (): Promise<Subscription | null> => {
+    if (!user) return null;
+    const res = await databases.listDocuments<Subscription>(DB_ID, SUBSCRIPTIONS_COLLECTION_ID, [
+      Query.equal('userId', user.$id), Query.orderDesc('$createdAt'), Query.limit(25),
+    ]);
+    const docs = res.documents;
+    // Self-heal: one subscription per user — remove any extras.
+    if (docs.length > 1) {
+      await Promise.allSettled(docs.slice(1).map((d) => databases.deleteDocument(DB_ID, SUBSCRIPTIONS_COLLECTION_ID, d.$id)));
     }
-    setLoading(true);
-    setError('');
+    return docs[0] || null;
+  }, [user]);
+
+  const load = useCallback(async () => {
+    if (!isConfigured || !user) { setLoading(false); return; }
+    setLoading(true); setError('');
     try {
-      const [planRes, subRes] = await Promise.all([
+      const [planRes, subDoc] = await Promise.all([
         databases.listDocuments<Plan>(DB_ID, PLANS_COLLECTION_ID, [Query.orderAsc('order'), Query.limit(20)]),
-        databases.listDocuments<Subscription>(DB_ID, SUBSCRIPTIONS_COLLECTION_ID, [Query.equal('userId', user.$id), Query.limit(1)]),
+        fetchSub(),
       ]);
       setPlans(planRes.documents);
-      setSub(subRes.documents[0] || null);
+      setSub(subDoc);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load your dashboard.');
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, fetchSub]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -47,38 +58,30 @@ export default function Dashboard() {
     if (!status) return;
     if (status === 'success') {
       setNotice('Payment received — your plan is being activated. This can take a few seconds.');
-      // Re-poll the subscription a couple of times while the webhook lands.
       const timers = [2000, 5000].map((ms) => setTimeout(() => load(), ms));
-      params.delete('checkout');
-      setParams(params, { replace: true });
+      params.delete('checkout'); setParams(params, { replace: true });
       return () => timers.forEach(clearTimeout);
     }
     if (status === 'cancel') {
       setNotice('Checkout cancelled — your plan was not changed.');
-      params.delete('checkout');
-      setParams(params, { replace: true });
+      params.delete('checkout'); setParams(params, { replace: true });
     }
   }, [params, setParams, load]);
 
   const choosePlan = async (plan: Plan) => {
-    if (!user) return;
+    if (!user || savingId) return; // guard against concurrent clicks
     setError('');
-    // Paid plans go through Stripe Checkout; free plans switch immediately.
     if (plan.price > 0 && plan.stripePriceId && billingEnabled) {
       setSavingId(plan.$id);
-      try {
-        await startCheckout(plan);
-        return; // browser redirects to Stripe
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Could not start checkout.');
-        setSavingId(null);
-        return;
-      }
+      try { await startCheckout(plan); return; }
+      catch (err) { setError(err instanceof Error ? err.message : 'Could not start checkout.'); setSavingId(null); return; }
     }
     setSavingId(plan.$id);
     try {
-      if (sub) {
-        const updated = await databases.updateDocument<Subscription>(DB_ID, SUBSCRIPTIONS_COLLECTION_ID, sub.$id, {
+      // Re-fetch right before writing so we never create a second doc.
+      const existing = await fetchSub();
+      if (existing) {
+        const updated = await databases.updateDocument<Subscription>(DB_ID, SUBSCRIPTIONS_COLLECTION_ID, existing.$id, {
           planId: plan.$id, planName: plan.name, status: 'active',
         });
         setSub(updated);
@@ -95,62 +98,68 @@ export default function Dashboard() {
     }
   };
 
-  const currentPlan = plans.find((p) => p.$id === sub?.planId) || null;
-
-  const [portalBusy, setPortalBusy] = useState(false);
   const manageBilling = async () => {
-    setPortalBusy(true);
-    setError('');
-    try {
-      await openBillingPortal();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not open the billing portal.');
-      setPortalBusy(false);
-    }
+    setPortalBusy(true); setError('');
+    try { await openBillingPortal(); }
+    catch (err) { setError(err instanceof Error ? err.message : 'Could not open the billing portal.'); setPortalBusy(false); }
   };
 
+  const currentPlan = plans.find((p) => p.$id === sub?.planId) || null;
+  const planName = currentPlan?.name || sub?.planName || 'Scout';
+  const planPrice = currentPlan ? (currentPlan.price === 0 ? 'Free' : `$${currentPlan.price}/mo`) : 'Free';
+  const status = sub?.status || 'active';
+  const initial = (user?.name || user?.email || 'R')[0].toUpperCase();
+
   return (
-    <div className="container dash">
+    <div className="dash">
       <div className="dash-head">
-        <div>
-          <h1>Your dashboard</h1>
-          <p className="muted">Welcome back, {user?.name || user?.email}.</p>
+        <div className="dash-greet">
+          <span className="dash-avatar">{initial}</span>
+          <div>
+            <h1>Your dashboard</h1>
+            <p className="muted">Welcome back, {user?.name || user?.email}.</p>
+          </div>
         </div>
-        {isAdmin && <span className="pill pill-owner">admin</span>}
+        {isAdmin && <Link className="btn btn-ghost btn-sm" to="/admin"><ShieldCheck size={14} /> Admin</Link>}
       </div>
 
-      {!isConfigured && (
-        <div className="auth-notice">Appwrite isn’t configured. Set the <code>VITE_APPWRITE_*</code> env vars to enable plans.</div>
-      )}
+      {!isConfigured && <div className="auth-notice">Appwrite isn’t configured. Set the <code>VITE_APPWRITE_*</code> env vars to enable plans.</div>}
       {notice && <div className="dash-notice">{notice}</div>}
       {error && <div className="auth-error" style={{ marginBottom: 16 }}>{error}</div>}
 
-      <div className="dash-cards">
-        <div className="dash-card">
-          <h4>Current plan</h4>
-          <div className="dash-plan">{currentPlan ? currentPlan.name : sub?.planName || 'Scout (Free)'}</div>
-          <span className={`status-dot ${sub?.status || 'active'}`}>{sub?.status || 'active'}</span>
-          {sub?.stripeCustomerId && (
-            <button className="btn btn-ghost btn-sm" style={{ marginTop: 14, display: 'flex', width: 'fit-content' }} onClick={manageBilling} disabled={portalBusy}>
-              {portalBusy ? 'Opening…' : 'Manage billing'}
-            </button>
-          )}
+      {/* Current plan hero + stats */}
+      <div className="dash-top">
+        <div className="dash-hero bracketed">
+          <span className="hud-label hud-label--accent">// Current plan</span>
+          <div className="dash-hero-row">
+            <div className="dash-hero-ic"><Crown size={22} /></div>
+            <div>
+              <div className="dash-hero-plan">{planName}</div>
+              <div className="dash-hero-price">{planPrice}</div>
+            </div>
+            <span className={`status-dot ${status}`}>{status}</span>
+          </div>
+          {sub?.renewsAt && <div className="dash-hero-meta">Renews {new Date(sub.renewsAt).toLocaleDateString()}</div>}
+          <div className="dash-hero-actions">
+            <a href="#plans" className="btn btn-sm"><Zap size={14} /> Change plan</a>
+            {sub?.stripeCustomerId && (
+              <button className="btn btn-ghost btn-sm" onClick={manageBilling} disabled={portalBusy}>
+                <CreditCard size={14} /> {portalBusy ? 'Opening…' : 'Manage billing'}
+              </button>
+            )}
+          </div>
         </div>
-        <div className="dash-card">
-          <h4>Linked servers</h4>
-          <div className="dash-plan">{currentPlan ? (currentPlan.servers < 0 ? '∞' : currentPlan.servers) : 1}</div>
-          <span className="muted">max for your plan</span>
-        </div>
-        <div className="dash-card">
-          <h4>Account</h4>
-          <div className="dash-plan" style={{ fontSize: 18 }}>{user?.email}</div>
-          <span className="muted">member since {user?.$createdAt ? new Date(user.$createdAt).toLocaleDateString() : '—'}</span>
+
+        <div className="dash-stats">
+          <div className="dash-stat"><span className="dash-stat-ic"><Server size={16} /></span><div><div className="dash-stat-v">{currentPlan ? (currentPlan.servers < 0 ? '∞' : currentPlan.servers) : 1}</div><div className="dash-stat-l">Linked servers</div></div></div>
+          <div className="dash-stat"><span className="dash-stat-ic"><CalendarDays size={16} /></span><div><div className="dash-stat-v">{user?.$createdAt ? new Date(user.$createdAt).toLocaleDateString() : '—'}</div><div className="dash-stat-l">Member since</div></div></div>
+          <div className="dash-stat"><span className="dash-stat-ic"><Mail size={16} /></span><div><div className="dash-stat-v dash-stat-email">{user?.email}</div><div className="dash-stat-l">Account email</div></div></div>
         </div>
       </div>
 
-      <section className="dash-section">
+      <section className="dash-section" id="plans">
         <h2>Manage your plan</h2>
-        <p className="muted">Switch plans anytime. Changes take effect immediately.</p>
+        <p className="muted">Switch plans anytime. Free plans apply instantly; paid plans go through secure checkout.</p>
 
         {loading ? (
           <div className="route-loading"><div className="spinner" /><span>Loading plans…</span></div>
@@ -162,8 +171,7 @@ export default function Dashboard() {
               const isCurrent = p.$id === sub?.planId;
               return (
                 <div className={`price-card ${p.popular ? 'popular' : ''} ${isCurrent ? 'current' : ''}`} key={p.$id}>
-                  {isCurrent && <div className="price-badge">Current</div>}
-                  {!isCurrent && p.popular && <div className="price-badge">Popular</div>}
+                  {isCurrent ? <div className="price-badge">Current</div> : p.popular && <div className="price-badge">Popular</div>}
                   <h3>{p.name}</h3>
                   {p.tagline && <p className="price-tagline">{p.tagline}</p>}
                   <div className="price">
@@ -174,17 +182,13 @@ export default function Dashboard() {
                   </ul>
                   <button
                     className={`btn ${isCurrent ? 'btn-ghost' : ''}`}
-                    disabled={isCurrent || savingId === p.$id}
+                    disabled={isCurrent || !!savingId}
                     onClick={() => choosePlan(p)}
-                    style={{ width: '100%', justifyContent: 'center' }}
+                    style={{ width: '100%' }}
                   >
-                    {isCurrent
-                      ? 'Active plan'
-                      : savingId === p.$id
-                        ? (p.price > 0 ? 'Redirecting…' : 'Switching…')
-                        : p.price > 0
-                          ? `Upgrade to ${p.name}`
-                          : `Switch to ${p.name}`}
+                    {isCurrent ? 'Active plan'
+                      : savingId === p.$id ? (p.price > 0 ? 'Redirecting…' : 'Switching…')
+                        : p.price > 0 ? `Upgrade to ${p.name}` : `Switch to ${p.name}`}
                   </button>
                 </div>
               );
