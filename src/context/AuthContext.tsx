@@ -11,7 +11,14 @@ interface AuthState {
   loginWithOAuth: (provider: 'discord' | 'google' | 'github') => void;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  /** Email a verification link to the signed-in user. */
+  sendVerification: () => Promise<void>;
+  /** Complete verification from the link's userId + secret, then refresh. */
+  confirmVerification: (userId: string, secret: string) => Promise<void>;
 }
+
+/** Where Appwrite sends users back to after clicking the verification link. */
+const VERIFY_URL = `${window.location.origin}/verify`;
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
@@ -50,7 +57,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await account.createEmailPasswordSession(email, password);
     const me = await account.get();
     setUser(me);
+    // Fire off the verification email; don't block signup if it fails.
+    try { await account.createVerification(VERIFY_URL); } catch { /* user can resend later */ }
   }, []);
+
+  const sendVerification = useCallback(async () => {
+    await account.createVerification(VERIFY_URL);
+  }, []);
+
+  const confirmVerification = useCallback(async (userId: string, secret: string) => {
+    await account.updateVerification(userId, secret);
+    await refresh();
+  }, [refresh]);
 
   const logout = useCallback(async () => {
     try {
@@ -83,8 +101,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loginWithOAuth,
       logout,
       refresh,
+      sendVerification,
+      confirmVerification,
     }),
-    [user, loading, login, register, loginWithOAuth, logout, refresh],
+    [user, loading, login, register, loginWithOAuth, logout, refresh, sendVerification, confirmVerification],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

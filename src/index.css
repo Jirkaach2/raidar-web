@@ -1295,3 +1295,48 @@ img { display: block; max-width: 100%; }
   .admin-statgrid { grid-template-columns: repeat(2, 1fr); }
   .admin-row-recent { grid-template-columns: 1fr 1fr !important; }
 }
+
+/* ── Email verification ───────────────────────────────── */
+.verify-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 176, 32, 0.32);
+  background: linear-gradient(180deg, rgba(255, 176, 32, 0.12), rgba(255, 176, 32, 0.05));
+}
+.verify-banner-ic {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  color: #ffb020;
+  background: rgba(255, 176, 32, 0.14);
+}
+.verify-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.35;
+  flex: 1;
+  min-width: 0;
+}
+.verify-banner-text strong { font-size: 14px; }
+.verify-banner-text .muted { font-size: 13px; }
+
+.auth-card--center { text-align: center; }
+.verify-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0 4px;
+}
+.verify-state h1 { font-size: 22px; margin: 0; }
+.verify-state .btn { margin-top: 8px; }
+.verify-ic--ok { color: #36d399; }
+.verify-ic--bad { color: #ff5d5d; }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Check, Server, CalendarDays, Mail, CreditCard, Crown, ShieldCheck, Zap } from 'lucide-react';
+import { Check, Server, CalendarDays, Mail, CreditCard, Crown, ShieldCheck, Zap, MailWarning } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import {
   databases, DB_ID, PLANS_COLLECTION_ID, SUBSCRIPTIONS_COLLECTION_ID,
@@ -9,8 +9,10 @@ import {
 import { startCheckout, openBillingPortal } from '../lib/billing';
 
 export default function Dashboard() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, sendVerification } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [verifySent, setVerifySent] = useState(false);
+  const [verifyBusy, setVerifyBusy] = useState(false);
   const [sub, setSub] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -104,6 +106,13 @@ export default function Dashboard() {
     catch (err) { setError(err instanceof Error ? err.message : 'Could not open the billing portal.'); setPortalBusy(false); }
   };
 
+  const resendVerification = async () => {
+    setVerifyBusy(true); setError('');
+    try { await sendVerification(); setVerifySent(true); }
+    catch (err) { setError(err instanceof Error ? err.message : 'Could not send the verification email.'); }
+    finally { setVerifyBusy(false); }
+  };
+
   const currentPlan = plans.find((p) => p.$id === sub?.planId) || null;
   const planName = currentPlan?.name || sub?.planName || 'Scout';
   const planPrice = currentPlan ? (currentPlan.price === 0 ? 'Free' : `$${currentPlan.price}/mo`) : 'Free';
@@ -124,6 +133,18 @@ export default function Dashboard() {
       </div>
 
       {!isConfigured && <div className="auth-notice">Appwrite isn’t configured. Set the <code>VITE_APPWRITE_*</code> env vars to enable plans.</div>}
+      {user && !user.emailVerification && (
+        <div className="verify-banner">
+          <span className="verify-banner-ic"><MailWarning size={18} /></span>
+          <div className="verify-banner-text">
+            <strong>Verify your email</strong>
+            <span className="muted">{verifySent ? 'Check your inbox — we just sent a fresh link.' : `We sent a verification link to ${user.email}. Confirm it to secure your account.`}</span>
+          </div>
+          <button className="btn btn-sm" onClick={resendVerification} disabled={verifyBusy || verifySent}>
+            {verifyBusy ? 'Sending…' : verifySent ? 'Sent ✓' : 'Resend email'}
+          </button>
+        </div>
+      )}
       {notice && <div className="dash-notice">{notice}</div>}
       {error && <div className="auth-error" style={{ marginBottom: 16 }}>{error}</div>}
 

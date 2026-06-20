@@ -7,6 +7,7 @@ import Landing from './pages/Landing';
 import Docs from './pages/Docs';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Verify from './pages/Verify';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
 import NotFound from './pages/NotFound';
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/docs" element={<Docs />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify" element={<Verify />} />
           <Route
             path="/dashboard"
             element={
