@@ -1,4 +1,4 @@
-import { Client, Users, Databases, Query } from 'node-appwrite';
+import { Client, Users, Databases, Query, ID, Permission, Role } from 'node-appwrite';
 
 /**
  * Admin API — privileged user management + dashboard stats for Raidar.
@@ -91,6 +91,46 @@ export default async ({ req, res, log, error }) => {
           const subs = await databases.listDocuments(dbId, subsCol, [Query.equal('userId', body.userId), Query.limit(25)]);
           for (const s of subs.documents) await databases.deleteDocument(dbId, subsCol, s.$id);
         } catch { /* ignore */ }
+        return res.json({ ok: true });
+      }
+
+      case 'grantPlan': {
+        if (!body.userId || !body.planId) return res.json({ error: 'Missing userId or planId.' }, 400);
+        // Verify the target user and plan exist.
+        await users.get(body.userId);
+        const plan = await databases.getDocument(dbId, plansCol, body.planId);
+        const days = Number(body.days) || 0; // 0 = no expiry
+        const expiresAt = days > 0 ? new Date(Date.now() + days * 864e5).toISOString() : null;
+
+        // One subscription per user: update the existing doc or create a new one.
+        const existingList = await databases.listDocuments(dbId, subsCol, [Query.equal('userId', body.userId), Query.limit(1)]);
+        const data = {
+          planId: plan.$id, planName: plan.name, status: 'active',
+          comp: true, expiresAt, grantedBy: callerId,
+          renewsAt: expiresAt,
+          // Comp grants aren't billed — clear any Stripe linkage.
+          stripeSubscriptionId: null,
+        };
+        let doc;
+        if (existingList.documents[0]) {
+          doc = await databases.updateDocument(dbId, subsCol, existingList.documents[0].$id, data);
+        } else {
+          doc = await databases.createDocument(dbId, subsCol, ID.unique(), { userId: body.userId, ...data }, [
+            Permission.read(Role.user(body.userId)),
+            Permission.update(Role.user(body.userId)),
+          ]);
+        }
+        log(`granted ${plan.name} to ${body.userId}${days ? ` for ${days}d` : ' (no expiry)'}`);
+        return res.json({ subscription: doc });
+      }
+
+      case 'revokePlan': {
+        if (!body.userId) return res.json({ error: 'Missing userId.' }, 400);
+        const list = await databases.listDocuments(dbId, subsCol, [Query.equal('userId', body.userId), Query.limit(5)]);
+        for (const s of list.documents) {
+          if (body.delete) await databases.deleteDocument(dbId, subsCol, s.$id);
+          else await databases.updateDocument(dbId, subsCol, s.$id, { status: 'cancelled' });
+        }
         return res.json({ ok: true });
       }
 

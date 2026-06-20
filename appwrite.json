@@ -40,7 +40,10 @@
         { "key": "status", "type": "string", "size": 32, "required": false, "array": false, "default": "active" },
         { "key": "renewsAt", "type": "datetime", "required": false, "array": false, "default": null },
         { "key": "stripeCustomerId", "type": "string", "size": 128, "required": false, "array": false, "default": null },
-        { "key": "stripeSubscriptionId", "type": "string", "size": 128, "required": false, "array": false, "default": null }
+        { "key": "stripeSubscriptionId", "type": "string", "size": 128, "required": false, "array": false, "default": null },
+        { "key": "comp", "type": "boolean", "required": false, "array": false, "default": false },
+        { "key": "expiresAt", "type": "datetime", "required": false, "array": false, "default": null },
+        { "key": "grantedBy", "type": "string", "size": 64, "required": false, "array": false, "default": null }
       ],
       "indexes": [
         { "key": "userId_idx", "type": "key", "attributes": ["userId"], "orders": ["ASC"] },

@@ -3,11 +3,11 @@ import {
   databases, DB_ID, PLANS_COLLECTION_ID, SUBSCRIPTIONS_COLLECTION_ID,
   Query, ID, isConfigured, type Plan, type Subscription,
 } from '../lib/appwrite';
-import { listUsers, setAdmin, setStatus, deleteUser, getStats, type AdminUser, type AdminStats } from '../lib/admin';
+import { listUsers, setAdmin, setStatus, deleteUser, getStats, grantPlan, revokePlan, type AdminUser, type AdminStats } from '../lib/admin';
 import { useAuth } from '../context/AuthContext';
 import {
   Users as UsersIcon, CreditCard, DollarSign, TrendingUp, UserPlus, ShieldCheck,
-  RefreshCw, Download, Copy, Search, Ban, CheckCircle2, Trash2, Crown, Layers,
+  RefreshCw, Download, Copy, Search, Ban, CheckCircle2, Trash2, Crown, Layers, Gift, X,
 } from 'lucide-react';
 
 type Tab = 'overview' | 'plans' | 'users' | 'subs';
@@ -44,6 +44,12 @@ export default function Admin() {
   const [busyUser, setBusyUser] = useState<string | null>(null);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [copied, setCopied] = useState('');
+
+  // Grant-plan modal
+  const [grantUser, setGrantUser] = useState<AdminUser | null>(null);
+  const [grantPlanId, setGrantPlanId] = useState('');
+  const [grantDays, setGrantDays] = useState('30');
+  const [grantBusy, setGrantBusy] = useState(false);
 
   const load = useCallback(async () => {
     if (!isConfigured) { setLoading(false); return; }
@@ -114,6 +120,23 @@ export default function Admin() {
   const onSetAdmin = async (u: AdminUser, value: boolean) => { setBusyUser(u.id); setUsersError(''); try { const r = await setAdmin(u.id, value); applyUser(r.user); loadStats(); } catch (err) { setUsersError(err instanceof Error ? err.message : 'Failed.'); } finally { setBusyUser(null); } };
   const onSetStatus = async (u: AdminUser, status: boolean) => { setBusyUser(u.id); setUsersError(''); try { const r = await setStatus(u.id, status); applyUser(r.user); } catch (err) { setUsersError(err instanceof Error ? err.message : 'Failed.'); } finally { setBusyUser(null); } };
   const onDeleteUser = async (u: AdminUser) => { if (!window.confirm(`Delete ${u.email}? Removes their account and subscriptions.`)) return; setBusyUser(u.id); setUsersError(''); try { await deleteUser(u.id); setUsers((l) => l.filter((x) => x.id !== u.id)); setUsersTotal((t) => t - 1); loadStats(); } catch (err) { setUsersError(err instanceof Error ? err.message : 'Failed.'); } finally { setBusyUser(null); } };
+
+  // ── grant / revoke plan ──
+  const openGrant = (u: AdminUser) => { setGrantUser(u); setGrantPlanId(plans[0]?.$id || ''); setGrantDays('30'); };
+  const submitGrant = async () => {
+    if (!grantUser || !grantPlanId) return;
+    setGrantBusy(true); setUsersError('');
+    try { await grantPlan(grantUser.id, grantPlanId, Number(grantDays) || 0); setGrantUser(null); await load(); await loadStats(); }
+    catch (err) { setUsersError(err instanceof Error ? err.message : 'Could not grant the plan.'); }
+    finally { setGrantBusy(false); }
+  };
+  const onRevoke = async (u: AdminUser) => {
+    if (!window.confirm(`Revoke ${u.name || u.email}'s plan? They will drop to the free tier.`)) return;
+    setBusyUser(u.id); setUsersError('');
+    try { await revokePlan(u.id, false); await load(); await loadStats(); }
+    catch (err) { setUsersError(err instanceof Error ? err.message : 'Failed.'); }
+    finally { setBusyUser(null); }
+  };
 
   const shownUsers = users.filter((u) => filter === 'all' || (filter === 'admins' && u.labels.includes('admin')) || (filter === 'blocked' && !u.status) || (filter === 'unverified' && !u.emailVerification));
 
@@ -249,7 +272,9 @@ export default function Admin() {
                       <div className="admin-user-meta mono">joined {new Date(u.registration).toLocaleDateString()} · {u.emailVerification ? 'verified' : 'unverified'}</div>
                     </div>
                     <div className="admin-user-actions">
-                      <button className="btn btn-ghost btn-sm" disabled={busy || self} onClick={() => onSetAdmin(u, !isAdmin)}>{isAdmin ? <><Ban size={13} /> Revoke</> : <><Crown size={13} /> Make admin</>}</button>
+                      <button className="btn btn-ghost btn-sm" disabled={busy} onClick={() => openGrant(u)} title="Grant a plan for free"><Gift size={13} /> Grant</button>
+                      {plan && <button className="btn btn-ghost btn-sm" disabled={busy} onClick={() => onRevoke(u)} title="Revoke plan">Revoke</button>}
+                      <button className="btn btn-ghost btn-sm" disabled={busy || self} onClick={() => onSetAdmin(u, !isAdmin)}>{isAdmin ? <><Ban size={13} /> Revoke admin</> : <><Crown size={13} /> Make admin</>}</button>
                       <button className="btn btn-ghost btn-sm" disabled={busy || self} onClick={() => onSetStatus(u, !u.status)}>{u.status ? 'Block' : 'Unblock'}</button>
                       <button className="btn btn-ghost btn-sm danger" disabled={busy || self} onClick={() => onDeleteUser(u)}><Trash2 size={13} /></button>
                     </div>
@@ -275,9 +300,9 @@ export default function Admin() {
             {subs.map((s) => (
               <div className="admin-row admin-row-subs" key={s.$id}>
                 <span title={s.userId}>{emailFor(s.userId)}</span>
-                <span>{s.planName}</span>
+                <span>{s.planName}{s.comp && <span className="pill pill-plan" style={{ marginLeft: 6 }}>comp</span>}</span>
                 <span><span className={`status-dot ${s.status}`}>{s.status}</span></span>
-                <span className="mono">{new Date(s.$createdAt).toLocaleDateString()}</span>
+                <span className="mono">{s.expiresAt ? `until ${new Date(s.expiresAt).toLocaleDateString()}` : new Date(s.$createdAt).toLocaleDateString()}</span>
                 <span className="admin-row-actions">
                   {s.status === 'active'
                     ? <button className="btn btn-ghost btn-sm" onClick={() => setSubStatus(s, 'cancelled')}>Cancel</button>
@@ -289,6 +314,41 @@ export default function Admin() {
             {subs.length === 0 && <div className="admin-row"><span className="muted">No subscriptions yet.</span></div>}
           </div>
         </>
+      )}
+      {/* GRANT PLAN MODAL */}
+      {grantUser && (
+        <div className="admin-modal-overlay" onClick={() => !grantBusy && setGrantUser(null)}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-modal-head">
+              <h3><Gift size={16} /> Grant a plan</h3>
+              <button className="admin-modal-x" onClick={() => setGrantUser(null)} disabled={grantBusy}><X size={16} /></button>
+            </div>
+            <p className="muted" style={{ fontSize: 13, marginBottom: 16 }}>
+              Give <strong>{grantUser.name || grantUser.email}</strong> a plan for free. This overrides any current plan.
+            </p>
+            <label className="admin-modal-field">
+              Plan
+              <select value={grantPlanId} onChange={(e) => setGrantPlanId(e.target.value)}>
+                {plans.map((p) => <option key={p.$id} value={p.$id}>{p.name}{p.price > 0 ? ` ($${p.price}/mo value)` : ''}</option>)}
+              </select>
+            </label>
+            <label className="admin-modal-field">
+              Duration
+              <select value={grantDays} onChange={(e) => setGrantDays(e.target.value)}>
+                <option value="7">7 days</option>
+                <option value="14">14 days</option>
+                <option value="30">30 days</option>
+                <option value="90">90 days</option>
+                <option value="365">1 year</option>
+                <option value="0">No expiry (permanent)</option>
+              </select>
+            </label>
+            <div className="admin-modal-actions">
+              <button className="btn" onClick={submitGrant} disabled={grantBusy || !grantPlanId}>{grantBusy ? 'Granting…' : 'Grant plan'}</button>
+              <button className="btn btn-ghost" onClick={() => setGrantUser(null)} disabled={grantBusy}>Cancel</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

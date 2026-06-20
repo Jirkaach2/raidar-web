@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Check, Server, CalendarDays, Mail, CreditCard, Crown, ShieldCheck, Zap, MailWarning } from 'lucide-react';
+import { Check, Server, CalendarDays, Mail, CreditCard, Crown, ShieldCheck, Zap, MailWarning, Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import {
   databases, DB_ID, PLANS_COLLECTION_ID, SUBSCRIPTIONS_COLLECTION_ID,
@@ -32,7 +32,13 @@ export default function Dashboard() {
     if (docs.length > 1) {
       await Promise.allSettled(docs.slice(1).map((d) => databases.deleteDocument(DB_ID, SUBSCRIPTIONS_COLLECTION_ID, d.$id)));
     }
-    return docs[0] || null;
+    const doc = docs[0] || null;
+    // Expire complimentary grants whose window has passed.
+    if (doc && doc.comp && doc.expiresAt && new Date(doc.expiresAt).getTime() < Date.now() && doc.status === 'active') {
+      try { await databases.updateDocument<Subscription>(DB_ID, SUBSCRIPTIONS_COLLECTION_ID, doc.$id, { status: 'cancelled' }); } catch { /* ignore */ }
+      doc.status = 'cancelled';
+    }
+    return doc;
   }, [user]);
 
   const load = useCallback(async () => {
@@ -113,16 +119,17 @@ export default function Dashboard() {
     finally { setVerifyBusy(false); }
   };
 
-  const currentPlan = plans.find((p) => p.$id === sub?.planId) || null;
-  const planName = currentPlan?.name || sub?.planName || 'Scout';
+  const activeSub = sub && sub.status === 'active' ? sub : null;
+  const currentPlan = plans.find((p) => p.$id === activeSub?.planId) || null;
+  const planName = currentPlan?.name || activeSub?.planName || 'Scout';
   const planPrice = currentPlan ? (currentPlan.price === 0 ? 'Free' : `$${currentPlan.price}/mo`) : 'Free';
-  const status = sub?.status || 'active';
+  const status = activeSub?.status || 'active';
   const initial = (user?.name || user?.email || 'R')[0].toUpperCase();
 
   // Steam-linked accounts have no real inbox; we store provider/steamId in prefs.
   const prefs = (user?.prefs || {}) as Record<string, unknown>;
   const isSteam = prefs.provider === 'steam';
-  const steamAvatar = typeof prefs.steamAvatar === 'string' ? prefs.steamAvatar : '';
+  const steamAvatar = (typeof prefs.avatarUrl === 'string' && prefs.avatarUrl) || (typeof prefs.steamAvatar === 'string' ? prefs.steamAvatar : '');
   const hasRealEmail = !!user?.email && !user.email.endsWith('@steam.users.raidar.tech');
 
   return (
@@ -137,7 +144,10 @@ export default function Dashboard() {
             <p className="muted">Welcome back, {user?.name || user?.email}.</p>
           </div>
         </div>
-        {isAdmin && <Link className="btn btn-ghost btn-sm" to="/admin"><ShieldCheck size={14} /> Admin</Link>}
+        <div className="dash-head-actions">
+          <Link className="btn btn-ghost btn-sm" to="/settings"><SettingsIcon size={14} /> Settings</Link>
+          {isAdmin && <Link className="btn btn-ghost btn-sm" to="/admin"><ShieldCheck size={14} /> Admin</Link>}
+        </div>
       </div>
 
       {!isConfigured && <div className="auth-notice">Appwrite isn’t configured. Set the <code>VITE_APPWRITE_*</code> env vars to enable plans.</div>}
@@ -178,7 +188,9 @@ export default function Dashboard() {
             </div>
             <span className={`status-dot ${status}`}>{status}</span>
           </div>
-          {sub?.renewsAt && <div className="dash-hero-meta">Renews {new Date(sub.renewsAt).toLocaleDateString()}</div>}
+          {activeSub?.comp
+            ? <div className="dash-hero-meta">🎁 Complimentary{activeSub.expiresAt ? ` · ends ${new Date(activeSub.expiresAt).toLocaleDateString()}` : ' · no expiry'}</div>
+            : activeSub?.renewsAt && <div className="dash-hero-meta">Renews {new Date(activeSub.renewsAt).toLocaleDateString()}</div>}
           <div className="dash-hero-actions">
             <a href="#plans" className="btn btn-sm"><Zap size={14} /> Change plan</a>
             {sub?.stripeCustomerId && (
@@ -207,7 +219,7 @@ export default function Dashboard() {
         ) : (
           <div className="pricing-grid">
             {plans.map((p) => {
-              const isCurrent = p.$id === sub?.planId;
+              const isCurrent = p.$id === activeSub?.planId;
               return (
                 <div className={`price-card ${p.popular ? 'popular' : ''} ${isCurrent ? 'current' : ''}`} key={p.$id}>
                   {isCurrent ? <div className="price-badge">Current</div> : p.popular && <div className="price-badge">Popular</div>}

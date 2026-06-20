@@ -11,6 +11,7 @@ import Verify from './pages/Verify';
 import SteamCallback from './pages/SteamCallback';
 import CompleteSteamSignup from './pages/CompleteSteamSignup';
 import Dashboard from './pages/Dashboard';
+import Settings from './pages/Settings';
 import Admin from './pages/Admin';
 import NotFound from './pages/NotFound';
 import PrivacyPolicy from './pages/legal/PrivacyPolicy';
@@ -57,6 +58,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             }
           />

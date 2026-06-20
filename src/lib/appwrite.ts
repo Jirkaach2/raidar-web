@@ -1,4 +1,4 @@
-import { Client, Account, Databases, Functions, ID, Query, OAuthProvider, ExecutionMethod, type Models } from 'appwrite';
+import { Client, Account, Databases, Functions, Storage, ID, Query, OAuthProvider, ExecutionMethod, AuthenticatorType, AuthenticationFactor, type Models } from 'appwrite';
 
 // ─── Environment ──────────────────────────────────────────
 export const ENDPOINT = import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
@@ -32,8 +32,12 @@ export const client = new Client().setEndpoint(ENDPOINT).setProject(PROJECT_ID);
 export const account = new Account(client);
 export const databases = new Databases(client);
 export const functions = new Functions(client);
+export const storage = new Storage(client);
 
-export { ID, Query, OAuthProvider, ExecutionMethod };
+export { ID, Query, OAuthProvider, ExecutionMethod, AuthenticatorType, AuthenticationFactor };
+
+/** Storage bucket that holds user-uploaded avatars. */
+export const AVATARS_BUCKET_ID = import.meta.env.VITE_APPWRITE_AVATARS_BUCKET_ID || 'avatars';
 
 // ─── Domain types ─────────────────────────────────────────
 export interface Plan extends Models.Document {
@@ -55,6 +59,12 @@ export interface Subscription extends Models.Document {
   renewsAt?: string;
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
+  /** Complimentary admin-granted plan (no payment). */
+  comp?: boolean;
+  /** When a comp grant ends (ISO). Null/empty = no expiry. */
+  expiresAt?: string;
+  /** Admin user id that issued a comp grant. */
+  grantedBy?: string;
 }
 
 export type AppUser = Models.User<Models.Preferences>;

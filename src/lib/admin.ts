@@ -1,4 +1,4 @@
-import { functions, ADMIN_FUNCTION_ID, ExecutionMethod } from './appwrite';
+import { functions, ADMIN_FUNCTION_ID, ExecutionMethod, type Subscription } from './appwrite';
 
 export interface AdminUser {
   id: string;
@@ -45,3 +45,9 @@ export const setAdmin = (userId: string, value: boolean) => adminCall<{ user: Ad
 export const setStatus = (userId: string, status: boolean) => adminCall<{ user: AdminUser }>('setStatus', { userId, status });
 export const deleteUser = (userId: string) => adminCall<{ ok: boolean }>('deleteUser', { userId });
 export const getStats = () => adminCall<AdminStats>('stats');
+/** Grant a plan to a user for free. days = 0 means no expiry. */
+export const grantPlan = (userId: string, planId: string, days: number) =>
+  adminCall<{ subscription: Subscription }>('grantPlan', { userId, planId, days });
+/** Cancel (or delete) a user's subscription / comp grant. */
+export const revokePlan = (userId: string, del = false) =>
+  adminCall<{ ok: boolean }>('revokePlan', { userId, delete: del });

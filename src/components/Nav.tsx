@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, LayoutDashboard, ShieldCheck } from 'lucide-react';
+import { Menu, X, LogOut, LayoutDashboard, ShieldCheck, Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
 
@@ -49,6 +49,7 @@ export default function Nav() {
             <NavLink to="/docs" onClick={close}>Docs</NavLink>
             <NavLink to="/#pricing" onClick={close}>Pricing</NavLink>
             {user && <NavLink to="/dashboard" onClick={close}><LayoutDashboard size={14} /> Dashboard</NavLink>}
+            {user && <NavLink to="/settings" onClick={close}><SettingsIcon size={14} /> Settings</NavLink>}
             {isAdmin && <NavLink to="/admin" onClick={close}><ShieldCheck size={14} /> Admin</NavLink>}
           </div>
 
