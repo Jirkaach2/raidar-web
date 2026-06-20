@@ -1,5 +1,5 @@
 {
-  "projectId": "YOUR_PROJECT_ID",
+  "projectId": "6a35ee58000329887b08",
   "projectName": "Raidar",
   "databases": [
     { "$id": "raidar", "name": "Raidar", "enabled": true }
@@ -90,6 +90,20 @@
       "entrypoint": "src/main.js",
       "commands": "npm install",
       "path": "functions/stripe-portal"
+    },
+    {
+      "$id": "admin-api",
+      "name": "admin-api",
+      "runtime": "node-18.0",
+      "execute": ["users"],
+      "events": [],
+      "schedule": "",
+      "timeout": 15,
+      "enabled": true,
+      "logging": true,
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "path": "functions/admin-api"
     }
   ]
 }

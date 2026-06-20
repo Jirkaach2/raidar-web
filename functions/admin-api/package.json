@@ -1,0 +1,10 @@
+{
+  "name": "raidar-admin-api",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Appwrite Function: admin-only user management + dashboard stats for Raidar.",
+  "main": "src/main.js",
+  "dependencies": {
+    "node-appwrite": "^14.0.0"
+  }
+}

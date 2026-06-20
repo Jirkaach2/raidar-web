@@ -142,6 +142,18 @@ Paid plans use **Stripe Checkout**, driven by two Appwrite Functions in `functio
   Stripe (Settings → Billing → Customer portal). The dashboard shows a **Manage billing** button
   once a user has a Stripe customer, letting them update their card, change or cancel their plan.
 
+### 5. `admin-api` function (`functions/admin-api`)
+Powers the **Users** tab and **Overview** stats in the admin dashboard (the Web SDK can't manage
+other users, so this runs server-side and is gated to admins).
+- Runtime **Node 18+**, entrypoint `src/main.js`, build `npm install`. Execute access: **Users**.
+- Environment variables:
+  - `APPWRITE_API_KEY` = key with scopes `users.read`, `users.write`, `databases.read`, `documents.read/write`
+  - `APPWRITE_DB_ID`, `APPWRITE_PLANS_COLLECTION_ID`, `APPWRITE_SUBSCRIPTIONS_COLLECTION_ID`
+- Set its function ID into `VITE_APPWRITE_ADMIN_FUNCTION_ID`.
+- Every request is verified server-side: the caller must already carry the `admin` label, so only
+  admins can list users, grant/revoke admin, block/unblock or delete accounts, or read stats.
+  Bootstrap your **first** admin once by adding the `admin` label manually in Auth → Users → Labels.
+
 Flow: Dashboard → *Upgrade* → checkout function returns a Checkout URL → user pays on Stripe →
 Stripe redirects back to `/dashboard?checkout=success` and fires the webhook, which activates the
 subscription. The dashboard re-polls for a few seconds to reflect the change.
@@ -169,5 +181,6 @@ functions/
   stripe-checkout/        Appwrite Function — creates Checkout sessions
   stripe-webhook/         Appwrite Function — syncs subscriptions from Stripe
   stripe-portal/          Appwrite Function — opens the Stripe billing portal
+  admin-api/              Appwrite Function — admin user management + stats
 public/                   raidar-banner.png, favicon.svg
 ```

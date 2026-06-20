@@ -13,6 +13,8 @@ export const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KE
 export const CHECKOUT_FUNCTION_ID = import.meta.env.VITE_APPWRITE_CHECKOUT_FUNCTION_ID || 'stripe-checkout';
 /** ID of the Appwrite Function that opens the Stripe billing portal. */
 export const PORTAL_FUNCTION_ID = import.meta.env.VITE_APPWRITE_PORTAL_FUNCTION_ID || 'stripe-portal';
+/** ID of the admin-only user-management / stats Appwrite Function. */
+export const ADMIN_FUNCTION_ID = import.meta.env.VITE_APPWRITE_ADMIN_FUNCTION_ID || 'admin-api';
 /** True once a Stripe publishable key is present so paid checkout is available. */
 export const billingEnabled = Boolean(STRIPE_PUBLISHABLE_KEY);
 
