@@ -12,6 +12,10 @@ import SteamCallback from './pages/SteamCallback';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
 import NotFound from './pages/NotFound';
+import PrivacyPolicy from './pages/legal/PrivacyPolicy';
+import TermsOfService from './pages/legal/TermsOfService';
+import RefundPolicy from './pages/legal/RefundPolicy';
+import CookiePolicy from './pages/legal/CookiePolicy';
 
 /** Scroll to top (or to the #hash target) on every navigation. */
 function ScrollManager() {
@@ -42,6 +46,10 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/auth/steam" element={<SteamCallback />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/refunds" element={<RefundPolicy />} />
+          <Route path="/cookies" element={<CookiePolicy />} />
           <Route
             path="/dashboard"
             element={
