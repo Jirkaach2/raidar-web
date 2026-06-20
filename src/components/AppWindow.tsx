@@ -1,45 +1,26 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import {
   Users, ShoppingCart, ChevronRight, ChevronDown, ChevronUp, Search, Send,
   ToggleRight, ToggleLeft, BellRing, Database, Trash2, Edit2, Zap as ZapIc, Moon, Siren, Power,
   Home, Clock, Lock, Flame, RefreshCw, DollarSign, Calculator, Compass, Video, Activity, Shield,
-  ArrowUpDown, MapPin, Info, ExternalLink, Plus, Minus, RotateCcw, Grid3x3, Crosshair, Skull, List, Mountain, Radio, Sun,
+  ArrowUpDown, MapPin, Info, ExternalLink, Trophy, X,
 } from 'lucide-react';
 import Logo from './Logo';
 
-type Page = 'map' | 'team' | 'vending' | 'devices' | 'tools' | 'spy';
+type Page = 'team' | 'vending' | 'devices' | 'tools' | 'spy';
 
 const RAIL: Array<{ key: Page; path: ReactNode; sep?: boolean }> = [
-  { key: 'map', path: <><polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2" /><line x1="8" y1="2" x2="8" y2="18" /><line x1="16" y1="6" x2="16" y2="22" /></> },
   { key: 'team', path: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></> },
   { key: 'vending', path: <><rect x="4" y="2" width="16" height="20" rx="2" /><rect x="6" y="4" width="12" height="10" /><line x1="8" y1="18" x2="16" y2="18" /></> },
   { key: 'devices', path: <><path d="M12 2v4" /><path d="M12 18v4" /><path d="M4.93 4.93l2.83 2.83" /><path d="M16.24 16.24l2.83 2.83" /><path d="M2 12h4" /><path d="M18 12h4" /><path d="M4.93 19.07l2.83-2.83" /><path d="M16.24 7.76l2.83-2.83" /></>, sep: true },
   { key: 'tools', path: <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2-2 2.5-2.5z" /> },
   { key: 'spy', path: <><circle cx="12" cy="12" r="3" /><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /></> },
 ];
-const RAIL_LABELS: Record<Page, string> = { map: 'Live Map', team: 'Team', vending: 'Market', devices: 'Smart Devices', tools: 'Tools', spy: 'Rust Spy' };
+const RAIL_LABELS: Record<Page, string> = { team: 'Team', vending: 'Market', devices: 'Smart Devices', tools: 'Tools', spy: 'Rust Spy' };
 
 function icon(s: string) { return `https://cdn.rusthelp.com/images/256/${s.replace(/[._]/g, '-')}.webp`; }
 function hideErr(e: React.SyntheticEvent<HTMLImageElement>) { e.currentTarget.style.visibility = 'hidden'; }
 function Av({ name, color }: { name: string; color: string }) { return <span className="aw-av" style={{ background: color }}>{name[0]}</span>; }
-
-const LETTERS = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
-const NUMS = Array.from({ length: 26 }, (_, i) => i);
-const OVERLAYS: Array<{ key: string; label: string; Icon: typeof Users }> = [
-  { key: 'team', label: 'Team Players', Icon: Users },
-  { key: 'roster', label: 'Roster Status', Icon: List },
-  { key: 'death', label: 'Death Markers', Icon: Skull },
-  { key: 'shops', label: 'Vending Shops', Icon: ShoppingCart },
-  { key: 'caves', label: 'Caves & Wells', Icon: Mountain },
-  { key: 'markers', label: 'Map Markers', Icon: Radio },
-  { key: 'events', label: 'Active Events', Icon: ZapIc },
-  { key: 'day', label: 'Day / Night', Icon: Sun },
-];
-const MONUMENTS: Array<[string, number, number]> = [
-  ['LAUNCH SITE', 30, 70], ['AIRFIELD', 60, 44], ['OUTPOST', 48, 56], ['BANDIT CAMP', 66, 74],
-  ['WATER TREATMENT', 26, 50], ['MILITARY TUNNEL', 42, 34], ['HARBOR', 76, 60], ['DOME', 54, 26],
-  ['JUNKYARD', 36, 82], ['POWER PLANT', 70, 36], ['TRAIN YARD', 46, 48], ['SATELLITE DISH', 38, 24],
-];
 
 const SWITCHES = [{ name: 'Base Lights', id: 31882 }, { name: 'Turret Power', id: 31904 }, { name: 'Furnace Bank', id: 32011 }];
 const TC_ITEMS: Array<[string, string]> = [
@@ -71,15 +52,29 @@ const VEND = [
   ] },
 ];
 const BEST = [
-  { name: 'Big Boom Shop', grid: 'G7', sales: '4.2k', top: 'C4 ×38' },
-  { name: 'Bandit Camp', grid: 'K14', sales: '3.1k', top: 'Scrap ×1.2k' },
-  { name: 'Hill Traders', grid: 'C19', sales: '1.9k', top: 'HQM ×900' },
+  { name: 'Big Boom Shop', grid: 'G7', sales: 38, ago: '2m ago', earned: [['scrap', '4,200']], sold: [['explosive.timed', '38'], ['explosive.satchel', '64'], ['ammo.rocket.basic', '22'], ['explosive.timed', '12']] },
+  { name: 'Bandit Surplus', grid: 'K14', sales: 120, ago: 'just now', earned: [['scrap', '3,100'], ['metal.refined', '300']], sold: [['scrap', '1.2k'], ['cloth', '900'], ['lowgradefuel', '400'], ['gunpowder', '600'], ['metal.fragments', '2k']] },
+  { name: 'Hill Traders', grid: 'C19', sales: 54, ago: '6m ago', earned: [['scrap', '1,900']], sold: [['metal.refined', '900'], ['sulfur', '4k'], ['wood', '12k']] },
 ];
 
 const TOOL_GROUPS: Array<{ label: string; tools: Array<[string, string, typeof Home]> }> = [
   { label: 'BASE & DEFENSE', tools: [['cupboard', 'Cupboard', Home], ['decay', 'Decay', Clock]] },
   { label: 'RAIDING', tools: [['crates', 'Locked Crates', Lock], ['raidcost', 'Raid Cost', Flame], ['loadout', 'Loadout Lab', Shield], ['recycler', 'Recycler', RefreshCw]] },
   { label: 'INTEL', tools: [['pricewatch', 'Price Watch', DollarSign], ['profit', 'Profit Scan', Calculator], ['richbase', 'Rich Bases', Compass], ['cctv', 'CCTV Codes', Video], ['activity', 'Activity', Activity], ['lookup', 'Player Lookup', Search]] },
+];
+const CCTV: Array<[string, string]> = [
+  ['Large Oil Rig', 'OILRIG1L'], ['Small Oil Rig', 'OILRIG1S'], ['Dome', 'DOME1'], ['Airfield', 'AIRFIELDHELi'],
+  ['Launch Site', 'SATCOMS'], ['Excavator', 'XOR1'], ['Sewer Branch', 'SEWER'], ['Water Treatment', 'WTPCAM'],
+];
+const RECYCLE: Array<{ item: string; icon: string; out: Array<[string, string]> }> = [
+  { item: 'Rifle Body', icon: 'riflebody', out: [['scrap', '25'], ['metal.fragments', '63']] },
+  { item: 'Sheet Metal Door', icon: 'door.hinged.metal', out: [['metal.fragments', '75'], ['scrap', '10']] },
+  { item: 'Tech Trash', icon: 'techparts', out: [['scrap', '20'], ['metal.refined', '5']] },
+];
+const PRICEWATCH: Array<{ item: string; icon: string; target: string; best: string; grid: string }> = [
+  { item: 'C4', icon: 'explosive.timed', target: '≤ 450 scrap', best: '420 scrap', grid: 'G7' },
+  { item: 'Assault Rifle', icon: 'rifle.ak', target: '≤ 250 scrap', best: '240 scrap', grid: 'K14' },
+  { item: 'High Quality Metal', icon: 'metal.refined', target: '≤ 80 scrap', best: '75 scrap', grid: 'C19' },
 ];
 
 function bucket(seed: number, d: number, h: number): number {
@@ -91,18 +86,20 @@ function bucket(seed: number, d: number, h: number): number {
   return Math.min(1, v);
 }
 function heat(v: number) { if (v <= 0.04) return 'rgba(255,255,255,0.04)'; const g = Math.round(60 + v * 180); return `rgba(40, ${g}, 60, ${0.35 + v * 0.6})`; }
-const SPY = [
-  { name: 'BridgeKing', online: true, group: 'Bridge Clan', gc: '#ce422b', raid: '8PM–2AM', seed: 3, last: 'Online now' },
-  { name: 'zerg_ttv', online: false, group: 'Zerg D7', gc: '#58c6e8', raid: '6PM–12AM', seed: 7, last: 'Last seen 2h ago' },
-  { name: 'soloRoamer', online: false, group: '', gc: '', raid: '11PM–3AM', seed: 5, last: 'Last seen 8h ago' },
-  { name: 'Nightmare', online: true, group: 'Bridge Clan', gc: '#ce422b', raid: '9PM–1AM', seed: 9, last: 'Online now' },
+const ENEMIES = [
+  { name: 'BridgeKing', online: true, group: 'Bridge Clan', gc: '#ce422b', raid: '8PM–2AM', seed: 3, last: 'Online now', track: '' },
+  { name: 'zerg_ttv', online: false, group: 'Zerg D7', gc: '#58c6e8', raid: '6PM–12AM', seed: 7, last: 'Last seen 2h ago', track: '' },
+  { name: 'soloRoamer', online: false, group: '', gc: '', raid: '11PM–3AM', seed: 5, last: 'Last seen 8h ago', track: '' },
+  { name: 'Nightmare', online: true, group: 'Bridge Clan', gc: '#ce422b', raid: '9PM–1AM', seed: 9, last: 'Online now', track: '' },
 ];
+const TEAM_SPY = TEAM.map((m, i) => ({ name: m.name, online: m.status === 'online', group: '', gc: '', raid: `${fmtHour(((i * 7) % 6) + 18)}–${fmtHour((((i * 7) % 6) + 18 + 6) % 24)}`, seed: (i + 2) * 3, last: `tracked ${40 + i * 9}h`, track: '' }));
 const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 function fmtHour(h: number) { const a = h >= 12 ? 'PM' : 'AM'; let x = h % 12; if (x === 0) x = 12; return `${x}${a}`; }
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+function clock() { return new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
 
 export default function AppWindow() {
-  const [page, setPage] = useState<Page>('map');
-  const [ov, setOv] = useState<Record<string, boolean>>({ team: true, roster: true, death: true, shops: true, caves: false, markers: false, events: true, day: true });
+  const [page, setPage] = useState<Page>('devices');
   const [sw, setSw] = useState<Record<string, boolean>>({ 'Base Lights': true, 'Turret Power': true, 'Furnace Bank': false });
   const [openTc, setOpenTc] = useState(false);
   const [teamExp, setTeamExp] = useState<string | null>('Viktor');
@@ -110,21 +107,35 @@ export default function AppWindow() {
   const [vTab, setVTab] = useState<'buy' | 'sell'>('buy');
   const [vType, setVType] = useState<'all' | 'player' | 'npc'>('all');
   const [vChip, setVChip] = useState('');
-  const [tool, setTool] = useState('raidcost');
+  const [bsSort, setBsSort] = useState<'earn' | 'sales' | 'recent'>('earn');
+  const [tool, setTool] = useState('cctv');
   const [spyTab, setSpyTab] = useState<'team' | 'enemies' | 'history'>('enemies');
-  const [spySel, setSpySel] = useState('BridgeKing');
+  const [enemySel, setEnemySel] = useState('BridgeKing');
+  const [teamSel, setTeamSel] = useState('Viktor');
 
-  const sel = SPY.find((p) => p.name === spySel) || SPY[0];
-  const hourly = Array.from({ length: 24 }, (_, h) => { let s = 0; for (let d = 0; d < 7; d++) s += bucket(sel.seed, d, h); return s / 7; });
-  const toolMeta = TOOL_GROUPS.flatMap((g) => g.tools).find((t) => t[0] === tool);
-  const ToolIcon = (toolMeta?.[2] || Home);
+  // Live status bar.
+  const [time, setTime] = useState(clock());
+  const [stats, setStats] = useState({ ms: 87, pop: 142, shops: 82 });
+  useEffect(() => {
+    const c = setInterval(() => setTime(clock()), 1000);
+    const s = setInterval(() => setStats((p) => ({ ms: clamp(p.ms + (Math.floor(Math.random() * 21) - 10), 42, 120), pop: clamp(p.pop + (Math.floor(Math.random() * 7) - 3), 120, 200), shops: clamp(p.shops + (Math.floor(Math.random() * 3) - 1), 70, 96) })), 3200);
+    return () => { clearInterval(c); clearInterval(s); };
+  }, []);
 
-  // Market filtering — by shop type + active chip term + buy/sell field.
   const term = vChip.toLowerCase();
   const vendShown = VEND
     .filter((v) => vType === 'all' || (vType === 'npc' ? v.npc : !v.npc))
     .map((v) => ({ ...v, orders: v.orders.filter((o) => !term || (vTab === 'buy' ? o.item : o.cur).toLowerCase().includes(term)) }))
     .filter((v) => v.orders.length > 0);
+
+  const toolMeta = TOOL_GROUPS.flatMap((g) => g.tools).find((t) => t[0] === tool);
+  const ToolIcon = (toolMeta?.[2] || Home);
+
+  const spyList = spyTab === 'team' ? TEAM_SPY : ENEMIES;
+  const spySel = spyTab === 'team' ? teamSel : enemySel;
+  const setSpySel = spyTab === 'team' ? setTeamSel : setEnemySel;
+  const sel = spyList.find((p) => p.name === spySel) || spyList[0];
+  const hourly = sel ? Array.from({ length: 24 }, (_, h) => { let s = 0; for (let d = 0; d < 7; d++) s += bucket(sel.seed, d, h); return s / 7; }) : [];
 
   return (
     <div className="aw bracketed">
@@ -148,80 +159,6 @@ export default function AppWindow() {
         </nav>
 
         <div className="aw-content">
-          {/* ───────── LIVE MAP ───────── */}
-          {page === 'map' && (
-            <div className="aw-map-screen">
-              <div className="aw-mapcanvas">
-                <div className="aw-glabel aw-glabel-top">{LETTERS.map((l) => <span key={l}>{l}</span>)}</div>
-                <div className="aw-glabel aw-glabel-bot">{LETTERS.map((l) => <span key={l}>{l}</span>)}</div>
-                <div className="aw-nlabel aw-nlabel-l">{NUMS.map((n) => <span key={n}>{n}</span>)}</div>
-                <div className="aw-nlabel aw-nlabel-r">{NUMS.map((n) => <span key={n}>{n}</span>)}</div>
-                <svg className="aw-island" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-                  <defs>
-                    <radialGradient id="land" cx="45%" cy="40%" r="65%">
-                      <stop offset="0%" stopColor="#5a6b3e" /><stop offset="55%" stopColor="#3f5232" /><stop offset="100%" stopColor="#2c3a26" />
-                    </radialGradient>
-                  </defs>
-                  <path d="M28,16 C40,10 56,12 64,18 C76,16 86,26 84,38 C92,48 88,64 80,72 C82,84 68,90 56,86 C44,92 30,86 26,76 C12,74 8,58 14,48 C8,40 14,28 22,24 C23,20 25,17 28,16 Z" fill="url(#land)" stroke="rgba(120,200,180,0.25)" strokeWidth="0.6" />
-                  <path d="M22,24 C30,30 30,20 40,22 C36,30 28,32 22,30 Z" fill="rgba(235,240,245,0.5)" />
-                  <path d="M58,18 C70,24 62,34 70,40 C62,46 50,40 52,30 C50,24 54,20 58,18 Z" fill="rgba(235,240,245,0.32)" />
-                  <path d="M40,22 C50,40 46,58 56,70 C48,76 40,60 38,46 C34,36 36,28 40,22 Z" fill="none" stroke="rgba(90,150,200,0.5)" strokeWidth="1.1" />
-                  <path d="M26,52 C44,54 60,50 78,58" fill="none" stroke="rgba(180,170,150,0.35)" strokeWidth="0.7" strokeDasharray="2 1.5" />
-                </svg>
-                {MONUMENTS.map(([label, x, y]) => (
-                  <div className="aw-mon" key={label} style={{ left: `${x}%`, top: `${y}%` }}>
-                    <span className="aw-mon-dot" />{ov.markers && <span className="aw-mon-label">{label}</span>}
-                  </div>
-                ))}
-                {ov.shops && [[44, 60], [58, 52], [33, 44]].map(([x, y], i) => <span key={i} className="aw-shopdot" style={{ left: `${x}%`, top: `${y}%` }} />)}
-                {ov.team && <><span className="aw-blip aw-blip--online" style={{ left: '47%', top: '58%' }} /><span className="aw-blip aw-blip--online" style={{ left: '50%', top: '61%' }} /></>}
-                {ov.death && <span className="aw-blip aw-blip--dead" style={{ left: '40%', top: '72%' }} />}
-
-                {/* event ticker */}
-                {ov.events && <div className="aw-ticker"><ShoppingCart size={11} /> NEW CARGO SHIP <b>· 6:25</b></div>}
-              </div>
-
-              {/* left panels */}
-              <div className="aw-fl aw-fl-left">
-                <div className="aw-mappill"><Crosshair size={10} /> LIVE MAP</div>
-                <div className="aw-mapchips"><span>ZOOM 110%</span><span>SEED 31419926</span></div>
-                {ov.roster && (
-                  <div className="aw-glass aw-gp">
-                    <div className="aw-gp-h"><Users size={11} className="aw-gp-ic" /> ROSTER STATUS <b className="aw-gp-count">3/5</b></div>
-                    <div className="aw-roster-row"><span className="aw-on-dot" /> Viktor <span className="aw-rgrid">F12</span></div>
-                    <div className="aw-roster-row"><span className="aw-on-dot" /> Dima <span className="aw-rgrid">F12</span></div>
-                  </div>
-                )}
-                <div className="aw-glass aw-gp">
-                  <div className="aw-gp-h"><svg className="aw-gp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 2 7 12 12 22 7 12 2" /><polyline points="2 17 12 22 22 17" /><polyline points="2 12 12 17 22 12" /></svg> TACTICAL OVERLAYS <ChevronDown size={11} className="aw-chev" /></div>
-                  <div className="aw-ovlist">
-                    {OVERLAYS.map(({ key, label, Icon }) => (
-                      <div className="aw-ovrow" key={key}>
-                        <span>{label}</span>
-                        <button className={`aw-ovbtn ${ov[key] ? 'active' : ''}`} onClick={() => setOv((s) => ({ ...s, [key]: !s[key] }))}><Icon size={12} /></button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* right controls */}
-              <div className="aw-fl aw-fl-right">
-                <div className="aw-zoom">
-                  <button className="aw-zbtn"><Plus size={13} /></button>
-                  <button className="aw-zbtn"><Minus size={13} /></button>
-                  <button className="aw-zbtn"><RotateCcw size={12} /></button>
-                  <button className="aw-zbtn active"><Grid3x3 size={13} /></button>
-                </div>
-              </div>
-              <div className="aw-fl aw-fl-br">
-                <div className="aw-mapinfo"><Crosshair size={10} /> MAP INFO</div>
-                {ov.events && <div className="aw-glass aw-float"><div className="aw-float-h">ACTIVE EVENTS</div><div className="aw-ev"><ShoppingCart size={9} /> Travelling Vendor <b>J8</b></div></div>}
-                {ov.day && <div className="aw-glass aw-float aw-day"><div className="aw-day-top"><Sun size={11} /> DAYTIME <b>8:40 AM</b></div><div className="aw-day-sub">Nightfall in 62m 25s</div></div>}
-              </div>
-            </div>
-          )}
-
           {/* ───────── DEVICES ───────── */}
           {page === 'devices' && (
             <div className="aw-scr aw-devpanel">
@@ -248,9 +185,9 @@ export default function AppWindow() {
                 <div className="device-tc-info"><div className="tc-row"><span className="tc-lbl">TC UPKEEP TIMER</span><span className="tc-good">2d 4h left</span></div><div className="tc-row"><span className="tc-lbl">TC STORAGE · 22/30 SLOTS</span><span className="tc-pct">73%</span></div><div className="device-storage-bar"><div className="storage-fill" style={{ width: '73%' }} /></div></div>
                 {openTc && <div className="tc-contents" onClick={(e) => e.stopPropagation()}>{TC_ITEMS.map(([ic, qty]) => (<div className="tc-slot" key={ic}><img src={icon(ic)} onError={hideErr} alt="" /><span>{qty}</span></div>))}</div>}
               </div>
-              <div className="device-group-label foreign">RUSTORIA · OFF-SERVER</div>
+              <div className="device-group-label foreign">RAIDAR.TECH · OFF-SERVER</div>
               <div className="device-card dev-switch is-foreign">
-                <div className="device-card-header"><div className="device-icon"><ToggleLeft /></div><div className="device-info"><div className="device-name-row"><h3 className="device-name">2nd Base Heater</h3></div><div className="device-meta">ID: 9931 · Rustoria</div></div><div className="device-actions"><button className="device-toggle is-off">OFF</button></div></div>
+                <div className="device-card-header"><div className="device-icon"><ToggleLeft /></div><div className="device-info"><div className="device-name-row"><h3 className="device-name">2nd Base Heater</h3></div><div className="device-meta">ID: 9931 · raidar.tech</div></div><div className="device-actions"><button className="device-toggle is-off">OFF</button></div></div>
               </div>
               <div className="aw-auto-h"><ZapIc size={12} /> SWITCH AUTOMATIONS</div>
               <div className="aw-autorow"><span className="aw-auto-ic"><Moon size={11} /></span><div><b>Base Lights</b><small>at nightfall <ChevronRight size={8} /> turn ON</small></div><span className="aw-auto-on"><Power size={10} /></span></div>
@@ -339,11 +276,27 @@ export default function AppWindow() {
                   ))}
                 </div>
               </> : (
-                <div className="aw-vlist">
-                  <div className="aw-sec-lbl">TOP EARNING SHOPS · LAST 24H</div>
-                  {BEST.map((b, i) => (
-                    <div className="aw-best" key={b.name}><span className={`aw-best-rank r${i + 1}`}>{i + 1}</span><div className="aw-best-info"><b>{b.name}</b><small>top seller · {b.top}</small></div><span className="aw-vgrid">{b.grid}</span><span className="aw-best-sales">{b.sales}<small>scrap</small></span></div>
-                  ))}
+                <div className="aw-bs">
+                  <div className="aw-bs-head"><h3><Trophy size={14} /> BEST SELLING SHOPS</h3><button className="aw-bs-clear"><Trash2 size={11} /> Reset</button></div>
+                  <p className="aw-bs-sub">Live-tracked while connected. Each shop's stock drop = a sale; Raidar tallies what every store sold and earned.</p>
+                  <div className="aw-bs-sort">
+                    <button className={bsSort === 'earn' ? 'active' : ''} onClick={() => setBsSort('earn')}>Top earners</button>
+                    <button className={bsSort === 'sales' ? 'active' : ''} onClick={() => setBsSort('sales')}>Most sales</button>
+                    <button className={bsSort === 'recent' ? 'active' : ''} onClick={() => setBsSort('recent')}>Most recent</button>
+                  </div>
+                  <div className="aw-bs-list">
+                    {BEST.map((b, i) => (
+                      <div className="aw-bs-card" key={b.name}>
+                        <div className="aw-bs-card-h">
+                          <span className={`aw-bs-rank ${i < 3 ? `r${i + 1}` : ''}`}>{i + 1}</span>
+                          <div className="aw-bs-id"><span className="aw-bs-name">{b.name}</span><span className="aw-bs-meta"><span className="aw-vgrid">{b.grid}</span> · {b.sales} sales · {b.ago}</span></div>
+                          <button className="aw-bs-loc"><MapPin size={13} /></button><button className="aw-bs-del"><X size={13} /></button>
+                        </div>
+                        <div className="aw-bs-earned"><span className="aw-bs-el">EARNED</span>{b.earned.map(([ic, amt], j) => <span className="aw-bs-ecell" key={j}><img src={icon(ic)} onError={hideErr} alt="" />{amt}</span>)}</div>
+                        <div className="aw-bs-sold">{b.sold.slice(0, 8).map(([ic, qty], j) => <span className="aw-bs-scell" key={j}><img src={icon(ic)} onError={hideErr} alt="" /><b>{qty}</b></span>)}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -362,11 +315,37 @@ export default function AppWindow() {
                 ))}
               </div>
               <div className="aw-tools-main">
-                <div className="aw-tool-generic">
-                  <div className="aw-tg-ico"><ToolIcon size={26} /></div>
-                  <h3>{toolMeta?.[1]}</h3>
-                  <p>Live data loads here once you're connected to a server.</p>
-                </div>
+                {tool === 'cctv' ? <>
+                  <div className="aw-tool-h"><Video size={14} /> CCTV CAMERA CODES</div>
+                  <p className="aw-tool-p">Type these into a Computer Station to watch monument cameras.</p>
+                  <div className="aw-cctv">{CCTV.map(([mon, code]) => <div className="aw-cctv-row" key={code}><span>{mon}</span><code>{code}</code></div>)}</div>
+                </> : tool === 'recycler' ? <>
+                  <div className="aw-tool-h"><RefreshCw size={14} /> RECYCLER OUTPUT</div>
+                  <p className="aw-tool-p">What you get back from recycling components.</p>
+                  {RECYCLE.map((r) => (
+                    <div className="aw-rec" key={r.item}>
+                      <span className="aw-rec-in"><img src={icon(r.icon)} onError={hideErr} alt="" /> {r.item}</span>
+                      <ChevronRight size={13} className="aw-rec-arrow" />
+                      <span className="aw-rec-out">{r.out.map(([ic, q], j) => <span key={j}><img src={icon(ic)} onError={hideErr} alt="" />{q}</span>)}</span>
+                    </div>
+                  ))}
+                </> : tool === 'pricewatch' ? <>
+                  <div className="aw-tool-h"><DollarSign size={14} /> PRICE WATCH</div>
+                  <p className="aw-tool-p">Get alerted when a watched item drops below your target.</p>
+                  {PRICEWATCH.map((w) => (
+                    <div className="aw-pw" key={w.item}>
+                      <span className="aw-pw-item"><img src={icon(w.icon)} onError={hideErr} alt="" /> {w.item}</span>
+                      <span className="aw-pw-target">{w.target}</span>
+                      <span className="aw-pw-best">{w.best} <span className="aw-vgrid">{w.grid}</span></span>
+                    </div>
+                  ))}
+                </> : (
+                  <div className="aw-tool-generic">
+                    <div className="aw-tg-ico"><ToolIcon size={26} /></div>
+                    <h3>{toolMeta?.[1]}</h3>
+                    <p>Live data loads here once you're connected to a server.</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -376,20 +355,20 @@ export default function AppWindow() {
             <div className="aw-scr aw-spy">
               <div className="aw-spy-head">
                 <div><h1>RUST SPY</h1><p>Read their schedule · Predict · Plan · Raid</p></div>
-                <div className="aw-spy-stats"><div><span className="n">{SPY.length}</span><span className="l">TRACKED</span></div><div><span className="n">{SPY.filter((p) => p.online).length}</span><span className="l">ONLINE</span></div></div>
+                <div className="aw-spy-stats"><div><span className="n">{spyList.length}</span><span className="l">TRACKED</span></div><div><span className="n">{spyList.filter((p) => p.online).length}</span><span className="l">ONLINE</span></div></div>
               </div>
               <div className="aw-spy-tabs">
                 <button className={spyTab === 'team' ? 'active' : ''} onClick={() => setSpyTab('team')}>Team (Live)</button>
                 <button className={spyTab === 'enemies' ? 'active' : ''} onClick={() => setSpyTab('enemies')}>Enemies (BattleMetrics)</button>
                 <button className={spyTab === 'history' ? 'active' : ''} onClick={() => setSpyTab('history')}>Server History</button>
               </div>
-              {spyTab === 'team' ? (
-                <div className="aw-spy-empty"><p>No team activity tracked yet.</p><span>Connect & join a team — Raidar records each teammate's online windows to reveal their schedule.</span></div>
-              ) : (
+              {spyTab === 'history' ? (
+                <div className="aw-spy-empty"><p>Search a player's cross-server history.</p><span>Pull any player's full BattleMetrics record — every server they play, ranked by time spent.</span></div>
+              ) : sel && (
                 <div className="aw-spy-body">
                   <div className="aw-spy-players">
-                    <div className="aw-spy-search"><Search size={11} /> Search BattleMetrics…</div>
-                    {SPY.map((p) => (
+                    {spyTab === 'enemies' && <div className="aw-spy-search"><Search size={11} /> Search BattleMetrics…</div>}
+                    {spyList.map((p) => (
                       <button key={p.name} className={`aw-spy-p ${sel.name === p.name ? 'active' : ''}`} onClick={() => setSpySel(p.name)}>
                         <span className={`aw-spy-dot ${p.online ? 'on' : 'off'}`} /><span className="aw-spy-pn">{p.name}</span>
                         {p.group && <span className="aw-spy-pg" style={{ color: p.gc, background: `${p.gc}22`, borderColor: `${p.gc}66` }}>{p.group}</span>}
@@ -418,7 +397,7 @@ export default function AppWindow() {
                         <div className="aw-heat-row" key={day}><span className="aw-heat-day">{day}</span><div className="aw-heat-cells">{Array.from({ length: 24 }, (_, h) => <div key={h} className="aw-heat-c" style={{ background: heat(bucket(sel.seed, d, h)) }} />)}</div></div>
                       ))}
                     </div>
-                    <p className="aw-spy-note">Built from BattleMetrics session history across servers.</p>
+                    <p className="aw-spy-note">{spyTab === 'team' ? 'Built passively from Rust+ team data over time — runs longer = sharper pattern.' : 'Built from BattleMetrics session history across servers.'}</p>
                   </div>
                 </div>
               )}
@@ -428,16 +407,17 @@ export default function AppWindow() {
       </div>
 
       <div className="aw-status">
+        <span className="aw-st-sweep" />
         <span className="aw-st-conn"><i /> CONNECTED</span>
-        <span className="aw-st-sep">87MS</span>
-        <span>SURVIVORS.GG #5</span>
-        <span className="aw-st-dim">· 3X SOLO/DUO/TRIO</span>
+        <span className="aw-st-sep">{stats.ms}MS</span>
+        <span className="aw-st-srv">RAIDAR.TECH</span>
+        <span className="aw-st-dim">· 2X SOLO/DUO/TRIO</span>
         <span className="aw-st-grow" />
-        <span className="aw-st-ic"><ShoppingCart size={10} /> 82</span>
+        <span className="aw-st-ic"><ShoppingCart size={10} /> {stats.shops}</span>
         <span className="aw-st-day">DAY</span>
         <span className="aw-st-ic"><Users size={10} /> 3/5</span>
-        <span className="aw-st-ic players">142/300</span>
-        <span className="aw-st-clock">21:30:01</span>
+        <span className="aw-st-ic players">{stats.pop}/300</span>
+        <span className="aw-st-clock">{time}</span>
       </div>
     </div>
   );

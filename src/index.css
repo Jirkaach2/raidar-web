@@ -1024,3 +1024,71 @@ img { display: block; max-width: 100%; }
 .aw-vempty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 36px 20px; color: var(--color-text-dim); text-align: center; }
 .aw-vempty svg { opacity: 0.5; }
 .aw-vempty p { font-size: 12px; }
+
+/* ── Spy name readability fix ── */
+.aw-spy-p { color: var(--color-text); }
+.aw-spy-pn { color: var(--color-text); }
+.aw-spy-search { color: var(--color-text-dim); }
+
+/* ════════════════════════════════════════════════════════
+   Best Shops (reworked to match the app)
+   ════════════════════════════════════════════════════════ */
+.aw-bs-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.aw-bs-head h3 { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 600; font-size: 16px; letter-spacing: 1px; }
+.aw-bs-head h3 svg { color: var(--color-warning); }
+.aw-bs-clear { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 9px; color: var(--color-text-dim); background: rgba(255,255,255,0.04); border: 1px solid var(--color-border); border-radius: 5px; padding: 4px 9px; cursor: pointer; }
+.aw-bs-sub { font-size: 11px; color: var(--color-text-muted); line-height: 1.5; margin: 6px 0 12px; }
+.aw-bs-sort { display: flex; gap: 6px; margin-bottom: 12px; }
+.aw-bs-sort button { font-family: var(--font-mono); font-size: 9px; color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: 6px; padding: 6px 11px; cursor: pointer; background: transparent; transition: all 140ms var(--ease); }
+.aw-bs-sort button.active { color: var(--color-accent-bright); border-color: var(--color-accent-dim); background: rgba(206,66,43,0.1); }
+.aw-bs-list { display: flex; flex-direction: column; gap: 10px; }
+.aw-bs-card { border: 1px solid var(--color-border); border-radius: 10px; padding: 12px; background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.006)); }
+.aw-bs-card-h { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
+.aw-bs-rank { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: 14px; background: rgba(255,255,255,0.05); color: var(--color-text-muted); flex-shrink: 0; }
+.aw-bs-rank.r1 { background: rgba(232,168,56,0.2); color: var(--color-warning); box-shadow: 0 0 10px rgba(232,168,56,0.25); }
+.aw-bs-rank.r2 { background: rgba(200,205,215,0.16); color: #c8cdd7; }
+.aw-bs-rank.r3 { background: rgba(206,66,43,0.18); color: var(--color-accent-bright); }
+.aw-bs-id { flex: 1; min-width: 0; }
+.aw-bs-name { display: block; font-size: 14px; font-weight: 700; color: var(--color-text); }
+.aw-bs-meta { display: flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 9px; color: var(--color-text-dim); margin-top: 3px; }
+.aw-bs-loc, .aw-bs-del { background: none; border: none; color: var(--color-text-dim); cursor: pointer; padding: 4px; border-radius: 5px; display: flex; }
+.aw-bs-loc:hover { color: var(--color-info); } .aw-bs-del:hover { color: var(--color-danger); }
+.aw-bs-earned { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: rgba(0,0,0,0.25); border-radius: 7px; margin-bottom: 8px; flex-wrap: wrap; }
+.aw-bs-el { font-family: var(--font-mono); font-size: 8px; font-weight: 700; letter-spacing: 1px; color: var(--color-text-dim); }
+.aw-bs-ecell { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--color-success); }
+.aw-bs-ecell img { width: 18px; height: 18px; object-fit: contain; }
+.aw-bs-sold { display: flex; flex-wrap: wrap; gap: 6px; }
+.aw-bs-scell { display: inline-flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.04); border-radius: 6px; padding: 4px 8px; font-family: var(--font-mono); font-size: 10px; }
+.aw-bs-scell img { width: 16px; height: 16px; object-fit: contain; }
+.aw-bs-scell b { color: var(--color-text); }
+
+/* ════════════════════════════════════════════════════════
+   Tool content (CCTV / Recycler / Price Watch)
+   ════════════════════════════════════════════════════════ */
+.aw-tool-h { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--color-accent-bright); margin-bottom: 6px; }
+.aw-tool-p { font-size: 11px; color: var(--color-text-muted); margin-bottom: 14px; line-height: 1.5; }
+.aw-cctv { display: flex; flex-direction: column; gap: 6px; }
+.aw-cctv-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: 7px; background: rgba(0,0,0,0.22); font-size: 12px; }
+.aw-cctv-row code { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--color-accent-bright); background: rgba(206,66,43,0.12); border: 1px solid var(--color-border); padding: 3px 9px; border-radius: 5px; }
+.aw-rec { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 8px; background: rgba(0,0,0,0.22); margin-bottom: 8px; }
+.aw-rec-in { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; min-width: 120px; }
+.aw-rec-in img { width: 22px; height: 22px; object-fit: contain; }
+.aw-rec-arrow { color: var(--color-text-dim); }
+.aw-rec-out { display: flex; gap: 10px; margin-left: auto; }
+.aw-rec-out span { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--color-success); }
+.aw-rec-out img { width: 17px; height: 17px; object-fit: contain; }
+.aw-pw { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 8px; background: rgba(0,0,0,0.22); margin-bottom: 8px; }
+.aw-pw-item { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; flex: 1; }
+.aw-pw-item img { width: 20px; height: 20px; object-fit: contain; }
+.aw-pw-target { font-family: var(--font-mono); font-size: 10px; color: var(--color-text-muted); }
+.aw-pw-best { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--color-success); }
+
+/* ════════════════════════════════════════════════════════
+   Status bar — richer, app-accurate
+   ════════════════════════════════════════════════════════ */
+.aw-status { position: relative; height: 24px; gap: 12px; background: linear-gradient(90deg, rgba(19,16,13,0.96), rgba(11,13,17,0.96)); overflow: hidden; }
+.aw-st-sweep { position: absolute; top: 0; left: 0; width: 90px; height: 1px; background: linear-gradient(90deg, transparent, var(--color-accent-dim), transparent); animation: aw-sweep 9s linear infinite; opacity: 0.5; }
+@keyframes aw-sweep { 0% { transform: translateX(-100px); } 100% { transform: translateX(1200px); } }
+.aw-st-srv { color: var(--color-text); font-weight: 700; }
+.aw-st-clock { color: var(--color-text); min-width: 52px; text-align: right; }
+.aw-st-ic.players { color: var(--color-accent); }
