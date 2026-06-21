@@ -50,14 +50,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const isMfa = (e: unknown) => (e as { type?: string })?.type === 'user_more_factors_required';
+    const isExists = (e: unknown) => (e as { type?: string })?.type === 'user_session_already_exists';
     try {
       await account.createEmailPasswordSession(email, password);
     } catch (e) {
-      // Depending on Appwrite version the second-factor requirement can surface
-      // here (the first factor still succeeded and a partial session exists).
       if (isMfa(e)) return { mfa: true };
-      // A leftover partial session from a previous attempt — continue to checks.
-      if ((e as { type?: string })?.type !== 'user_session_already_exists') throw e;
+      // A stale/partial session is blocking a fresh login (this is what makes
+      // every attempt — even for a wrong account — appear to "require MFA").
+      // Clear it and authenticate with the credentials actually entered.
+      if (isExists(e)) {
+        try { await account.deleteSession('current'); } catch { /* ignore */ }
+        try {
+          await account.createEmailPasswordSession(email, password);
+        } catch (e2) {
+          if (isMfa(e2)) return { mfa: true };
+          throw e2;
+        }
+      } else {
+        throw e;
+      }
     }
     try {
       const me = await account.get();
