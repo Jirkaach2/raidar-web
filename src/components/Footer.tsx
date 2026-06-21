@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageCircle, Github, Mail } from 'lucide-react';
 import Logo from './Logo';
-import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured } from '../lib/appwrite';
+import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, functions, ExecutionMethod } from '../lib/appwrite';
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -46,15 +46,19 @@ export default function Footer() {
 
     async function fetchVersion() {
       try {
-        const res = await fetch('https://api.github.com/repos/JirkaachS/raidar-app/releases/latest');
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.tag_name) {
-            if (active) setLatestVersion(data.tag_name);
-          }
+        const exec = await functions.createExecution(
+          'tauri-updater',
+          '',
+          false,
+          '/',
+          ExecutionMethod.GET
+        );
+        const data = JSON.parse(exec.responseBody || '{}');
+        if (data && data.version) {
+          if (active) setLatestVersion(`v${data.version}`);
         }
       } catch (err) {
-        console.error('GitHub release version check failed:', err);
+        console.error('Appwrite release version check failed:', err);
       }
     }
 

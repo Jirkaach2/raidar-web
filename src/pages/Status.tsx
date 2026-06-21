@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, Server, MessageSquare, Download, CheckCircle2, AlertCircle, XCircle, Activity, Clock, Cpu } from 'lucide-react';
-import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, ENDPOINT, PROJECT_ID } from '../lib/appwrite';
+import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, ENDPOINT, PROJECT_ID, functions, ExecutionMethod } from '../lib/appwrite';
 
 interface BotHealth {
   ok: boolean;
@@ -77,12 +77,16 @@ export default function Status() {
 
     // 3. Fetch version
     try {
-      const res = await fetch('https://api.github.com/repos/JirkaachS/raidar-app/releases/latest');
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.tag_name) {
-          setLatestVersion(data.tag_name);
-        }
+      const exec = await functions.createExecution(
+        'tauri-updater',
+        '',
+        false,
+        '/',
+        ExecutionMethod.GET
+      );
+      const data = JSON.parse(exec.responseBody || '{}');
+      if (data && data.version) {
+        setLatestVersion(`v${data.version}`);
       }
     } catch (err) {
       console.error('Version fetch failed:', err);
