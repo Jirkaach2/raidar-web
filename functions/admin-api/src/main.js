@@ -94,6 +94,34 @@ export default async ({ req, res, log, error }) => {
         return res.json({ ok: true });
       }
 
+      case 'bootstrap': {
+        // One execution that returns users + stats together, so the admin
+        // dashboard pays the function cold-start cost once instead of twice.
+        const search = body.search || undefined;
+        const [userRes, planList, subList] = await Promise.all([
+          users.list([Query.limit(100), Query.orderDesc('$createdAt')], search),
+          databases.listDocuments(dbId, plansCol, [Query.limit(50)]).catch(() => ({ documents: [] })),
+          databases.listDocuments(dbId, subsCol, [Query.limit(500)]).catch(() => ({ documents: [] })),
+        ]);
+        const priceByPlanId = Object.fromEntries(planList.documents.map((p) => [p.$id, p.price || 0]));
+        const priceByName = Object.fromEntries(planList.documents.map((p) => [p.name, p.price || 0]));
+        const byPlan = {};
+        let mrr = 0; let active = 0;
+        for (const s of subList.documents) {
+          byPlan[s.planName] = (byPlan[s.planName] || 0) + 1;
+          if (s.status === 'active') { active++; mrr += priceByPlanId[s.planId] ?? priceByName[s.planName] ?? 0; }
+        }
+        const admins = userRes.users.filter((u) => (u.labels || []).includes('admin')).length;
+        return res.json({
+          users: userRes.users.map(slim),
+          total: userRes.total,
+          stats: {
+            totalUsers: userRes.total, admins, totalSubs: subList.documents.length,
+            activeSubs: active, mrr, planCount: planList.documents.length, byPlan,
+          },
+        });
+      }
+
       case 'grantPlan': {
         if (!body.userId || !body.planId) return res.json({ error: 'Missing userId or planId.' }, 400);
         // Verify the target user and plan exist.

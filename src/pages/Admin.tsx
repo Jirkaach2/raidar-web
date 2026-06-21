@@ -3,7 +3,7 @@ import {
   databases, DB_ID, PLANS_COLLECTION_ID, SUBSCRIPTIONS_COLLECTION_ID,
   Query, ID, isConfigured, type Plan, type Subscription,
 } from '../lib/appwrite';
-import { listUsers, setAdmin, setStatus, deleteUser, getStats, grantPlan, revokePlan, resetMfa, type AdminUser, type AdminStats } from '../lib/admin';
+import { listUsers, setAdmin, setStatus, deleteUser, getStats, grantPlan, revokePlan, resetMfa, bootstrap, type AdminUser, type AdminStats } from '../lib/admin';
 import { useAuth } from '../context/AuthContext';
 import Select from '../components/ui/Select';
 import Checkbox from '../components/ui/Checkbox';
@@ -77,9 +77,19 @@ export default function Admin() {
 
   const loadStats = useCallback(async () => { try { setStats(await getStats()); } catch { /* not deployed */ } }, []);
 
-  useEffect(() => { load(); loadStats(); loadUsers(); }, [load, loadStats, loadUsers]);
+  // One function execution for users + stats (avoids a double cold start).
+  const loadUsersAndStats = useCallback(async (q = '') => {
+    setUsersLoading(true); setUsersError('');
+    try {
+      const r = await bootstrap(q);
+      setUsers(r.users); setUsersTotal(r.total); setStats(r.stats);
+    } catch (err) { setUsersError(err instanceof Error ? err.message : 'Could not load users. Is the admin-api function deployed?'); }
+    finally { setUsersLoading(false); }
+  }, []);
 
-  const refreshAll = () => { load(); loadStats(); loadUsers(search); };
+  useEffect(() => { load(); loadUsersAndStats(); }, [load, loadUsersAndStats]);
+
+  const refreshAll = () => { load(); loadUsersAndStats(search); };
 
   // ── lookups ──
   const userById = useMemo(() => new Map(users.map((u) => [u.id, u])), [users]);

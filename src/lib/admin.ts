@@ -41,6 +41,8 @@ export async function adminCall<T = unknown>(action: string, payload: Record<str
 }
 
 export const listUsers = (search = '') => adminCall<{ total: number; users: AdminUser[] }>('listUsers', { search });
+/** Combined initial load: users + stats in one execution (one cold start). */
+export const bootstrap = (search = '') => adminCall<{ total: number; users: AdminUser[]; stats: AdminStats }>('bootstrap', { search });
 export const setAdmin = (userId: string, value: boolean) => adminCall<{ user: AdminUser }>('setAdmin', { userId, value });
 export const setStatus = (userId: string, status: boolean) => adminCall<{ user: AdminUser }>('setStatus', { userId, status });
 export const deleteUser = (userId: string) => adminCall<{ ok: boolean }>('deleteUser', { userId });

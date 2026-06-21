@@ -106,6 +106,7 @@
       "logging": true,
       "entrypoint": "src/main.js",
       "commands": "npm install",
+      "specification": "s-1vcpu-1gb",
       "path": "functions/admin-api"
     },
     {
