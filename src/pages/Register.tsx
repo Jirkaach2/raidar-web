@@ -1,12 +1,17 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import OAuthButtons from '../components/OAuthButtons';
 import Logo from '../components/Logo';
 
 export default function Register() {
-  const { register, configured } = useAuth();
+  const { register, configured, user } = useAuth();
   const navigate = useNavigate();
+
+  // Already signed in → skip account creation.
+  useEffect(() => {
+    if (user) navigate('/dashboard', { replace: true });
+  }, [user, navigate]);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

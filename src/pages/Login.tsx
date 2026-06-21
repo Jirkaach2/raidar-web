@@ -7,9 +7,14 @@ import OAuthButtons from '../components/OAuthButtons';
 import Logo from '../components/Logo';
 
 export default function Login() {
-  const { login, completeMfa, configured } = useAuth();
+  const { login, completeMfa, configured, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation() as { state?: { from?: string; mfa?: boolean } };
+
+  // Already signed in → no reason to see the login page.
+  useEffect(() => {
+    if (user) navigate('/dashboard', { replace: true });
+  }, [user, navigate]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(() => {
