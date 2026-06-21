@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { Permission, Role } from 'appwrite';
-import { User as UserIcon, Lock, Mail, ShieldCheck, Upload, Trash2, KeyRound, Copy } from 'lucide-react';
+import { User as UserIcon, Lock, Mail, ShieldCheck, Upload, Trash2, KeyRound, Copy, Download } from 'lucide-react';
 import {
   account, storage, ID, AVATARS_BUCKET_ID, AuthenticatorType, type AppUser,
 } from '../lib/appwrite';
@@ -177,6 +177,26 @@ function TwoFactorCard({ user, refresh }: { user: AppUser; refresh: () => Promis
   const [codes, setCodes] = useState<string[]>([]);
   const enabled = (user as unknown as { mfa?: boolean }).mfa === true;
 
+  const downloadCodes = () => {
+    const body = [
+      'RAIDAR — Two-factor recovery codes',
+      '====================================',
+      '',
+      `Account: ${user.email || user.name || user.$id}`,
+      `Generated: ${new Date().toLocaleString()}`,
+      '',
+      'Keep these somewhere safe. Each code can be used once to sign in if you',
+      'lose access to your authenticator app.',
+      '',
+      ...codes.map((c, i) => `${String(i + 1).padStart(2, '0')}.  ${c}`),
+      '',
+    ].join('\r\n');
+    const url = URL.createObjectURL(new Blob([body], { type: 'text/plain' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = 'raidar-recovery-codes.txt'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const begin = async () => {
     setBusy(true); setNote(null);
     try {
@@ -254,6 +274,10 @@ function TwoFactorCard({ user, refresh }: { user: AppUser; refresh: () => Promis
           <strong>Save your recovery codes</strong>
           <p className="muted" style={{ fontSize: 12 }}>Store these somewhere safe. Each can be used once if you lose your authenticator.</p>
           <div className="settings-codes-grid">{codes.map((c) => <code key={c}>{c}</code>)}</div>
+          <div className="settings-codes-actions">
+            <button type="button" className="btn btn-sm" onClick={downloadCodes}><Download size={13} /> Download .txt</button>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => navigator.clipboard?.writeText(codes.join('\n'))}><Copy size={13} /> Copy all</button>
+          </div>
         </div>
       )}
       {note && <div className={note.kind === 'ok' ? 'settings-ok' : 'auth-error'} style={{ marginTop: 12 }}>{note.text}</div>}

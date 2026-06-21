@@ -1588,3 +1588,57 @@ img { display: block; max-width: 100%; }
 .confirm-msg { color: var(--color-text-muted); font-size: 14px; line-height: 1.6; margin-bottom: 22px; }
 .confirm-actions { display: flex; gap: 10px; justify-content: center; }
 .confirm-actions .btn { min-width: 110px; }
+
+/* ════════════════════════════════════════════════════════
+   Entrance animations (auth + dashboard)
+   ════════════════════════════════════════════════════════ */
+@keyframes ar-fade-up { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes ar-pop-in  { from { opacity: 0; transform: translateY(22px) scale(0.985); } to { opacity: 1; transform: none; } }
+@keyframes ar-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ar-glow-in { from { opacity: 0; transform: translateY(14px); filter: blur(6px); } to { opacity: 1; transform: none; filter: blur(0); } }
+
+.settings-codes-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+/* ── Auth (login / register) entrance ── */
+.auth-card { animation: ar-pop-in 560ms var(--ease) both; }
+.auth-card .auth-head { animation: ar-fade-up 520ms var(--ease) both; animation-delay: 90ms; }
+.auth-card .auth-form > label,
+.auth-card .auth-form > button,
+.auth-card .oauth,
+.auth-card .auth-alt,
+.auth-card .auth-notice { animation: ar-fade-up 520ms var(--ease) both; }
+.auth-card .auth-form > label:nth-of-type(1) { animation-delay: 150ms; }
+.auth-card .auth-form > label:nth-of-type(2) { animation-delay: 210ms; }
+.auth-card .auth-form > label:nth-of-type(3) { animation-delay: 270ms; }
+.auth-card .auth-form > button { animation-delay: 320ms; }
+.auth-card .oauth { animation-delay: 380ms; }
+.auth-card .auth-alt { animation-delay: 440ms; }
+.auth-card .verify-state { animation: ar-glow-in 600ms var(--ease) both; }
+
+/* ── Dashboard entrance (staggered) ── */
+.dash > .dash-head { animation: ar-fade-up 520ms var(--ease) both; }
+.dash > .verify-banner { animation: ar-fade-up 520ms var(--ease) both; animation-delay: 70ms; }
+.dash > .dash-top { animation: ar-glow-in 640ms var(--ease) both; animation-delay: 130ms; }
+.dash > .dash-section { animation: ar-fade-up 620ms var(--ease) both; animation-delay: 220ms; }
+.dash-top .dash-stat { animation: ar-fade-up 520ms var(--ease) both; }
+.dash-top .dash-stat:nth-child(1) { animation-delay: 240ms; }
+.dash-top .dash-stat:nth-child(2) { animation-delay: 300ms; }
+.dash-top .dash-stat:nth-child(3) { animation-delay: 360ms; }
+.dash-section .price-card { animation: ar-pop-in 560ms var(--ease) both; }
+.dash-section .price-card:nth-child(1) { animation-delay: 280ms; }
+.dash-section .price-card:nth-child(2) { animation-delay: 360ms; }
+.dash-section .price-card:nth-child(3) { animation-delay: 440ms; }
+.dash-section .price-card:nth-child(4) { animation-delay: 520ms; }
+
+/* ── Settings entrance ── */
+.settings-card { animation: ar-fade-up 560ms var(--ease) both; }
+.settings-card:nth-child(1) { animation-delay: 60ms; }
+.settings-card:nth-child(2) { animation-delay: 140ms; }
+.settings-card:nth-child(3) { animation-delay: 220ms; }
+.settings-card:nth-child(4) { animation-delay: 300ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-card, .auth-card *, .dash > *, .dash-top .dash-stat, .dash-section .price-card, .settings-card {
+    animation: none !important;
+  }
+}
