@@ -22,8 +22,6 @@ export default function LinkApp() {
       setCode(btoa(`${userId}:${secret}`).replace(/=+$/, ''));
       const dl = `raidar://auth?userId=${encodeURIComponent(userId)}&secret=${encodeURIComponent(secret)}`;
       setDeepLink(dl);
-      // Best-effort auto-launch — most reliable via a real anchor click.
-      requestAnimationFrame(() => { try { linkRef.current?.click(); } catch { /* ignore */ } });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not generate a code.');
     } finally {
