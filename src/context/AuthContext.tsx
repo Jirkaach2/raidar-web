@@ -49,14 +49,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const login = useCallback(async (email: string, password: string) => {
-    await account.createEmailPasswordSession(email, password);
+    const isMfa = (e: unknown) => (e as { type?: string })?.type === 'user_more_factors_required';
+    try {
+      await account.createEmailPasswordSession(email, password);
+    } catch (e) {
+      // Depending on Appwrite version the second-factor requirement can surface
+      // here (the first factor still succeeded and a partial session exists).
+      if (isMfa(e)) return { mfa: true };
+      // A leftover partial session from a previous attempt — continue to checks.
+      if ((e as { type?: string })?.type !== 'user_session_already_exists') throw e;
+    }
     try {
       const me = await account.get();
       setUser(me);
       return { mfa: false };
     } catch (e) {
-      // Appwrite signals a pending second factor with this error type.
-      if ((e as { type?: string })?.type === 'user_more_factors_required') return { mfa: true };
+      if (isMfa(e)) return { mfa: true };
       throw e;
     }
   }, []);
