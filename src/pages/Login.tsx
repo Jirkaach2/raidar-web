@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShieldCheck, KeyRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -25,6 +25,18 @@ export default function Login() {
   const [mfa, setMfa] = useState(!!location.state?.mfa);
   const [useRecovery, setUseRecovery] = useState(false);
   const [code, setCode] = useState('');
+
+  // If the user reaches the MFA step but leaves without finishing, the
+  // first-factor session lingers and keeps re-triggering the 2FA prompt.
+  // Clean it up on unmount unless the challenge was completed.
+  const completedRef = useRef(false);
+  const mfaRef = useRef(mfa);
+  useEffect(() => { mfaRef.current = mfa; }, [mfa]);
+  useEffect(() => () => {
+    if (mfaRef.current && !completedRef.current) {
+      account.deleteSession('current').catch(() => { /* ignore */ });
+    }
+  }, []);
 
   const goNext = () => navigate(location.state?.from || '/dashboard', { replace: true });
 
@@ -57,6 +69,7 @@ export default function Login() {
     setError(''); setBusy(true);
     try {
       await completeMfa(useRecovery ? AuthenticationFactor.Recoverycode : AuthenticationFactor.Totp, code.trim());
+      completedRef.current = true;
       goNext();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid code — try again.');
