@@ -1,12 +1,30 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, Server, MessageSquare, Download, CheckCircle2, AlertCircle, XCircle, Activity } from 'lucide-react';
+import { RefreshCw, Server, MessageSquare, Download, CheckCircle2, AlertCircle, XCircle, Activity, Clock, Cpu } from 'lucide-react';
 import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, ENDPOINT, PROJECT_ID } from '../lib/appwrite';
+
+interface BotHealth {
+  ok: boolean;
+  uptime?: number;
+  memory?: { rss: number; heapUsed: number; heapTotal: number };
+  version?: string;
+  nodeVersion?: string;
+  timestamp?: string;
+}
+
+function formatUptime(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  return `${h}h ${m}m`;
+}
 
 export default function Status() {
   const [webStatus, setWebStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [webLatency, setWebLatency] = useState<number | null>(null);
   const [botStatus, setBotStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [botLatency, setBotLatency] = useState<number | null>(null);
+  const [botHealth, setBotHealth] = useState<BotHealth | null>(null);
   const [latestVersion, setLatestVersion] = useState<string>('v1.0.0');
   const [checking, setChecking] = useState(false);
 
@@ -30,27 +48,31 @@ export default function Status() {
       }
     }
 
-    // 2. Discord Bot check + latency
+    // 2. Discord Bot check + latency (with rich health data)
     const botStart = performance.now();
     try {
-      const res = await fetch('https://92.5.73.207.nip.io/health', { cache: 'no-store' });
+      const res = await fetch('https://92.5.73.207.nip.io/health', { cache: 'no-store', signal: AbortSignal.timeout(8000) });
       if (res.ok) {
-        const data = await res.json();
+        const data: BotHealth = await res.json();
         if (data && data.ok) {
           setBotLatency(Math.round(performance.now() - botStart));
           setBotStatus('online');
+          setBotHealth(data);
         } else {
           setBotStatus('offline');
           setBotLatency(null);
+          setBotHealth(null);
         }
       } else {
         setBotStatus('offline');
         setBotLatency(null);
+        setBotHealth(null);
       }
     } catch (err) {
       console.error('Bot check failed:', err);
       setBotStatus('offline');
       setBotLatency(null);
+      setBotHealth(null);
     }
 
     // 3. Fetch version
@@ -166,6 +188,32 @@ export default function Status() {
               </span>
             </div>
           </div>
+          {botStatus === 'online' && botHealth && (
+            <div style={{ display: 'flex', gap: 20, marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap' }}>
+              {botHealth.uptime !== undefined && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--color-text-dim)' }}>
+                  <Clock size={12} style={{ color: 'var(--color-accent)' }} />
+                  <span>Uptime: <strong style={{ color: 'var(--color-text)' }}>{formatUptime(botHealth.uptime)}</strong></span>
+                </div>
+              )}
+              {botHealth.memory && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--color-text-dim)' }}>
+                  <Cpu size={12} style={{ color: 'var(--color-accent)' }} />
+                  <span>Heap: <strong style={{ color: 'var(--color-text)' }}>{botHealth.memory.heapUsed}/{botHealth.memory.heapTotal} MB</strong></span>
+                </div>
+              )}
+              {botHealth.version && (
+                <div style={{ fontSize: 12, color: 'var(--color-text-dim)' }}>
+                  Bot v<strong style={{ color: 'var(--color-text)' }}>{botHealth.version}</strong>
+                </div>
+              )}
+            </div>
+          )}
+          {botStatus === 'offline' && (
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: 12, color: '#ef4444' }}>
+              ⚠ Bot gateway unreachable. The VM may be down or restarting — the watchdog will auto-recover within 5 minutes.
+            </div>
+          )}
         </div>
       </div>
 
