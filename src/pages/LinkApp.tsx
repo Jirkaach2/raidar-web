@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MonitorSmartphone, Copy, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -9,21 +9,21 @@ export default function LinkApp() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [code, setCode] = useState('');
+  const [deepLink, setDeepLink] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [launched, setLaunched] = useState(false);
+  const linkRef = useRef<HTMLAnchorElement>(null);
 
-  const mint = async (autoLaunch = true) => {
+  const mint = async () => {
     setBusy(true); setError(''); setCopied(false);
     try {
       const { userId, secret } = await createAppLoginToken();
       setCode(btoa(`${userId}:${secret}`).replace(/=+$/, ''));
-      if (autoLaunch) {
-        // Seamless handoff — hand the token to the desktop app via its scheme.
-        setLaunched(true);
-        window.location.href = `raidar://auth?userId=${encodeURIComponent(userId)}&secret=${encodeURIComponent(secret)}`;
-      }
+      const dl = `raidar://auth?userId=${encodeURIComponent(userId)}&secret=${encodeURIComponent(secret)}`;
+      setDeepLink(dl);
+      // Best-effort auto-launch — most reliable via a real anchor click.
+      requestAnimationFrame(() => { try { linkRef.current?.click(); } catch { /* ignore */ } });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not generate a code.');
     } finally {
@@ -34,7 +34,7 @@ export default function LinkApp() {
   useEffect(() => {
     if (loading) return;
     if (!user) { navigate('/login?next=/link-app', { replace: true }); return; }
-    mint(true);
+    mint();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading]);
 
@@ -46,30 +46,30 @@ export default function LinkApp() {
         <div className="auth-head">
           <div className="brand"><Logo /> RAIDAR</div>
           <h1>Connect the desktop app</h1>
-          <p>{launched
-            ? 'Opening the Raidar app… approve the prompt to allow it. If nothing happens, paste the code below.'
-            : `Signed in as ${user?.email}.`}</p>
+          <p>Signed in as {user?.email}. Open the app to finish signing in.</p>
         </div>
 
         {error ? (
           <div className="verify-state">
             <p className="auth-error">{error}</p>
-            <button className="btn" onClick={() => mint(true)} disabled={busy}><RefreshCw size={15} /> Try again</button>
+            <button className="btn" onClick={mint} disabled={busy}><RefreshCw size={15} /> Try again</button>
           </div>
         ) : (
           <div className="linkapp">
             <div className="linkapp-ic"><MonitorSmartphone size={26} /></div>
-            <button className="btn" onClick={() => mint(true)} disabled={busy} style={{ width: '100%' }}>
+            {/* A real anchor is the reliable way to launch the custom protocol. */}
+            <a ref={linkRef} className="btn" href={deepLink || '#'} style={{ width: '100%', justifyContent: 'center', pointerEvents: deepLink ? 'auto' : 'none', opacity: deepLink ? 1 : 0.6 }}>
               {busy ? 'Generating…' : 'Open the Raidar app'}
-            </button>
-            <p className="muted linkapp-hint">Not opening automatically? Copy this code and paste it in the app under <strong>Sign in with raidar.tech</strong>.</p>
+            </a>
+            <p className="muted linkapp-hint">If a browser prompt appears, choose <strong>Open Raidar</strong>. Make sure the app is already running.</p>
+            <p className="muted linkapp-hint" style={{ marginTop: 4 }}>Not opening? Copy this code and paste it in the app under <strong>Sign in with raidar.tech</strong>.</p>
             <div className="linkapp-code">
               <code>{busy ? '…' : code}</code>
               <button className="linkapp-copy" onClick={copy} disabled={!code || busy} title="Copy code">
                 {copied ? <CheckCircle2 size={16} /> : <Copy size={16} />}
               </button>
             </div>
-            <p className="muted linkapp-hint">This code is valid for 2 minutes.</p>
+            <button className="btn btn-ghost btn-sm" onClick={mint} disabled={busy}><RefreshCw size={14} /> New code</button>
           </div>
         )}
       </div>
