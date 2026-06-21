@@ -66,11 +66,6 @@ const CCTV: Array<[string, string]> = [
   ['Large Oil Rig', 'OILRIG1L'], ['Small Oil Rig', 'OILRIG1S'], ['Dome', 'DOME1'], ['Airfield', 'AIRFIELDHELi'],
   ['Launch Site', 'SATCOMS'], ['Excavator', 'XOR1'], ['Sewer Branch', 'SEWER'], ['Water Treatment', 'WTPCAM'],
 ];
-const RECYCLE: Array<{ item: string; icon: string; out: Array<[string, string]> }> = [
-  { item: 'Rifle Body', icon: 'riflebody', out: [['scrap', '25'], ['metal.fragments', '63']] },
-  { item: 'Sheet Metal Door', icon: 'door.hinged.metal', out: [['metal.fragments', '75'], ['scrap', '10']] },
-  { item: 'Tech Trash', icon: 'techparts', out: [['scrap', '20'], ['metal.refined', '5']] },
-];
 const PRICEWATCH: Array<{ item: string; icon: string; target: string; best: string; grid: string }> = [
   { item: 'C4', icon: 'explosive.timed', target: '≤ 450 scrap', best: '420 scrap', grid: 'G7' },
   { item: 'Assault Rifle', icon: 'rifle.ak', target: '≤ 250 scrap', best: '240 scrap', grid: 'K14' },
@@ -113,11 +108,33 @@ const ACT_LOG: Array<{ k: string; label: string; detail: string; time: string }>
   { k: 'heli', label: 'Patrol Heli inbound', detail: '', time: '22m ago' },
   { k: 'crate', label: 'Locked Crate spawned', detail: 'Launch Site', time: '28m ago' },
 ];
-const LOADOUT_HITS: Array<{ part: string; dmg: string; pct: number; mult: string; htk: string }> = [
-  { part: 'HEAD', dmg: '95.0', pct: 100, mult: '×2.0', htk: '1× shot' },
-  { part: 'CHEST', dmg: '47.5', pct: 62, mult: '×1.0', htk: '3× shots' },
-  { part: 'LEGS', dmg: '35.6', pct: 46, mult: '×0.75', htk: '4× shots' },
+
+// ── Recycler (interactive) ──
+const REC_COMPONENTS: Array<{ id: string; name: string; icon: string; out: Array<[string, number]> }> = [
+  { id: 'riflebody', name: 'Rifle Body', icon: 'riflebody', out: [['scrap', 25], ['metal.fragments', 63]] },
+  { id: 'techparts', name: 'Tech Trash', icon: 'techparts', out: [['scrap', 20], ['metal.refined', 5]] },
+  { id: 'metalpipe', name: 'Metal Pipe', icon: 'metalpipe', out: [['metal.fragments', 38], ['scrap', 5]] },
+  { id: 'gears', name: 'Gears', icon: 'gears', out: [['scrap', 13], ['metal.fragments', 25]] },
+  { id: 'sheetmetal', name: 'Sheet Metal', icon: 'sheetmetal', out: [['metal.fragments', 100]] },
+  { id: 'roadsigns', name: 'Road Signs', icon: 'roadsigns', out: [['metal.fragments', 50]] },
+  { id: 'springs', name: 'Springs', icon: 'metalspring', out: [['metal.fragments', 13], ['scrap', 7]] },
+  { id: 'sewingkit', name: 'Sewing Kit', icon: 'sewingkit', out: [['scrap', 8], ['cloth', 10]] },
 ];
+const REC_NAMES: Record<string, string> = { scrap: 'Scrap', 'metal.fragments': 'Metal Frags', 'metal.refined': 'HQM', cloth: 'Cloth' };
+
+// ── Loadout lab (interactive) ──
+const LO_WEAPONS: Record<string, { name: string; icon: string; dmg: number; head: number; rpm: number }> = {
+  'rifle.ak': { name: 'Assault Rifle', icon: 'rifle.ak', dmg: 50, head: 2.0, rpm: 450 },
+  'smg.mp5': { name: 'MP5A4', icon: 'smg.mp5', dmg: 35, head: 1.5, rpm: 600 },
+  'rifle.bolt': { name: 'Bolt Action', icon: 'rifle.bolt', dmg: 80, head: 2.0, rpm: 40 },
+  'pistol.semiauto': { name: 'Semi Pistol', icon: 'pistol.semiauto', dmg: 32.5, head: 2.0, rpm: 400 },
+};
+const LO_ARMOR: Record<string, { name: string; head: number; chest: number; legs: number }> = {
+  none: { name: 'No Armor', head: 0, chest: 0, legs: 0 },
+  road: { name: 'Roadsign Kit', head: 0.25, chest: 0.45, legs: 0.3 },
+  metal: { name: 'Metal Facemask + Chest', head: 0.55, chest: 0.5, legs: 0.1 },
+  hazzy: { name: 'Hazmat Suit', head: 0.2, chest: 0.2, legs: 0.2 },
+};
 
 function bucket(seed: number, d: number, h: number): number {
   const peak = ((seed * 7) % 6) + 18;
@@ -154,6 +171,14 @@ export default function AppWindow() {
   const [spyTab, setSpyTab] = useState<'team' | 'enemies' | 'history'>('enemies');
   const [enemySel, setEnemySel] = useState('BridgeKing');
   const [teamSel, setTeamSel] = useState('Viktor');
+
+  // Tool-specific interactive state
+  const [recBasket, setRecBasket] = useState<Record<string, number>>({ riflebody: 2, techparts: 5 });
+  const [recMult, setRecMult] = useState(2);
+  const [recType, setRecType] = useState<'monument' | 'safezone'>('monument');
+  const [loWeapon, setLoWeapon] = useState('rifle.ak');
+  const [loArmor, setLoArmor] = useState('metal');
+  const [cupSel, setCupSel] = useState('tc');
 
   // Live status bar.
   const [time, setTime] = useState(clock());
@@ -362,17 +387,37 @@ export default function AppWindow() {
                   <p className="aw-tool-p">Type these into a Computer Station to watch monument cameras.</p>
                   <div className="aw-cctv">{CCTV.map(([mon, code]) => <div className="aw-cctv-row" key={code}><span>{mon}</span><code>{code}</code></div>)}</div>
                 </>}
-                {tool === 'recycler' && <>
-                  <div className="aw-tool-h"><RefreshCw size={14} /> RECYCLER OUTPUT</div>
-                  <p className="aw-tool-p">What you get back from recycling components.</p>
-                  {RECYCLE.map((r) => (
-                    <div className="aw-rec" key={r.item}>
-                      <span className="aw-rec-in"><img src={icon(r.icon)} onError={hideErr} alt="" /> {r.item}</span>
-                      <ChevronRight size={13} className="aw-rec-arrow" />
-                      <span className="aw-rec-out">{r.out.map(([ic, q], j) => <span key={j}><img src={icon(ic)} onError={hideErr} alt="" />{q}</span>)}</span>
+                {tool === 'recycler' && (() => {
+                  const yields: Record<string, number> = {};
+                  REC_COMPONENTS.forEach((c) => { const n = recBasket[c.id] || 0; if (n) c.out.forEach(([res, amt]) => { yields[res] = (yields[res] || 0) + amt * n * (recType === 'safezone' ? 0.67 : 1) * recMult; }); });
+                  const total = Object.values(recBasket).reduce((a, b) => a + b, 0);
+                  const setN = (id: string, n: number) => setRecBasket((b) => ({ ...b, [id]: Math.max(0, n) }));
+                  return <>
+                    <div className="aw-tool-h"><RefreshCw size={14} /> RECYCLER CALCULATOR</div>
+                    <div className="aw-rec2-ctrl">
+                      <div className="aw-rec2-mult">{[1, 2, 3, 5, 10].map((m) => <button key={m} className={recMult === m ? 'on' : ''} onClick={() => setRecMult(m)}>{m}x</button>)}</div>
+                      <div className="aw-rec2-type">
+                        <button className={recType === 'monument' ? 'on' : ''} onClick={() => setRecType('monument')}>Monument <small>~100%</small></button>
+                        <button className={recType === 'safezone' ? 'on' : ''} onClick={() => setRecType('safezone')}>Safe-zone <small>~67%</small></button>
+                      </div>
                     </div>
-                  ))}
-                </>}
+                    <div className="aw-rec2-grid">
+                      {REC_COMPONENTS.map((c) => { const n = recBasket[c.id] || 0; return (
+                        <div className={`aw-rec2-item ${n ? 'on' : ''}`} key={c.id}>
+                          <img src={icon(c.icon)} onError={hideErr} alt="" title={c.name} />
+                          <span className="aw-rec2-name">{c.name}</span>
+                          <div className="aw-rec2-step"><button onClick={() => setN(c.id, n - 1)}>−</button><b>{n}</b><button onClick={() => setN(c.id, n + 1)}>+</button></div>
+                        </div>
+                      ); })}
+                    </div>
+                    <div className="aw-tool-h" style={{ marginTop: 12 }}>OUTPUT {total > 0 && <span className="aw-rec2-cnt">{total} item{total === 1 ? '' : 's'} · {recMult}x</span>}</div>
+                    {total === 0 ? <p className="aw-tool-p">Add components above to see the yield.</p> : (
+                      <div className="aw-rec2-out">{Object.entries(yields).map(([res, amt]) => (
+                        <div className="aw-rec2-outitem" key={res}><img src={icon(res)} onError={hideErr} alt="" /><b>×{Math.round(amt)}</b><span>{REC_NAMES[res] || res}</span></div>
+                      ))}</div>
+                    )}
+                  </>;
+                })()}
                 {tool === 'pricewatch' && <>
                   <div className="aw-tool-h"><DollarSign size={14} /> PRICE WATCH</div>
                   <p className="aw-tool-p">Get alerted when a watched item drops below your target.</p>
@@ -384,16 +429,45 @@ export default function AppWindow() {
                     </div>
                   ))}
                 </>}
-                {tool === 'cupboard' && <>
-                  <div className="aw-tool-h"><Home size={14} /> TOOL CUPBOARD</div>
-                  <div className="aw-cup-card">
-                    <div className="aw-cup-h"><span>Main Base TC</span><span className="aw-cup-status ok">PROTECTED · 2d 4h</span></div>
-                    <div className="aw-cup-grid">
-                      {CUP_ITEMS.map(([ic, q]) => <div className="aw-cup-slot" key={ic}><img src={icon(ic)} onError={hideErr} alt="" /><span>{q}</span></div>)}
-                      {Array.from({ length: 26 }).map((_, i) => <div className="aw-cup-slot empty" key={`e${i}`} />)}
+                {tool === 'cupboard' && (() => {
+                  const UPKEEP = [
+                    { ic: 'wood', label: 'Wood', have: '14.2k', days: 4.1, pct: 0.82 },
+                    { ic: 'stones', label: 'Stone', have: '9.8k', days: 3.4, pct: 0.68 },
+                    { ic: 'metal.fragments', label: 'Metal', have: '6.1k', days: 2.2, pct: 0.44 },
+                    { ic: 'metal.refined', label: 'HQM', have: '420', days: 1.1, pct: 0.22 },
+                  ];
+                  return <>
+                    <div className="aw-cup-tabs">
+                      <button className={cupSel === 'tc' ? 'on' : ''} onClick={() => setCupSel('tc')}><Home size={12} /> Main Base TC</button>
+                      <button className={cupSel === 'box' ? 'on' : ''} onClick={() => setCupSel('box')}><Database size={12} /> Loot Room Box</button>
                     </div>
-                  </div>
-                </>}
+                    {cupSel === 'tc' ? (
+                      <div className="aw-cup-card">
+                        <div className="aw-cup-h"><span>Main Base TC</span><span className="aw-cup-status ok">● PROTECTED · 2d 4h</span></div>
+                        <div className="aw-cup-upkeep">
+                          {UPKEEP.map((u) => (
+                            <div className="aw-cup-up" key={u.ic}>
+                              <img src={icon(u.ic)} onError={hideErr} alt="" />
+                              <div className="aw-cup-up-info"><span className="aw-cup-up-top"><b>{u.label}</b><span>{u.have}</span></span><div className="aw-cup-up-bar"><span className={u.days < 1.5 ? 'low' : u.days < 2.5 ? 'mid' : ''} style={{ width: `${u.pct * 100}%` }} /></div><span className="aw-cup-up-days">{u.days.toFixed(1)}d left</span></div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="aw-cup-grid">
+                          {CUP_ITEMS.map(([ic, q]) => <div className="aw-cup-slot" key={ic} title={ic}><img src={icon(ic)} onError={hideErr} alt="" /><span>{q}</span></div>)}
+                          {Array.from({ length: 26 }).map((_, i) => <div className="aw-cup-slot empty" key={`e${i}`} />)}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="aw-cup-card">
+                        <div className="aw-cup-h"><span>Loot Room Box</span><span className="aw-cup-status box">STORAGE · 18/30</span></div>
+                        <div className="aw-cup-grid">
+                          {([['explosive.timed', '4'], ['rifle.ak', '2'], ['ammo.rifle', '480'], ['metal.refined', '1.2k'], ['scrap', '2.6k'], ['syringe.medical', '12'], ['supply.signal', '3'], ['targeting.computer', '2'], ['cctv.camera', '5'], ['rocket.launcher', '1'], ['ammo.rocket.basic', '6'], ['metal.facemask', '4']] as Array<[string, string]>).map(([ic, q]) => <div className="aw-cup-slot" key={ic} title={ic}><img src={icon(ic)} onError={hideErr} alt="" /><span>{q}</span></div>)}
+                          {Array.from({ length: 18 }).map((_, i) => <div className="aw-cup-slot empty" key={`b${i}`} />)}
+                        </div>
+                      </div>
+                    )}
+                  </>;
+                })()}
                 {tool === 'decay' && <>
                   <div className="aw-tool-h"><Clock size={14} /> TRACKED STRUCTURES</div>
                   <p className="aw-tool-p">Pin enemy structures and watch their decay window count down.</p>
@@ -458,29 +532,47 @@ export default function AppWindow() {
                     {ACT_LOG.map((e, i) => <div className="aw-act-le" key={i}><span className={`aw-act-dot ${e.k}`} /><span className="aw-act-lbl">{e.label}{e.detail && <em> · {e.detail}</em>}</span><span className="aw-act-time">{e.time}</span></div>)}
                   </div>
                 </>}
-                {tool === 'loadout' && <>
-                  <div className="aw-tool-h"><Shield size={14} /> LOADOUT & DAMAGE LAB</div>
-                  <div className="aw-lo-weapon"><img src={icon('rifle.ak')} onError={hideErr} alt="" /><div><b>Assault Rifle</b><small>50 dmg · ×2.0 head · 450 rpm</small></div><span className="aw-lo-vs">vs Metal Facemask + Chest</span></div>
-                  {LOADOUT_HITS.map((h) => (
-                    <div className="aw-lo-hit" key={h.part}>
-                      <div className="aw-lo-hit-h"><span className="aw-lo-part">{h.part}</span><span className="aw-lo-dmg">{h.dmg}<small> dmg</small></span></div>
-                      <div className="aw-lo-bar"><span style={{ width: `${h.pct}%` }} /></div>
-                      <div className="aw-lo-meta"><span>{h.mult}</span><span>{h.htk}</span></div>
-                    </div>
-                  ))}
-                  <div className="aw-lo-lethal">☠ One-shot headshot possible</div>
-                </>}
+                {tool === 'loadout' && (() => {
+                  const w = LO_WEAPONS[loWeapon]; const a = LO_ARMOR[loArmor];
+                  const parts = [
+                    { part: 'HEAD', mult: w.head, prot: a.head },
+                    { part: 'CHEST', mult: 1.0, prot: a.chest },
+                    { part: 'LEGS', mult: 0.75, prot: a.legs },
+                  ].map((p) => { const dmg = w.dmg * p.mult * (1 - p.prot); const htk = Math.ceil(100 / dmg); return { ...p, dmg, htk, ttk: (htk - 1) * (60 / w.rpm) }; });
+                  const maxDmg = Math.max(...parts.map((p) => p.dmg));
+                  const oneShot = parts[0].dmg >= 100;
+                  return <>
+                    <div className="aw-tool-h"><Shield size={14} /> LOADOUT & DAMAGE LAB</div>
+                    <div className="aw-lo-pick">{Object.entries(LO_WEAPONS).map(([k, v]) => <button key={k} className={loWeapon === k ? 'on' : ''} onClick={() => setLoWeapon(k)}><img src={icon(v.icon)} onError={hideErr} alt="" />{v.name.split(' ')[0]}</button>)}</div>
+                    <div className="aw-lo-weapon"><img src={icon(w.icon)} onError={hideErr} alt="" /><div><b>{w.name}</b><small>{w.dmg} dmg · ×{w.head.toFixed(1)} head · {w.rpm} rpm</small></div></div>
+                    <div className="aw-lo-armor"><span className="aw-lo-armor-lbl">VS ARMOR</span>{Object.entries(LO_ARMOR).map(([k, v]) => <button key={k} className={loArmor === k ? 'on' : ''} onClick={() => setLoArmor(k)}>{v.name.split(' ')[0]}</button>)}</div>
+                    {parts.map((p) => (
+                      <div className="aw-lo-hit" key={p.part}>
+                        <div className="aw-lo-hit-h"><span className="aw-lo-part">{p.part}</span><span className="aw-lo-dmg">{p.dmg.toFixed(1)}<small> dmg</small></span></div>
+                        <div className="aw-lo-bar"><span style={{ width: `${(p.dmg / maxDmg) * 100}%` }} /></div>
+                        <div className="aw-lo-meta"><span>×{p.mult} {p.prot > 0 && `· −${Math.round(p.prot * 100)}% armor`}</span><span>{p.htk}× shots · {p.ttk.toFixed(2)}s</span></div>
+                      </div>
+                    ))}
+                    <div className={`aw-lo-lethal ${oneShot ? '' : 'no'}`}>{oneShot ? '☠ One-shot headshot possible' : `${parts[0].htk} headshots to kill`}</div>
+                  </>;
+                })()}
                 {tool === 'lookup' && <>
                   <div className="aw-tool-h"><Search size={14} /> PLAYER STEAMID LOOKUP</div>
                   <div className="aw-lk-search"><Search size={12} /> SteamID, SteamID64 or profile URL…<span className="aw-lk-btn">Search</span></div>
                   <div className="aw-lk-banner danger"><span>⚠ RED FLAGS / BANS CACHED</span></div>
-                  <div className="aw-lk-flags"><span className="aw-lk-flag vac">VAC BANNED</span><span className="aw-lk-flag game">GAME BANS: 1</span><span className="aw-lk-flag report">RUST HACK REPORTED</span></div>
+                  <div className="aw-lk-flags"><span className="aw-lk-flag vac">VAC BANNED</span><span className="aw-lk-flag game">GAME BANS: 1</span><span className="aw-lk-flag report">RUST HACK REPORTED · 4d</span></div>
                   <div className="aw-lk-card">
                     <div className="aw-lk-av" style={{ background: '#3a4a5a' }}>S<span className="aw-lk-lvl">42</span></div>
-                    <div className="aw-lk-info"><b>SketchyAce</b><span className="aw-lk-priv">public</span><div className="aw-lk-hrs"><Clock size={10} /> RUST: 84 hrs</div></div>
-                    <span className="aw-lk-risk high">HIGH RISK · 82</span>
+                    <div className="aw-lk-info"><b>SketchyAce</b><span className="aw-lk-priv">public</span><div className="aw-lk-hrs"><Clock size={10} /> RUST: 84 hrs · <span className="aw-lk-playing">● PLAYING NOW</span></div></div>
+                    <span className="aw-lk-risk high">HIGH · 82</span>
                   </div>
-                  <div className="aw-lk-stats"><div><span className="l">K/D</span><span className="v" style={{ color: '#ce422b' }}>7.41</span></div><div><span className="l">HEADSHOT</span><span className="v" style={{ color: '#10b981' }}>61%</span></div><div><span className="l">ACCURACY</span><span className="v" style={{ color: '#06b6d4' }}>44%</span></div></div>
+                  <div className="aw-lk-reasons">
+                    <div className="aw-lk-reason"><span className="aw-lk-rdot" /> Active VAC ban on record</div>
+                    <div className="aw-lk-reason"><span className="aw-lk-rdot" /> Flagged on @RustHackReport (4d ago)</div>
+                    <div className="aw-lk-reason"><span className="aw-lk-rdot" /> 6/14 friends banned (43% — cheater cluster)</div>
+                    <div className="aw-lk-reason"><span className="aw-lk-rdot" /> Low playtime: 84 hrs · 19 alias changes</div>
+                  </div>
+                  <div className="aw-lk-stats"><div><span className="l">K/D</span><span className="v" style={{ color: '#ce422b' }}>7.41</span></div><div><span className="l">HEADSHOT</span><span className="v" style={{ color: '#e8a838' }}>61%</span></div><div><span className="l">ACCURACY</span><span className="v" style={{ color: '#06b6d4' }}>44%</span></div><div><span className="l">BANNED FRIENDS</span><span className="v" style={{ color: '#ce422b' }}>6/14</span></div></div>
                 </>}
                 {!['cctv', 'recycler', 'pricewatch', 'cupboard', 'decay', 'crates', 'profit', 'richbase', 'activity', 'loadout', 'lookup'].includes(tool) && (
                   <div className="aw-tool-generic">

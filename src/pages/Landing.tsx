@@ -11,6 +11,9 @@ import Reveal from '../components/Reveal';
 import AppWindow from '../components/AppWindow';
 import { Megaphone } from 'lucide-react';
 
+/** Where the desktop app download lives. Update to your releases URL. */
+const DOWNLOAD_URL = 'https://github.com/JirkaachS/raidar-app/releases/latest';
+
 const FEATURES = [
   { Icon: Map, title: 'Live Tactical Map', desc: 'Real-time team, monuments, caves, the travelling vendor and every world event — projected on in-game grids with click-through detail panels.' },
   { Icon: Siren, title: 'Base Alarms', desc: 'Smart Alarm triggers hit your overlay and Discord the instant your base is touched. Never sleep through a raid again.' },
@@ -63,7 +66,9 @@ export default function Landing() {
             switches, shop intel and raid planning — on your desktop and in your team's server.
           </p>
           <div className="hero-cta reveal reveal-up in-view" style={{ transitionDelay: '140ms' }}>
-            <Link className="btn btn-lg" to="/register"><Download size={17} /> Start free</Link>
+            {user
+              ? <a className="btn btn-lg" href={DOWNLOAD_URL} target="_blank" rel="noreferrer"><Download size={17} /> Download Raidar</a>
+              : <Link className="btn btn-lg" to="/register"><Download size={17} /> Start free</Link>}
             <Link className="btn btn-ghost btn-lg" to="/docs">Read the docs <ChevronRight size={16} /></Link>
           </div>
           <div className="trust reveal reveal-up in-view" style={{ transitionDelay: '210ms' }}>
@@ -163,7 +168,9 @@ export default function Landing() {
               <h2>Get Raidar</h2>
               <p>Free to start, built for Rust. Download the desktop app and link your server today.</p>
               <div className="hero-cta">
-                <Link className="btn btn-lg" to="/register"><Download size={17} /> Create your account</Link>
+                {user
+                  ? <a className="btn btn-lg" href={DOWNLOAD_URL} target="_blank" rel="noreferrer"><Download size={17} /> Download Raidar</a>
+                  : <Link className="btn btn-lg" to="/register"><Download size={17} /> Create your account</Link>}
                 <Link className="btn btn-ghost btn-lg" to="/docs#discord-bot">Set up the Discord bot</Link>
               </div>
             </div>

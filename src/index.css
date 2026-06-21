@@ -1685,3 +1685,60 @@ img { display: block; max-width: 100%; }
 .latest-body { padding: 26px 28px; display: flex; flex-direction: column; gap: 10px; }
 .latest-body h3 { font-family: var(--font-display); font-size: 24px; letter-spacing: 0.3px; }
 @media (max-width: 760px) { .admin-row-blog { grid-template-columns: 1fr 1fr; } }
+
+/* ── AppWindow: interactive recycler ── */
+.aw-rec2-ctrl { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.aw-rec2-mult { display: flex; gap: 4px; }
+.aw-rec2-mult button { font-family: var(--font-mono); font-size: 11px; font-weight: 700; padding: 5px 9px; border-radius: 5px; border: 1px solid var(--color-border); background: rgba(0,0,0,0.3); color: var(--color-text-muted); cursor: pointer; }
+.aw-rec2-mult button.on { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
+.aw-rec2-type { display: flex; gap: 4px; margin-left: auto; }
+.aw-rec2-type button { display: flex; flex-direction: column; align-items: flex-start; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 5px; border: 1px solid var(--color-border); background: rgba(0,0,0,0.3); color: var(--color-text-muted); cursor: pointer; }
+.aw-rec2-type button small { font-family: var(--font-mono); font-size: 8px; color: var(--color-text-dim); }
+.aw-rec2-type button.on { border-color: var(--color-accent); color: var(--color-text); }
+.aw-rec2-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+.aw-rec2-item { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 1px solid var(--color-border); border-radius: 7px; background: rgba(0,0,0,0.22); transition: border-color 140ms var(--ease), background 140ms var(--ease); }
+.aw-rec2-item.on { border-color: var(--color-accent-dim); background: rgba(206,66,43,0.08); }
+.aw-rec2-item img { width: 26px; height: 26px; object-fit: contain; flex-shrink: 0; }
+.aw-rec2-name { font-size: 11px; font-weight: 600; flex: 1; min-width: 0; }
+.aw-rec2-step { display: flex; align-items: center; gap: 4px; }
+.aw-rec2-step button { width: 20px; height: 20px; border-radius: 5px; border: 1px solid var(--color-border-strong); background: rgba(255,255,255,0.04); color: var(--color-text); font-weight: 700; cursor: pointer; line-height: 1; }
+.aw-rec2-step b { font-family: var(--font-mono); font-size: 12px; min-width: 16px; text-align: center; }
+.aw-rec2-cnt { font-family: var(--font-mono); font-size: 9px; color: var(--color-text-dim); margin-left: 8px; }
+.aw-rec2-out { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.aw-rec2-outitem { display: flex; align-items: center; gap: 8px; padding: 9px 11px; border: 1px solid var(--color-border); border-radius: 7px; background: linear-gradient(180deg, rgba(111,207,115,0.06), transparent); }
+.aw-rec2-outitem img { width: 26px; height: 26px; object-fit: contain; }
+.aw-rec2-outitem b { font-family: var(--font-mono); font-size: 14px; color: var(--color-success); }
+.aw-rec2-outitem span { font-size: 11px; color: var(--color-text-muted); }
+
+/* ── AppWindow: cupboard upkeep + tabs ── */
+.aw-cup-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.aw-cup-tabs button { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--color-border); background: rgba(0,0,0,0.3); color: var(--color-text-muted); cursor: pointer; }
+.aw-cup-tabs button.on { border-color: var(--color-accent); background: rgba(206,66,43,0.1); color: var(--color-text); }
+.aw-cup-status.box { color: var(--color-info); background: rgba(88,198,232,0.14); }
+.aw-cup-upkeep { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+.aw-cup-up { display: flex; align-items: center; gap: 9px; padding: 7px 9px; border: 1px solid var(--color-border); border-radius: 7px; background: rgba(0,0,0,0.22); }
+.aw-cup-up img { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+.aw-cup-up-info { flex: 1; min-width: 0; }
+.aw-cup-up-top { display: flex; justify-content: space-between; font-size: 11px; }
+.aw-cup-up-top b { font-weight: 600; } .aw-cup-up-top span { font-family: var(--font-mono); color: var(--color-text-muted); }
+.aw-cup-up-bar { height: 4px; border-radius: 3px; background: rgba(255,255,255,0.07); margin: 4px 0 2px; overflow: hidden; }
+.aw-cup-up-bar span { display: block; height: 100%; background: var(--color-success); }
+.aw-cup-up-bar span.mid { background: var(--color-warning); } .aw-cup-up-bar span.low { background: var(--color-danger); }
+.aw-cup-up-days { font-family: var(--font-mono); font-size: 8px; color: var(--color-text-dim); }
+
+/* ── AppWindow: loadout pickers ── */
+.aw-lo-pick { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+.aw-lo-pick button { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--color-border); background: rgba(0,0,0,0.3); color: var(--color-text-muted); cursor: pointer; }
+.aw-lo-pick button img { width: 18px; height: 18px; object-fit: contain; }
+.aw-lo-pick button.on { border-color: var(--color-accent); background: rgba(206,66,43,0.1); color: var(--color-text); }
+.aw-lo-armor { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 10px 0 12px; }
+.aw-lo-armor-lbl { font-family: var(--font-mono); font-size: 9px; color: var(--color-text-dim); letter-spacing: 1px; }
+.aw-lo-armor button { font-size: 10px; font-weight: 600; padding: 4px 9px; border-radius: 5px; border: 1px solid var(--color-border); background: rgba(0,0,0,0.3); color: var(--color-text-muted); cursor: pointer; }
+.aw-lo-armor button.on { border-color: var(--color-info); background: rgba(88,198,232,0.12); color: var(--color-text); }
+.aw-lo-lethal.no { color: var(--color-text-muted); background: rgba(255,255,255,0.04); }
+
+/* ── AppWindow: lookup reasons ── */
+.aw-lk-reasons { display: flex; flex-direction: column; gap: 5px; margin: 10px 0; }
+.aw-lk-reason { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--color-text-muted); }
+.aw-lk-rdot { width: 5px; height: 5px; border-radius: 50%; background: var(--color-danger); flex-shrink: 0; }
+.aw-lk-playing { color: var(--color-success); font-weight: 700; font-size: 9px; }

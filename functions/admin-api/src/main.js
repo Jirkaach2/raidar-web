@@ -108,6 +108,7 @@ export default async ({ req, res, log, error }) => {
         const byPlan = {};
         let mrr = 0; let active = 0;
         for (const s of subList.documents) {
+          if (s.comp) continue; // complimentary grants don't count toward revenue/active/distribution
           byPlan[s.planName] = (byPlan[s.planName] || 0) + 1;
           if (s.status === 'active') { active++; mrr += priceByPlanId[s.planId] ?? priceByName[s.planName] ?? 0; }
         }
@@ -195,6 +196,7 @@ export default async ({ req, res, log, error }) => {
         let mrr = 0;
         let active = 0;
         for (const s of subList.documents) {
+          if (s.comp) continue; // exclude complimentary grants from revenue/active/distribution
           byPlan[s.planName] = (byPlan[s.planName] || 0) + 1;
           if (s.status === 'active') {
             active++;
