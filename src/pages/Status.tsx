@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, Server, MessageSquare, Download, CheckCircle2, AlertCircle, XCircle, Activity } from 'lucide-react';
-import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured } from '../lib/appwrite';
+import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, ENDPOINT, PROJECT_ID } from '../lib/appwrite';
 
 export default function Status() {
   const [webStatus, setWebStatus] = useState<'checking' | 'online' | 'offline'>('checking');
@@ -187,10 +187,10 @@ export default function Status() {
           <div className="version-actions" style={{ borderTop: '1px solid rgba(255,255,255,0.04)', marginTop: 14, paddingTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span className="text-dim" style={{ fontSize: '11px' }}>Signature signed by: <strong>Raidar Code Signing</strong></span>
             <div style={{ display: 'flex', gap: 10 }}>
-              <a href="/installers/Raidar_Setup_v1.0.0.exe" download className="btn btn-xs" style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <a href={`${ENDPOINT}/storage/buckets/installers/files/setup/download?project=${PROJECT_ID}`} download className="btn btn-xs" style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                 <Download size={12} /> Setup.exe
               </a>
-              <a href="/installers/Raidar_Installer_v1.0.0.msi" download className="btn btn-xs btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: '1px solid rgba(255,255,255,0.1)' }}>
+              <a href={`${ENDPOINT}/storage/buckets/installers/files/installer/download?project=${PROJECT_ID}`} download className="btn btn-xs btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: '1px solid rgba(255,255,255,0.1)' }}>
                 <Download size={12} /> Installer.msi
               </a>
             </div>

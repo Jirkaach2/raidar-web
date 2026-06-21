@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   databases, DB_ID, PLANS_COLLECTION_ID, SUBSCRIPTIONS_COLLECTION_ID, ANNOUNCEMENTS_COLLECTION_ID,
-  Query, ID, isConfigured, type Plan, type Subscription, type Announcement,
+  Query, ID, isConfigured, ENDPOINT, PROJECT_ID, type Plan, type Subscription, type Announcement,
 } from '../lib/appwrite';
 import { listAll, slugify } from '../lib/announcements';
 import { listUsers, setAdmin, setStatus, deleteUser, getStats, grantPlan, revokePlan, resetMfa, bootstrap, type AdminUser, type AdminStats, type SubUser } from '../lib/admin';
@@ -268,10 +268,10 @@ export default function Admin() {
             <h2>Desktop App Installer Downloads</h2>
             <p className="muted" style={{ marginBottom: 12 }}>Download the compiled Raidar desktop client installers directly from the app server (Admins only).</p>
             <div style={{ display: 'flex', gap: 12 }}>
-              <a href="/installers/Raidar_Setup_v1.0.0.exe" download className="btn btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <a href={`${ENDPOINT}/storage/buckets/installers/files/setup/download?project=${PROJECT_ID}`} download className="btn btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 <Download size={14} /> Download Raidar_Setup_v1.0.0.exe
               </a>
-              <a href="/installers/Raidar_Installer_v1.0.0.msi" download className="btn btn-sm btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid rgba(255,255,255,0.1)' }}>
+              <a href={`${ENDPOINT}/storage/buckets/installers/files/installer/download?project=${PROJECT_ID}`} download className="btn btn-sm btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid rgba(255,255,255,0.1)' }}>
                 <Download size={14} /> Download Raidar_Installer_v1.0.0.msi
               </a>
             </div>
