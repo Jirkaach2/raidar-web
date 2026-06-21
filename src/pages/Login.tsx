@@ -13,7 +13,10 @@ export default function Login() {
 
   // Already signed in → no reason to see the login page.
   useEffect(() => {
-    if (user) navigate('/dashboard', { replace: true });
+    if (user) {
+      const next = new URLSearchParams(window.location.search).get('next');
+      navigate(next || '/dashboard', { replace: true });
+    }
   }, [user, navigate]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -43,7 +46,10 @@ export default function Login() {
     }
   }, []);
 
-  const goNext = () => navigate(location.state?.from || '/dashboard', { replace: true });
+  const goNext = () => {
+    const next = new URLSearchParams(window.location.search).get('next');
+    navigate(next || location.state?.from || '/dashboard', { replace: true });
+  };
 
   // Escape hatch: nuke any lingering session (cookie + localStorage fallback)
   // that can otherwise wedge the login in a phantom MFA / "session exists" state.

@@ -20,6 +20,7 @@ import RefundPolicy from './pages/legal/RefundPolicy';
 import CookiePolicy from './pages/legal/CookiePolicy';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
+import LinkApp from './pages/LinkApp';
 
 /** Scroll to top (or to the #hash target) on every navigation. */
 function ScrollManager() {
@@ -53,6 +54,7 @@ export default function App() {
           <Route path="/verify" element={<Verify />} />
           <Route path="/auth/steam" element={<SteamCallback />} />
           <Route path="/auth/steam/complete" element={<CompleteSteamSignup />} />
+          <Route path="/link-app" element={<LinkApp />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/refunds" element={<RefundPolicy />} />

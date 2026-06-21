@@ -85,6 +85,21 @@ export default async ({ req, res, log, error }) => {
       return res.redirect(`${STEAM_OPENID}?${params.toString()}`, 302);
     }
 
+    // ── Authenticated: mint a one-time token so the desktop app can sign the
+    // user in using their existing web session (web → app handoff). ──
+    if (action === 'appToken') {
+      const callerId = req.headers['x-appwrite-user-id'];
+      if (!callerId) return res.json({ error: 'Not authenticated.' }, 401);
+      const client = new Client().setEndpoint(endpoint).setProject(projectId).setKey(process.env.APPWRITE_API_KEY);
+      const users = new Users(client);
+      try {
+        const token = await users.createToken(callerId, 64, 120); // valid 2 min
+        return res.json({ userId: token.userId, secret: token.secret });
+      } catch (e) {
+        return res.json({ error: e.message || 'Could not create login token.' }, 500);
+      }
+    }
+
     // ── Authenticated: let a signed-in Steam user attach a real email ──
     if (action === 'setEmail') {
       const callerId = req.headers['x-appwrite-user-id'];
