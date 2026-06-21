@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShieldCheck, KeyRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { AuthenticationFactor } from '../lib/appwrite';
+import { account, AuthenticationFactor } from '../lib/appwrite';
 import OAuthButtons from '../components/OAuthButtons';
 import Logo from '../components/Logo';
 
@@ -27,6 +27,16 @@ export default function Login() {
   const [code, setCode] = useState('');
 
   const goNext = () => navigate(location.state?.from || '/dashboard', { replace: true });
+
+  // Escape hatch: nuke any lingering session (cookie + localStorage fallback)
+  // that can otherwise wedge the login in a phantom MFA / "session exists" state.
+  const resetSession = async () => {
+    setBusy(true);
+    try { await account.deleteSessions(); } catch { /* ignore */ }
+    try { localStorage.removeItem('cookieFallback'); } catch { /* ignore */ }
+    setMfa(false); setUseRecovery(false); setCode(''); setError('');
+    setBusy(false);
+  };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -92,6 +102,9 @@ export default function Login() {
             <button className="auth-skip" type="button" onClick={() => { setUseRecovery((v) => !v); setCode(''); setError(''); }}>
               <KeyRound size={14} /> {useRecovery ? 'Use authenticator code instead' : 'Lost your device? Use a recovery code'}
             </button>
+            <button className="auth-skip" type="button" onClick={resetSession} disabled={busy}>
+              Not your account? Start over
+            </button>
           </>
         ) : (
           <>
@@ -115,6 +128,9 @@ export default function Login() {
             <p className="auth-alt">
               New to Raidar? <Link to="/register">Create an account</Link>
             </p>
+            <button className="auth-skip" type="button" onClick={resetSession} disabled={busy}>
+              Trouble signing in? Reset session
+            </button>
           </>
         )}
       </div>
