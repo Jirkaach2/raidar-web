@@ -5,6 +5,7 @@ import {
   account, storage, ID, AVATARS_BUCKET_ID, AuthenticatorType, type AppUser,
 } from '../lib/appwrite';
 import { useAuth } from '../context/AuthContext';
+import { useConfirm } from '../components/ui/ConfirmProvider';
 
 type Note = { kind: 'ok' | 'err'; text: string } | null;
 
@@ -167,6 +168,7 @@ function SecurityCard({ isSteam, refresh }: { isSteam: boolean; refresh: () => P
 
 /* ── Two-factor (TOTP authenticator) ─────────────────────── */
 function TwoFactorCard({ user, refresh }: { user: AppUser; refresh: () => Promise<void> }) {
+  const ask = useConfirm();
   const [secret, setSecret] = useState('');
   const [uri, setUri] = useState('');
   const [otp, setOtp] = useState('');
@@ -199,7 +201,7 @@ function TwoFactorCard({ user, refresh }: { user: AppUser; refresh: () => Promis
   };
 
   const disable = async () => {
-    if (!window.confirm('Disable two-factor authentication?')) return;
+    if (!(await ask({ title: 'Disable 2FA', message: 'Disable two-factor authentication? Your account will be less secure.', confirmText: 'Disable', danger: true }))) return;
     setBusy(true); setNote(null);
     try {
       await account.deleteMfaAuthenticator(AuthenticatorType.Totp);
@@ -207,6 +209,16 @@ function TwoFactorCard({ user, refresh }: { user: AppUser; refresh: () => Promis
       await refresh();
       setNote({ kind: 'ok', text: 'Two-factor authentication disabled.' });
     } catch (err) { setNote({ kind: 'err', text: err instanceof Error ? err.message : 'Could not disable 2FA.' }); }
+    finally { setBusy(false); }
+  };
+
+  const regenerate = async () => {
+    setBusy(true); setNote(null);
+    try {
+      const rc = await account.updateMfaRecoveryCodes();
+      setCodes(rc.recoveryCodes);
+      setNote({ kind: 'ok', text: 'New recovery codes generated — your old ones no longer work.' });
+    } catch (err) { setNote({ kind: 'err', text: err instanceof Error ? err.message : 'Could not regenerate codes.' }); }
     finally { setBusy(false); }
   };
 
@@ -218,7 +230,10 @@ function TwoFactorCard({ user, refresh }: { user: AppUser; refresh: () => Promis
       <p className="muted" style={{ fontSize: 13 }}>Add a one-time code from an authenticator app (Google Authenticator, Authy, 1Password) as a second step at sign-in.</p>
 
       {enabled ? (
-        <button className="btn btn-ghost btn-sm danger" onClick={disable} disabled={busy} style={{ marginTop: 14 }}>Disable 2FA</button>
+        <div className="settings-2fa-on">
+          <button className="btn btn-ghost btn-sm" onClick={regenerate} disabled={busy}><KeyRound size={14} /> Regenerate recovery codes</button>
+          <button className="btn btn-ghost btn-sm danger" onClick={disable} disabled={busy}>Disable 2FA</button>
+        </div>
       ) : !secret ? (
         <button className="btn btn-sm" onClick={begin} disabled={busy} style={{ marginTop: 14 }}><KeyRound size={14} /> {busy ? 'Starting…' : 'Set up 2FA'}</button>
       ) : (
@@ -248,9 +263,11 @@ function TwoFactorCard({ user, refresh }: { user: AppUser; refresh: () => Promis
 
 /* ── Danger zone ─────────────────────────────────────────── */
 function DangerCard() {
+  const confirm = useConfirm();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<Note>(null);
   const signOutEverywhere = async () => {
+    if (!(await confirm({ title: 'Sign out everywhere', message: 'This ends every active session across all your devices. You will need to sign in again.', confirmText: 'Sign out all', danger: true }))) return;
     setBusy(true); setNote(null);
     try { await account.deleteSessions(); window.location.href = '/login'; }
     catch (err) { setNote({ kind: 'err', text: err instanceof Error ? err.message : 'Failed.' }); setBusy(false); }

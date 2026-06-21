@@ -51,3 +51,5 @@ export const grantPlan = (userId: string, planId: string, days: number) =>
 /** Cancel (or delete) a user's subscription / comp grant. */
 export const revokePlan = (userId: string, del = false) =>
   adminCall<{ ok: boolean }>('revokePlan', { userId, delete: del });
+/** Disable a user's 2FA (admin recovery when they lose their authenticator). */
+export const resetMfa = (userId: string) => adminCall<{ ok: boolean }>('resetMfa', { userId });

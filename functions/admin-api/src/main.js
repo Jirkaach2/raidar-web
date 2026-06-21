@@ -134,6 +134,14 @@ export default async ({ req, res, log, error }) => {
         return res.json({ ok: true });
       }
 
+      case 'resetMfa': {
+        if (!body.userId) return res.json({ error: 'Missing userId.' }, 400);
+        await users.updateMfa(body.userId, false);
+        try { await users.deleteMfaAuthenticator(body.userId, 'totp'); } catch { /* none set */ }
+        log(`reset MFA for ${body.userId}`);
+        return res.json({ ok: true });
+      }
+
       case 'stats': {
         const [userList, planList, subList] = await Promise.all([
           users.list([Query.limit(1)]),

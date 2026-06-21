@@ -3,8 +3,11 @@ import {
   databases, DB_ID, PLANS_COLLECTION_ID, SUBSCRIPTIONS_COLLECTION_ID,
   Query, ID, isConfigured, type Plan, type Subscription,
 } from '../lib/appwrite';
-import { listUsers, setAdmin, setStatus, deleteUser, getStats, grantPlan, revokePlan, type AdminUser, type AdminStats } from '../lib/admin';
+import { listUsers, setAdmin, setStatus, deleteUser, getStats, grantPlan, revokePlan, resetMfa, type AdminUser, type AdminStats } from '../lib/admin';
 import { useAuth } from '../context/AuthContext';
+import Select from '../components/ui/Select';
+import Checkbox from '../components/ui/Checkbox';
+import { useConfirm } from '../components/ui/ConfirmProvider';
 import {
   Users as UsersIcon, CreditCard, DollarSign, TrendingUp, UserPlus, ShieldCheck,
   RefreshCw, Download, Copy, Search, Ban, CheckCircle2, Trash2, Crown, Layers, Gift, X,
@@ -26,6 +29,7 @@ function downloadCSV(filename: string, rows: (string | number)[][]) {
 
 export default function Admin() {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [tab, setTab] = useState<Tab>('overview');
   const [plans, setPlans] = useState<Plan[]>([]);
   const [subs, setSubs] = useState<Subscription[]>([]);
@@ -105,21 +109,21 @@ export default function Admin() {
     } catch (err) { setError(err instanceof Error ? err.message : 'Could not save the plan.'); }
     finally { setSaving(false); }
   };
-  const removePlan = async (p: Plan) => { if (!window.confirm(`Delete the "${p.name}" plan?`)) return; try { await databases.deleteDocument(DB_ID, PLANS_COLLECTION_ID, p.$id); await load(); } catch (err) { setError(err instanceof Error ? err.message : 'Failed.'); } };
+  const removePlan = async (p: Plan) => { if (!(await confirm({ title: 'Delete plan', message: `Delete the "${p.name}" plan? This can't be undone.`, confirmText: 'Delete', danger: true }))) return; try { await databases.deleteDocument(DB_ID, PLANS_COLLECTION_ID, p.$id); await load(); } catch (err) { setError(err instanceof Error ? err.message : 'Failed.'); } };
 
   // ── subscriptions ──
   const setSubStatus = async (s: Subscription, status: Subscription['status']) => {
     try { await databases.updateDocument(DB_ID, SUBSCRIPTIONS_COLLECTION_ID, s.$id, { status }); await load(); await loadStats(); }
     catch (err) { setError(err instanceof Error ? err.message : 'Could not update subscription.'); }
   };
-  const removeSub = async (s: Subscription) => { if (!window.confirm(`Delete this subscription (${s.planName})?`)) return; try { await databases.deleteDocument(DB_ID, SUBSCRIPTIONS_COLLECTION_ID, s.$id); await load(); await loadStats(); } catch (err) { setError(err instanceof Error ? err.message : 'Failed.'); } };
+  const removeSub = async (s: Subscription) => { if (!(await confirm({ title: 'Delete subscription', message: `Delete this subscription (${s.planName})?`, confirmText: 'Delete', danger: true }))) return; try { await databases.deleteDocument(DB_ID, SUBSCRIPTIONS_COLLECTION_ID, s.$id); await load(); await loadStats(); } catch (err) { setError(err instanceof Error ? err.message : 'Failed.'); } };
   const subCount = (planId: string) => subs.filter((s) => s.planId === planId).length;
 
   // ── users ──
   const applyUser = (u: AdminUser) => setUsers((list) => list.map((x) => (x.id === u.id ? u : x)));
   const onSetAdmin = async (u: AdminUser, value: boolean) => { setBusyUser(u.id); setUsersError(''); try { const r = await setAdmin(u.id, value); applyUser(r.user); loadStats(); } catch (err) { setUsersError(err instanceof Error ? err.message : 'Failed.'); } finally { setBusyUser(null); } };
   const onSetStatus = async (u: AdminUser, status: boolean) => { setBusyUser(u.id); setUsersError(''); try { const r = await setStatus(u.id, status); applyUser(r.user); } catch (err) { setUsersError(err instanceof Error ? err.message : 'Failed.'); } finally { setBusyUser(null); } };
-  const onDeleteUser = async (u: AdminUser) => { if (!window.confirm(`Delete ${u.email}? Removes their account and subscriptions.`)) return; setBusyUser(u.id); setUsersError(''); try { await deleteUser(u.id); setUsers((l) => l.filter((x) => x.id !== u.id)); setUsersTotal((t) => t - 1); loadStats(); } catch (err) { setUsersError(err instanceof Error ? err.message : 'Failed.'); } finally { setBusyUser(null); } };
+  const onDeleteUser = async (u: AdminUser) => { if (!(await confirm({ title: 'Delete user', message: `Delete ${u.email}? This removes their account and subscriptions and can't be undone.`, confirmText: 'Delete user', danger: true }))) return; setBusyUser(u.id); setUsersError(''); try { await deleteUser(u.id); setUsers((l) => l.filter((x) => x.id !== u.id)); setUsersTotal((t) => t - 1); loadStats(); } catch (err) { setUsersError(err instanceof Error ? err.message : 'Failed.'); } finally { setBusyUser(null); } };
 
   // ── grant / revoke plan ──
   const openGrant = (u: AdminUser) => { setGrantUser(u); setGrantPlanId(plans[0]?.$id || ''); setGrantDays('30'); };
@@ -131,9 +135,16 @@ export default function Admin() {
     finally { setGrantBusy(false); }
   };
   const onRevoke = async (u: AdminUser) => {
-    if (!window.confirm(`Revoke ${u.name || u.email}'s plan? They will drop to the free tier.`)) return;
+    if (!(await confirm({ title: 'Revoke plan', message: `Revoke ${u.name || u.email}'s plan? They will drop to the free tier.`, confirmText: 'Revoke', danger: true }))) return;
     setBusyUser(u.id); setUsersError('');
     try { await revokePlan(u.id, false); await load(); await loadStats(); }
+    catch (err) { setUsersError(err instanceof Error ? err.message : 'Failed.'); }
+    finally { setBusyUser(null); }
+  };
+  const onResetMfa = async (u: AdminUser) => {
+    if (!(await confirm({ title: 'Reset 2FA', message: `Disable two-factor authentication for ${u.name || u.email}? Use this only when they've lost access to their authenticator.`, confirmText: 'Reset 2FA', danger: true }))) return;
+    setBusyUser(u.id); setUsersError('');
+    try { await resetMfa(u.id); }
     catch (err) { setUsersError(err instanceof Error ? err.message : 'Failed.'); }
     finally { setBusyUser(null); }
   };
@@ -220,7 +231,7 @@ export default function Admin() {
               <label>Tagline<input value={form.tagline} onChange={(e) => setForm({ ...form, tagline: e.target.value })} /></label>
               <label>Stripe Price ID <span className="muted">(price_… — required for paid plans)</span><input value={form.stripePriceId} onChange={(e) => setForm({ ...form, stripePriceId: e.target.value })} placeholder="price_1Xxxx" /></label>
               <label>Features (one per line)<textarea rows={5} value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} /></label>
-              <label className="admin-check"><input type="checkbox" checked={form.popular} onChange={(e) => setForm({ ...form, popular: e.target.checked })} /> Mark as most popular</label>
+              <div className="admin-check"><Checkbox checked={form.popular} onChange={(v) => setForm({ ...form, popular: v })} label="Mark as most popular" /></div>
               <div className="admin-actions"><button className="btn" type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save plan'}</button><button className="btn btn-ghost" type="button" onClick={cancel}>Cancel</button></div>
             </form>
           )}
@@ -276,6 +287,7 @@ export default function Admin() {
                       {plan && <button className="btn btn-ghost btn-sm" disabled={busy} onClick={() => onRevoke(u)} title="Revoke plan">Revoke</button>}
                       <button className="btn btn-ghost btn-sm" disabled={busy || self} onClick={() => onSetAdmin(u, !isAdmin)}>{isAdmin ? <><Ban size={13} /> Revoke admin</> : <><Crown size={13} /> Make admin</>}</button>
                       <button className="btn btn-ghost btn-sm" disabled={busy || self} onClick={() => onSetStatus(u, !u.status)}>{u.status ? 'Block' : 'Unblock'}</button>
+                      <button className="btn btn-ghost btn-sm" disabled={busy} onClick={() => onResetMfa(u)} title="Disable their 2FA">Reset 2FA</button>
                       <button className="btn btn-ghost btn-sm danger" disabled={busy || self} onClick={() => onDeleteUser(u)}><Trash2 size={13} /></button>
                     </div>
                   </div>
@@ -328,20 +340,27 @@ export default function Admin() {
             </p>
             <label className="admin-modal-field">
               Plan
-              <select value={grantPlanId} onChange={(e) => setGrantPlanId(e.target.value)}>
-                {plans.map((p) => <option key={p.$id} value={p.$id}>{p.name}{p.price > 0 ? ` ($${p.price}/mo value)` : ''}</option>)}
-              </select>
+              <Select
+                value={grantPlanId}
+                onChange={setGrantPlanId}
+                options={plans.map((p) => ({ value: p.$id, label: p.name, hint: p.price > 0 ? `$${p.price}/mo value` : 'free' }))}
+                placeholder="Select a plan"
+              />
             </label>
             <label className="admin-modal-field">
               Duration
-              <select value={grantDays} onChange={(e) => setGrantDays(e.target.value)}>
-                <option value="7">7 days</option>
-                <option value="14">14 days</option>
-                <option value="30">30 days</option>
-                <option value="90">90 days</option>
-                <option value="365">1 year</option>
-                <option value="0">No expiry (permanent)</option>
-              </select>
+              <Select
+                value={grantDays}
+                onChange={setGrantDays}
+                options={[
+                  { value: '7', label: '7 days' },
+                  { value: '14', label: '14 days' },
+                  { value: '30', label: '30 days' },
+                  { value: '90', label: '90 days' },
+                  { value: '365', label: '1 year' },
+                  { value: '0', label: 'No expiry (permanent)' },
+                ]}
+              />
             </label>
             <div className="admin-modal-actions">
               <button className="btn" onClick={submitGrant} disabled={grantBusy || !grantPlanId}>{grantBusy ? 'Granting…' : 'Grant plan'}</button>

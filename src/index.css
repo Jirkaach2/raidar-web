@@ -1515,4 +1515,76 @@ img { display: block; max-width: 100%; }
 .settings-codes { margin-top: 16px; padding: 14px; border-radius: var(--radius-md); border: 1px dashed var(--color-border-strong); background: rgba(255,255,255,0.02); }
 .settings-codes-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 10px; }
 .settings-codes-grid code { font-family: var(--font-mono); font-size: 13px; padding: 6px 8px; border-radius: 5px; background: var(--color-bg-deep); color: var(--color-text); text-align: center; }
+.settings-2fa-on { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.mfa-ic { display: grid; place-items: center; width: 52px; height: 52px; margin: 0 auto 6px; border-radius: 14px; color: var(--color-accent-bright); background: var(--color-accent-glow); }
 @media (max-width: 760px) { .settings-grid { grid-template-columns: 1fr; } }
+
+/* ════════════════════════════════════════════════════════
+   Custom UI primitives (select / checkbox / confirm)
+   ════════════════════════════════════════════════════════ */
+.btn-danger { background: var(--color-danger); border-color: var(--color-danger); box-shadow: 0 0 12px rgba(232,69,69,.3); }
+.btn-danger:hover { background: #ff5d5d; border-color: #ff5d5d; box-shadow: 0 0 18px rgba(232,69,69,.5); }
+
+/* ── Select ── */
+.ui-select { position: relative; width: 100%; }
+.ui-select-trigger {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-family: var(--font-body); font-size: 14px; color: var(--color-text); text-align: left;
+  padding: 10px 12px; border-radius: var(--radius-md); border: 1px solid var(--color-border-strong);
+  background: var(--color-bg-deep); cursor: pointer; transition: border-color 150ms var(--ease), box-shadow 150ms var(--ease);
+}
+.ui-select-trigger:hover:not(:disabled) { border-color: var(--color-accent-dim); }
+.ui-select.open .ui-select-trigger { border-color: var(--color-accent); box-shadow: 0 0 0 3px var(--color-accent-glow); }
+.ui-select.disabled .ui-select-trigger { opacity: 0.5; cursor: not-allowed; }
+.ui-select-ph { color: var(--color-text-dim); }
+.ui-select-caret { color: var(--color-text-muted); transition: transform 200ms var(--ease); flex-shrink: 0; }
+.ui-select.open .ui-select-caret { transform: rotate(180deg); color: var(--color-accent-bright); }
+.ui-select-menu {
+  position: absolute; z-index: 1200; top: calc(100% + 6px); left: 0; right: 0; list-style: none; margin: 0; padding: 5px;
+  background: var(--color-surface); border: 1px solid var(--color-border-strong); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popup); max-height: 260px; overflow-y: auto;
+  animation: ui-pop 140ms var(--ease);
+}
+@keyframes ui-pop { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+.ui-select-opt {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 11px; border-radius: var(--radius-sm);
+  font-size: 14px; color: var(--color-text-muted); cursor: pointer; transition: background 120ms var(--ease), color 120ms var(--ease);
+}
+.ui-select-opt.active { background: rgba(255,255,255,0.05); color: var(--color-text); }
+.ui-select-opt.selected { color: var(--color-accent-bright); }
+.ui-select-opt svg { color: var(--color-accent-bright); flex-shrink: 0; }
+.ui-select-opt-main { display: flex; flex-direction: column; gap: 1px; }
+.ui-select-opt-hint { font-size: 11px; color: var(--color-text-dim); font-family: var(--font-mono); }
+
+/* ── Checkbox ── */
+.ui-check { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+.ui-check.disabled { opacity: 0.5; cursor: not-allowed; }
+.ui-check-input { position: absolute; opacity: 0; width: 0; height: 0; }
+.ui-check-box {
+  display: grid; place-items: center; width: 20px; height: 20px; flex-shrink: 0; border-radius: 5px;
+  border: 1.5px solid var(--color-border-strong); background: var(--color-bg-deep);
+  transition: all 150ms var(--ease); color: #fff;
+}
+.ui-check-box svg { opacity: 0; transform: scale(0.5); transition: all 150ms var(--ease); }
+.ui-check-input:checked + .ui-check-box { background: var(--color-accent); border-color: var(--color-accent); box-shadow: 0 0 10px rgba(206,66,43,.4); }
+.ui-check-input:checked + .ui-check-box svg { opacity: 1; transform: scale(1); }
+.ui-check-input:focus-visible + .ui-check-box { box-shadow: 0 0 0 3px var(--color-accent-glow); }
+.ui-check:hover .ui-check-input:not(:checked) + .ui-check-box { border-color: var(--color-accent-dim); }
+.ui-check-label { font-size: 14px; color: var(--color-text); }
+
+/* ── Confirm dialog ── */
+.confirm-overlay { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: 20px; background: rgba(4,5,8,0.74); backdrop-filter: blur(5px); animation: ui-fade 160ms var(--ease); }
+@keyframes ui-fade { from { opacity: 0; } to { opacity: 1; } }
+.confirm-box {
+  position: relative; width: 100%; max-width: 410px; text-align: center;
+  background: var(--color-surface); border: 1px solid var(--color-border-strong); border-radius: var(--radius-xl);
+  padding: 30px 26px 24px; box-shadow: var(--shadow-popup); animation: ui-pop 180ms var(--ease);
+}
+.confirm-x { position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--color-text-dim); cursor: pointer; padding: 4px; border-radius: 6px; }
+.confirm-x:hover { color: var(--color-text); background: rgba(255,255,255,0.06); }
+.confirm-ic { display: grid; place-items: center; width: 50px; height: 50px; margin: 0 auto 14px; border-radius: 13px; color: var(--color-warning); background: rgba(232,168,56,0.12); }
+.confirm-ic.danger { color: var(--color-danger); background: rgba(232,69,69,0.12); }
+.confirm-box h3 { font-family: var(--font-display); font-size: 21px; letter-spacing: 0.4px; margin-bottom: 8px; }
+.confirm-msg { color: var(--color-text-muted); font-size: 14px; line-height: 1.6; margin-bottom: 22px; }
+.confirm-actions { display: flex; gap: 10px; justify-content: center; }
+.confirm-actions .btn { min-width: 110px; }

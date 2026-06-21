@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { account, ID, OAuthProvider, userIsAdmin, isConfigured, type AppUser } from '../lib/appwrite';
+import { account, ID, OAuthProvider, AuthenticationFactor, userIsAdmin, isConfigured, type AppUser } from '../lib/appwrite';
 
 interface AuthState {
   user: AppUser | null;
   loading: boolean;
   isAdmin: boolean;
   configured: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ mfa: boolean }>;
   register: (name: string, email: string, password: string) => Promise<void>;
   loginWithOAuth: (provider: 'discord' | 'google' | 'github') => void;
   logout: () => Promise<void>;
@@ -15,6 +15,8 @@ interface AuthState {
   sendVerification: () => Promise<void>;
   /** Complete verification from the link's userId + secret, then refresh. */
   confirmVerification: (userId: string, secret: string) => Promise<void>;
+  /** Complete an MFA challenge during sign-in (TOTP or recovery code). */
+  completeMfa: (factor: AuthenticationFactor, code: string) => Promise<void>;
 }
 
 /** Where Appwrite sends users back to after clicking the verification link. */
@@ -48,6 +50,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     await account.createEmailPasswordSession(email, password);
+    try {
+      const me = await account.get();
+      setUser(me);
+      return { mfa: false };
+    } catch (e) {
+      // Appwrite signals a pending second factor with this error type.
+      if ((e as { type?: string })?.type === 'user_more_factors_required') return { mfa: true };
+      throw e;
+    }
+  }, []);
+
+  const completeMfa = useCallback(async (factor: AuthenticationFactor, code: string) => {
+    const challenge = await account.createMfaChallenge(factor);
+    await account.updateMfaChallenge(challenge.$id, code);
     const me = await account.get();
     setUser(me);
   }, []);
@@ -103,8 +119,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refresh,
       sendVerification,
       confirmVerification,
+      completeMfa,
     }),
-    [user, loading, login, register, loginWithOAuth, logout, refresh, sendVerification, confirmVerification],
+    [user, loading, login, register, loginWithOAuth, logout, refresh, sendVerification, confirmVerification, completeMfa],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
