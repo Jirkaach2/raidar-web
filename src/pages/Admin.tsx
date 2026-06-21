@@ -263,6 +263,19 @@ export default function Admin() {
               </div>
             )}
           </section>
+
+          <section className="dash-section">
+            <h2>Desktop App Installer Downloads</h2>
+            <p className="muted" style={{ marginBottom: 12 }}>Download the compiled Raidar desktop client installers directly from the app server (Admins only).</p>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <a href="/installers/Raidar_Setup_v1.0.0.exe" download className="btn btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Download size={14} /> Download Raidar_Setup_v1.0.0.exe
+              </a>
+              <a href="/installers/Raidar_Installer_v1.0.0.msi" download className="btn btn-sm btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid rgba(255,255,255,0.1)' }}>
+                <Download size={14} /> Download Raidar_Installer_v1.0.0.msi
+              </a>
+            </div>
+          </section>
         </>
       )}
 

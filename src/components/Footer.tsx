@@ -1,9 +1,82 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageCircle, Github, Mail } from 'lucide-react';
 import Logo from './Logo';
+import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured } from '../lib/appwrite';
 
 export default function Footer() {
   const year = new Date().getFullYear();
+  const [webStatus, setWebStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [botStatus, setBotStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [latestVersion, setLatestVersion] = useState<string>('v1.0.0');
+
+  useEffect(() => {
+    let active = true;
+
+    async function checkWeb() {
+      if (!isConfigured) {
+        if (active) setWebStatus('offline');
+        return;
+      }
+      try {
+        await databases.listDocuments(DB_ID, PLANS_COLLECTION_ID, [Query.limit(1)]);
+        if (active) setWebStatus('online');
+      } catch (err) {
+        console.error('Web App connection check failed:', err);
+        if (active) setWebStatus('offline');
+      }
+    }
+
+    async function checkBot() {
+      try {
+        const res = await fetch('https://92.5.73.207.nip.io/health');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.ok) {
+            if (active) setBotStatus('online');
+            return;
+          }
+        }
+        if (active) setBotStatus('offline');
+      } catch (err) {
+        console.error('Discord bot connection check failed:', err);
+        if (active) setBotStatus('offline');
+      }
+    }
+
+    async function fetchVersion() {
+      try {
+        const res = await fetch('https://api.github.com/repos/JirkaachS/raidar-app/releases/latest');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.tag_name) {
+            if (active) setLatestVersion(data.tag_name);
+          }
+        }
+      } catch (err) {
+        console.error('GitHub release version check failed:', err);
+      }
+    }
+
+    checkWeb();
+    checkBot();
+    fetchVersion();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const overallStatus =
+    webStatus === 'online' && botStatus === 'online' ? 'operational' :
+    webStatus === 'offline' && botStatus === 'offline' ? 'major-outage' :
+    webStatus === 'checking' || botStatus === 'checking' ? 'checking' : 'partial-outage';
+
+  const statusText =
+    overallStatus === 'operational' ? 'All systems operational' :
+    overallStatus === 'major-outage' ? 'Systems offline' :
+    overallStatus === 'checking' ? 'Checking systems...' : 'Partial service outage';
+
   return (
     <footer className="footer">
       <div className="container">
@@ -14,12 +87,32 @@ export default function Footer() {
             </div>
             <p>Tactical intelligence for Rust — a live map overlay and Discord companion that turns Rust+ into a real-time command center.</p>
             <div className="footer-status">
-              <span className="footer-status-dot" />
-              All systems operational
+              <span className={`footer-status-dot ${overallStatus}`} />
+              {statusText}
+              <div className="footer-status-tooltip">
+                <div className="tooltip-title">System Status</div>
+                <div className="tooltip-item">
+                  <span>Web App:</span>
+                  <span className={`status-label ${webStatus}`}>
+                    {webStatus === 'online' ? 'Operational' : webStatus === 'offline' ? 'Offline' : 'Checking...'}
+                  </span>
+                </div>
+                <div className="tooltip-item">
+                  <span>Discord Bot:</span>
+                  <span className={`status-label ${botStatus}`}>
+                    {botStatus === 'online' ? 'Operational' : botStatus === 'offline' ? 'Offline' : 'Checking...'}
+                  </span>
+                </div>
+                <div className="tooltip-divider" />
+                <div className="tooltip-item version-item">
+                  <span>Latest App:</span>
+                  <span className="version-label">{latestVersion}</span>
+                </div>
+              </div>
             </div>
             <div className="footer-social">
               <a href="https://discord.gg" target="_blank" rel="noreferrer" aria-label="Discord"><MessageCircle size={17} /></a>
-              <a href="https://gitlab.com/supply-pulse-group/RustOverlay" target="_blank" rel="noreferrer" aria-label="Repository"><Github size={17} /></a>
+              <a href="https://github.com/JirkaachS/raidar-app" target="_blank" rel="noreferrer" aria-label="Repository"><Github size={17} /></a>
               <a href="mailto:support@raidar.tech" aria-label="Email"><Mail size={17} /></a>
             </div>
           </div>
@@ -64,3 +157,4 @@ export default function Footer() {
     </footer>
   );
 }
+
