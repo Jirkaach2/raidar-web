@@ -145,6 +145,20 @@
       "entrypoint": "src/main.js",
       "commands": "npm install",
       "path": "functions/steam-auth"
+    },
+    {
+      "$id": "tauri-updater",
+      "name": "tauri-updater",
+      "runtime": "node-18.0",
+      "execute": ["any"],
+      "events": [],
+      "schedule": "",
+      "timeout": 15,
+      "enabled": true,
+      "logging": true,
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "path": "functions/tauri-updater"
     }
   ]
 }

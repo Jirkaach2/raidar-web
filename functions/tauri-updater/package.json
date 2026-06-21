@@ -1,0 +1,8 @@
+{
+  "name": "raidar-tauri-updater",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Appwrite Function: Securely proxy Tauri auto-updater manifest and binaries from private GitHub Releases.",
+  "main": "src/main.js",
+  "dependencies": {}
+}
