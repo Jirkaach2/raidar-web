@@ -2,7 +2,7 @@
 
 This walks through deploying the whole web app (auth + database + Stripe functions + the site)
 to Appwrite. You can do everything in the **Console** (web UI) or speed up the database/functions
-with the **CLI** using the included `appwrite.json`.
+with the **CLI** using the included `appwrite.config.json`.
 
 ## 0. Prerequisites
 - An Appwrite Cloud account (your Pro plan).
@@ -18,7 +18,7 @@ with the **CLI** using the included `appwrite.json`.
 From the `raidar-web/` folder:
 ```bash
 appwrite login
-# put your real project id into appwrite.json first (replace YOUR_PROJECT_ID)
+# put your real project id into appwrite.config.json first (replace YOUR_PROJECT_ID)
 appwrite push collections      # creates the raidar DB + plans & subscriptions collections
 appwrite push functions        # creates & deploys stripe-checkout / -webhook / -portal
 ```
