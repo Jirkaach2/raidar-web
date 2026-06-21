@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Check, Server, CalendarDays, Mail, CreditCard, Crown, ShieldCheck, Zap, MailWarning, Settings as SettingsIcon } from 'lucide-react';
+import { Check, Server, CalendarDays, Mail, CreditCard, Crown, ShieldCheck, Zap, MailWarning, Settings as SettingsIcon, Activity } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import {
   databases, DB_ID, PLANS_COLLECTION_ID, SUBSCRIPTIONS_COLLECTION_ID,
@@ -145,6 +145,7 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="dash-head-actions">
+          <Link className="btn btn-ghost btn-sm" to="/status"><Activity size={14} /> System Status</Link>
           <Link className="btn btn-ghost btn-sm" to="/settings"><SettingsIcon size={14} /> Settings</Link>
           {isAdmin && <Link className="btn btn-ghost btn-sm" to="/admin"><ShieldCheck size={14} /> Admin</Link>}
         </div>

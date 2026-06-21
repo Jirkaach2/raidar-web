@@ -86,7 +86,7 @@ export default function Footer() {
               <Logo size={22} /> RAIDAR
             </div>
             <p>Tactical intelligence for Rust — a live map overlay and Discord companion that turns Rust+ into a real-time command center.</p>
-            <div className="footer-status">
+            <Link to="/status" className="footer-status">
               <span className={`footer-status-dot ${overallStatus}`} />
               {statusText}
               <div className="footer-status-tooltip">
@@ -109,7 +109,7 @@ export default function Footer() {
                   <span className="version-label">{latestVersion}</span>
                 </div>
               </div>
-            </div>
+            </Link>
             <div className="footer-social">
               <a href="https://discord.gg" target="_blank" rel="noreferrer" aria-label="Discord"><MessageCircle size={17} /></a>
               <a href="https://github.com/JirkaachS/raidar-app" target="_blank" rel="noreferrer" aria-label="Repository"><Github size={17} /></a>

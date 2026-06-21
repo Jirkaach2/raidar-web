@@ -21,6 +21,7 @@ import CookiePolicy from './pages/legal/CookiePolicy';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import LinkApp from './pages/LinkApp';
+import Status from './pages/Status';
 
 /** Scroll to top (or to the #hash target) on every navigation. */
 function ScrollManager() {
@@ -83,6 +84,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/status" element={<Status />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

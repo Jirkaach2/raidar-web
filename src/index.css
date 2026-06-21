@@ -1879,3 +1879,289 @@ img { display: block; max-width: 100%; }
 .linkapp-copy:hover { border-color: var(--color-accent); color: #fff; }
 .linkapp-copy svg { color: var(--color-success); }
 .linkapp-hint { font-size: 12.5px; text-align: center; line-height: 1.5; }
+
+/* ════════════════════════════════════════════════════════
+   Dedicated Status Page (/status)
+   ════════════════════════════════════════════════════════ */
+.status-page {
+  padding: 56px 0 80px;
+  max-width: 680px !important;
+  animation: ar-fade-up 550ms var(--ease) both;
+}
+
+.status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.status-header h1 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin: 0 0 6px 0;
+  letter-spacing: 0.5px;
+}
+
+.btn-refresh .spin {
+  animation: spin 1.2s linear infinite;
+}
+
+/* Status Hero Banner */
+.status-hero {
+  display: flex;
+  gap: 20px;
+  padding: 24px;
+  border-radius: var(--radius-lg, 12px);
+  margin-bottom: 36px;
+  align-items: flex-start;
+  border: 1px solid transparent;
+}
+
+.status-hero h2 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-hero p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.status-hero-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+/* Hero Status Variant Styles */
+.status-hero--operational {
+  background: rgba(111, 207, 115, 0.05);
+  border-color: rgba(111, 207, 115, 0.22);
+  color: var(--color-success);
+}
+.status-hero--operational .status-hero-icon {
+  background: rgba(111, 207, 115, 0.12);
+}
+.status-hero--operational p {
+  color: rgba(111, 207, 115, 0.85);
+}
+
+.status-hero--partial-outage {
+  background: rgba(232, 168, 56, 0.05);
+  border-color: rgba(232, 168, 56, 0.22);
+  color: var(--color-warning);
+}
+.status-hero--partial-outage .status-hero-icon {
+  background: rgba(232, 168, 56, 0.12);
+}
+.status-hero--partial-outage p {
+  color: rgba(232, 168, 56, 0.85);
+}
+
+.status-hero--major-outage {
+  background: rgba(232, 69, 69, 0.05);
+  border-color: rgba(232, 69, 69, 0.22);
+  color: var(--color-danger);
+}
+.status-hero--major-outage .status-hero-icon {
+  background: rgba(232, 69, 69, 0.12);
+}
+.status-hero--major-outage p {
+  color: rgba(232, 69, 69, 0.85);
+}
+
+.status-hero--checking {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+.status-hero--checking .status-hero-icon {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Component sections */
+.section-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  margin-bottom: 16px;
+}
+
+.status-components, .status-versions {
+  margin-bottom: 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.status-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  padding: 16px 20px;
+  transition: all 180ms ease;
+}
+
+.status-card:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--color-border-strong);
+}
+
+.status-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.status-card-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.status-card:hover .status-card-icon {
+  color: var(--color-accent-bright);
+  border-color: var(--color-accent-dim);
+  background: rgba(206, 66, 43, 0.08);
+}
+
+.status-card h4 {
+  font-size: 14.5px;
+  font-weight: 600;
+  margin: 0 0 2px 0;
+  color: var(--color-text);
+}
+
+.status-card p.muted {
+  font-size: 12.5px;
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+/* Indicators */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.status-indicator .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-indicator.online {
+  color: var(--color-success);
+  background: rgba(111, 207, 115, 0.1);
+  border: 1px solid rgba(111, 207, 115, 0.2);
+}
+.status-indicator.online .dot {
+  background: var(--color-success);
+  box-shadow: 0 0 6px var(--color-success);
+}
+
+.status-indicator.offline {
+  color: var(--color-danger);
+  background: rgba(232, 69, 69, 0.1);
+  border: 1px solid rgba(232, 69, 69, 0.2);
+}
+.status-indicator.offline .dot {
+  background: var(--color-danger);
+  box-shadow: 0 0 6px var(--color-danger);
+}
+
+.status-indicator.checking {
+  color: var(--color-text-dim);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+}
+.status-indicator.checking .dot {
+  background: var(--color-text-dim);
+}
+
+.latency-badge {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--color-text-dim);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-border);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* Versions */
+.version-card {
+  padding: 20px;
+}
+
+.version-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.version-tag-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.version-tag {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-accent-bright);
+  background: rgba(206, 66, 43, 0.1);
+  border: 1px solid var(--color-accent-dim);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.version-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-info);
+  box-shadow: 0 0 6px var(--color-info);
+}
+
+.version-status-text {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  color: var(--color-info);
+  font-weight: 700;
+}
