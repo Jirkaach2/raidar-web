@@ -9,7 +9,7 @@ import Logo from '../components/Logo';
 export default function Login() {
   const { login, completeMfa, configured } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation() as { state?: { from?: string } };
+  const location = useLocation() as { state?: { from?: string; mfa?: boolean } };
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(() => {
@@ -22,7 +22,7 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
 
   // MFA step
-  const [mfa, setMfa] = useState(false);
+  const [mfa, setMfa] = useState(!!location.state?.mfa);
   const [useRecovery, setUseRecovery] = useState(false);
   const [code, setCode] = useState('');
 

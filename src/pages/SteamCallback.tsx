@@ -18,12 +18,25 @@ export default function SteamCallback() {
     const userId = params.get('userId');
     const secret = params.get('secret');
     if (!userId || !secret) { setError('Missing Steam login token.'); return; }
+    const isMfa = (e: unknown) => (e as { type?: string })?.type === 'user_more_factors_required';
+    const dest = params.get('needsEmail') === '1' ? '/auth/steam/complete' : '/dashboard';
     (async () => {
       try {
-        await account.createSession(userId, secret);
+        // Exchange the one-time token for a session (completes the first factor).
+        try {
+          await account.createSession(userId, secret);
+        } catch (err) {
+          if (!isMfa(err)) throw err; // MFA accounts: the partial session is set
+        }
+        // Either fully signed in, or a second factor is still pending.
+        try {
+          await account.get();
+        } catch (err) {
+          if (isMfa(err)) { navigate('/login', { replace: true, state: { mfa: true, from: dest } }); return; }
+          throw err;
+        }
         await refresh();
-        const needsEmail = params.get('needsEmail') === '1';
-        navigate(needsEmail ? '/auth/steam/complete' : '/dashboard', { replace: true });
+        navigate(dest, { replace: true });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Steam sign-in could not be completed.');
       }
