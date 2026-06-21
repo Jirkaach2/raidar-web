@@ -6,6 +6,7 @@ export const PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID || '';
 export const DB_ID = import.meta.env.VITE_APPWRITE_DB_ID || 'raidar';
 export const PLANS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_PLANS_COLLECTION_ID || 'plans';
 export const SUBSCRIPTIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SUBSCRIPTIONS_COLLECTION_ID || 'subscriptions';
+export const ANNOUNCEMENTS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_ANNOUNCEMENTS_COLLECTION_ID || 'announcements';
 
 // ─── Stripe / billing ─────────────────────────────────────
 export const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
@@ -68,6 +69,18 @@ export interface Subscription extends Models.Document {
 }
 
 export type AppUser = Models.User<Models.Preferences>;
+
+export interface Announcement extends Models.Document {
+  title: string;
+  slug: string;
+  excerpt?: string;
+  body: string;
+  coverImage?: string;
+  type: 'announcement' | 'blog';
+  published: boolean;
+  pinned?: boolean;
+  authorName?: string;
+}
 
 /** Admins are flagged with the `admin` label on their Appwrite account. */
 export function userIsAdmin(user: AppUser | null): boolean {

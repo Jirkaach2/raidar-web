@@ -112,9 +112,21 @@ export default async ({ req, res, log, error }) => {
           if (s.status === 'active') { active++; mrr += priceByPlanId[s.planId] ?? priceByName[s.planName] ?? 0; }
         }
         const admins = userRes.users.filter((u) => (u.labels || []).includes('admin')).length;
+
+        // Resolve identity for every subscription owner (they may not be in the
+        // first page of users), so the dashboard can show names + emails.
+        const known = Object.fromEntries(userRes.users.map((u) => [u.$id, { name: u.name, email: u.email }]));
+        const subUsers = {};
+        for (const id of [...new Set(subList.documents.map((s) => s.userId))]) {
+          if (known[id]) { subUsers[id] = known[id]; continue; }
+          try { const u = await users.get(id); subUsers[id] = { name: u.name, email: u.email }; }
+          catch { subUsers[id] = null; }
+        }
+
         return res.json({
           users: userRes.users.map(slim),
           total: userRes.total,
+          subUsers,
           stats: {
             totalUsers: userRes.total, admins, totalSubs: subList.documents.length,
             activeSubs: active, mrr, planCount: planList.documents.length, byPlan,

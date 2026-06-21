@@ -4,10 +4,12 @@ import {
   Map, Siren, ToggleRight, Bot, Bomb, Radar, ShieldCheck,
   Check, ChevronRight, Download, Wifi, Cpu, Zap, MousePointerClick,
 } from 'lucide-react';
-import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, type Plan } from '../lib/appwrite';
+import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, type Plan, type Announcement } from '../lib/appwrite';
+import { latestPublished } from '../lib/announcements';
 import { useAuth } from '../context/AuthContext';
 import Reveal from '../components/Reveal';
 import AppWindow from '../components/AppWindow';
+import { Megaphone } from 'lucide-react';
 
 const FEATURES = [
   { Icon: Map, title: 'Live Tactical Map', desc: 'Real-time team, monuments, caves, the travelling vendor and every world event — projected on in-game grids with click-through detail panels.' },
@@ -33,6 +35,11 @@ const FALLBACK_PLANS: Array<Pick<Plan, 'name' | 'price' | 'tagline' | 'features'
 export default function Landing() {
   const { user } = useAuth();
   const [plans, setPlans] = useState(FALLBACK_PLANS);
+  const [latest, setLatest] = useState<Announcement | null>(null);
+
+  useEffect(() => {
+    latestPublished().then(setLatest).catch(() => setLatest(null));
+  }, []);
 
   useEffect(() => {
     if (!isConfigured) return;
@@ -163,6 +170,34 @@ export default function Landing() {
           </Reveal>
         </div>
       </section>
+
+      {latest && (
+        <section className="section section-alt" id="latest">
+          <div className="container">
+            <Reveal className="section-head">
+              <span className="hud-label hud-label--accent">// Latest from Raidar</span>
+              <h2 className="section-title">{latest.type === 'blog' ? 'From the blog' : 'Latest announcement'}</h2>
+            </Reveal>
+            <Reveal variant="rise">
+              <Link to={`/blog/${latest.slug}`} className="latest-card bracketed">
+                {latest.coverImage && <div className="latest-cover"><img src={latest.coverImage} alt="" /></div>}
+                <div className="latest-body">
+                  <div className="blog-card-meta">
+                    <span className="blog-tag"><Megaphone size={12} /> {latest.type === 'blog' ? 'Blog' : 'Announcement'}</span>
+                    <span className="blog-date mono">{new Date(latest.$createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <h3>{latest.title}</h3>
+                  {latest.excerpt && <p className="muted">{latest.excerpt}</p>}
+                  <span className="blog-readmore">Read more →</span>
+                </div>
+              </Link>
+              <div style={{ textAlign: 'center', marginTop: 22 }}>
+                <Link className="btn btn-ghost btn-sm" to="/blog">View all posts</Link>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      )}
     </>
   );
 }

@@ -49,6 +49,29 @@
         { "key": "userId_idx", "type": "key", "attributes": ["userId"], "orders": ["ASC"] },
         { "key": "stripeSub_idx", "type": "key", "attributes": ["stripeSubscriptionId"], "orders": ["ASC"] }
       ]
+    },
+    {
+      "$id": "announcements",
+      "databaseId": "raidar",
+      "name": "Announcements",
+      "enabled": true,
+      "documentSecurity": false,
+      "$permissions": ["read(\"any\")", "create(\"label:admin\")", "update(\"label:admin\")", "delete(\"label:admin\")"],
+      "attributes": [
+        { "key": "title", "type": "string", "size": 200, "required": true, "array": false },
+        { "key": "slug", "type": "string", "size": 200, "required": true, "array": false },
+        { "key": "excerpt", "type": "string", "size": 400, "required": false, "array": false, "default": null },
+        { "key": "body", "type": "string", "size": 100000, "required": false, "array": false, "default": null },
+        { "key": "coverImage", "type": "string", "size": 512, "required": false, "array": false, "default": null },
+        { "key": "type", "type": "string", "size": 32, "required": false, "array": false, "default": "announcement" },
+        { "key": "published", "type": "boolean", "required": false, "array": false, "default": false },
+        { "key": "pinned", "type": "boolean", "required": false, "array": false, "default": false },
+        { "key": "authorName", "type": "string", "size": 128, "required": false, "array": false, "default": null }
+      ],
+      "indexes": [
+        { "key": "slug_idx", "type": "key", "attributes": ["slug"], "orders": ["ASC"] },
+        { "key": "published_idx", "type": "key", "attributes": ["published"], "orders": ["ASC"] }
+      ]
     }
   ],
   "functions": [

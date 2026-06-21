@@ -1,23 +1,28 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
-  databases, DB_ID, PLANS_COLLECTION_ID, SUBSCRIPTIONS_COLLECTION_ID,
-  Query, ID, isConfigured, type Plan, type Subscription,
+  databases, DB_ID, PLANS_COLLECTION_ID, SUBSCRIPTIONS_COLLECTION_ID, ANNOUNCEMENTS_COLLECTION_ID,
+  Query, ID, isConfigured, type Plan, type Subscription, type Announcement,
 } from '../lib/appwrite';
-import { listUsers, setAdmin, setStatus, deleteUser, getStats, grantPlan, revokePlan, resetMfa, bootstrap, type AdminUser, type AdminStats } from '../lib/admin';
+import { listAll, slugify } from '../lib/announcements';
+import { listUsers, setAdmin, setStatus, deleteUser, getStats, grantPlan, revokePlan, resetMfa, bootstrap, type AdminUser, type AdminStats, type SubUser } from '../lib/admin';
 import { useAuth } from '../context/AuthContext';
 import Select from '../components/ui/Select';
 import Checkbox from '../components/ui/Checkbox';
 import { useConfirm } from '../components/ui/ConfirmProvider';
+import { Megaphone } from 'lucide-react';
 import {
   Users as UsersIcon, CreditCard, DollarSign, TrendingUp, UserPlus, ShieldCheck,
   RefreshCw, Download, Copy, Search, Ban, CheckCircle2, Trash2, Crown, Layers, Gift, X,
 } from 'lucide-react';
 
-type Tab = 'overview' | 'plans' | 'users' | 'subs';
+type Tab = 'overview' | 'plans' | 'users' | 'subs' | 'blog';
 type UserFilter = 'all' | 'admins' | 'blocked' | 'unverified';
 
 interface PlanForm { name: string; price: string; tagline: string; features: string; servers: string; popular: boolean; order: string; stripePriceId: string; }
 const EMPTY: PlanForm = { name: '', price: '0', tagline: '', features: '', servers: '1', popular: false, order: '0', stripePriceId: '' };
+
+interface PostForm { title: string; slug: string; excerpt: string; body: string; coverImage: string; type: 'announcement' | 'blog'; published: boolean; pinned: boolean; authorName: string; }
+const EMPTY_POST: PostForm = { title: '', slug: '', excerpt: '', body: '', coverImage: '', type: 'announcement', published: true, pinned: false, authorName: '' };
 function toForm(p: Plan): PlanForm {
   return { name: p.name, price: String(p.price), tagline: p.tagline || '', features: (p.features || []).join('\n'), servers: String(p.servers ?? 1), popular: !!p.popular, order: String(p.order ?? 0), stripePriceId: p.stripePriceId || '' };
 }
@@ -41,6 +46,7 @@ export default function Admin() {
 
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [usersTotal, setUsersTotal] = useState(0);
+  const [subUsers, setSubUsers] = useState<Record<string, SubUser | null>>({});
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<UserFilter>('all');
   const [usersLoading, setUsersLoading] = useState(false);
@@ -55,6 +61,13 @@ export default function Admin() {
   const [grantDays, setGrantDays] = useState('30');
   const [grantBusy, setGrantBusy] = useState(false);
 
+  // Blog / announcements
+  const [posts, setPosts] = useState<Announcement[]>([]);
+  const [postEditing, setPostEditing] = useState<string | null>(null);
+  const [postForm, setPostForm] = useState<PostForm>(EMPTY_POST);
+  const [postBusy, setPostBusy] = useState(false);
+  const [slugTouched, setSlugTouched] = useState(false);
+
   const load = useCallback(async () => {
     if (!isConfigured) { setLoading(false); return; }
     setLoading(true); setError('');
@@ -64,6 +77,7 @@ export default function Admin() {
         databases.listDocuments<Subscription>(DB_ID, SUBSCRIPTIONS_COLLECTION_ID, [Query.orderDesc('$createdAt'), Query.limit(500)]),
       ]);
       setPlans(planRes.documents); setSubs(subRes.documents);
+      try { setPosts(await listAll()); } catch { /* collection may not exist yet */ }
     } catch (err) { setError(err instanceof Error ? err.message : 'Could not load admin data.'); }
     finally { setLoading(false); }
   }, []);
@@ -82,7 +96,7 @@ export default function Admin() {
     setUsersLoading(true); setUsersError('');
     try {
       const r = await bootstrap(q);
-      setUsers(r.users); setUsersTotal(r.total); setStats(r.stats);
+      setUsers(r.users); setUsersTotal(r.total); setStats(r.stats); setSubUsers(r.subUsers || {});
     } catch (err) { setUsersError(err instanceof Error ? err.message : 'Could not load users. Is the admin-api function deployed?'); }
     finally { setUsersLoading(false); }
   }, []);
@@ -93,7 +107,8 @@ export default function Admin() {
 
   // ── lookups ──
   const userById = useMemo(() => new Map(users.map((u) => [u.id, u])), [users]);
-  const emailFor = (id: string) => userById.get(id)?.email || id;
+  const emailFor = (id: string) => userById.get(id)?.email || subUsers[id]?.email || id;
+  const nameFor = (id: string) => userById.get(id)?.name || subUsers[id]?.name || '';
   const planForUser = (id: string) => subs.find((s) => s.userId === id)?.planName;
 
   // ── derived stats (convenience, from the loaded user sample) ──
@@ -129,6 +144,31 @@ export default function Admin() {
   const removeSub = async (s: Subscription) => { if (!(await confirm({ title: 'Delete subscription', message: `Delete this subscription (${s.planName})?`, confirmText: 'Delete', danger: true }))) return; try { await databases.deleteDocument(DB_ID, SUBSCRIPTIONS_COLLECTION_ID, s.$id); await load(); await loadStats(); } catch (err) { setError(err instanceof Error ? err.message : 'Failed.'); } };
   const subCount = (planId: string) => subs.filter((s) => s.planId === planId).length;
 
+  // ── blog / announcements ──
+  const startNewPost = () => { setPostForm({ ...EMPTY_POST, authorName: user?.name || 'Raidar' }); setSlugTouched(false); setPostEditing('new'); };
+  const startEditPost = (p: Announcement) => {
+    setPostForm({ title: p.title, slug: p.slug, excerpt: p.excerpt || '', body: p.body || '', coverImage: p.coverImage || '', type: (p.type as 'announcement' | 'blog') || 'announcement', published: !!p.published, pinned: !!p.pinned, authorName: p.authorName || '' });
+    setSlugTouched(true); setPostEditing(p.$id);
+  };
+  const cancelPost = () => { setPostEditing(null); setPostForm(EMPTY_POST); };
+  const setPostTitle = (title: string) => setPostForm((f) => ({ ...f, title, slug: slugTouched ? f.slug : slugify(title) }));
+  const savePost = async (e: FormEvent) => {
+    e.preventDefault(); setPostBusy(true); setError('');
+    const payload = {
+      title: postForm.title.trim(), slug: (postForm.slug || slugify(postForm.title)).trim(),
+      excerpt: postForm.excerpt.trim(), body: postForm.body, coverImage: postForm.coverImage.trim(),
+      type: postForm.type, published: postForm.published, pinned: postForm.pinned, authorName: postForm.authorName.trim(),
+    };
+    try {
+      if (postEditing === 'new') await databases.createDocument(DB_ID, ANNOUNCEMENTS_COLLECTION_ID, ID.unique(), payload);
+      else if (postEditing) await databases.updateDocument(DB_ID, ANNOUNCEMENTS_COLLECTION_ID, postEditing, payload);
+      cancelPost(); setPosts(await listAll());
+    } catch (err) { setError(err instanceof Error ? err.message : 'Could not save the post.'); }
+    finally { setPostBusy(false); }
+  };
+  const togglePublish = async (p: Announcement) => { try { await databases.updateDocument(DB_ID, ANNOUNCEMENTS_COLLECTION_ID, p.$id, { published: !p.published }); setPosts(await listAll()); } catch (err) { setError(err instanceof Error ? err.message : 'Failed.'); } };
+  const removePost = async (p: Announcement) => { if (!(await confirm({ title: 'Delete post', message: `Delete "${p.title}"?`, confirmText: 'Delete', danger: true }))) return; try { await databases.deleteDocument(DB_ID, ANNOUNCEMENTS_COLLECTION_ID, p.$id); setPosts(await listAll()); } catch (err) { setError(err instanceof Error ? err.message : 'Failed.'); } };
+
   // ── users ──
   const applyUser = (u: AdminUser) => setUsers((list) => list.map((x) => (x.id === u.id ? u : x)));
   const onSetAdmin = async (u: AdminUser, value: boolean) => { setBusyUser(u.id); setUsersError(''); try { const r = await setAdmin(u.id, value); applyUser(r.user); loadStats(); } catch (err) { setUsersError(err instanceof Error ? err.message : 'Failed.'); } finally { setBusyUser(null); } };
@@ -162,9 +202,9 @@ export default function Admin() {
   const shownUsers = users.filter((u) => filter === 'all' || (filter === 'admins' && u.labels.includes('admin')) || (filter === 'blocked' && !u.status) || (filter === 'unverified' && !u.emailVerification));
 
   const exportUsers = () => downloadCSV('raidar-users.csv', [['id', 'name', 'email', 'admin', 'status', 'verified', 'plan', 'registered'], ...users.map((u) => [u.id, u.name, u.email, u.labels.includes('admin') ? 'yes' : 'no', u.status ? 'active' : 'blocked', u.emailVerification ? 'yes' : 'no', planForUser(u.id) || '', new Date(u.registration).toISOString()])]);
-  const exportSubs = () => downloadCSV('raidar-subscriptions.csv', [['userId', 'email', 'plan', 'status', 'created'], ...subs.map((s) => [s.userId, emailFor(s.userId), s.planName, s.status, new Date(s.$createdAt).toISOString()])]);
+  const exportSubs = () => downloadCSV('raidar-subscriptions.csv', [['userId', 'name', 'email', 'plan', 'status', 'created'], ...subs.map((s) => [s.userId, nameFor(s.userId), emailFor(s.userId), s.planName, s.status, new Date(s.$createdAt).toISOString()])]);
 
-  const TABS: Array<[Tab, string]> = [['overview', 'Overview'], ['plans', 'Plans'], ['users', 'Users'], ['subs', 'Subscriptions']];
+  const TABS: Array<[Tab, string]> = [['overview', 'Overview'], ['plans', 'Plans'], ['users', 'Users'], ['subs', 'Subscriptions'], ['blog', 'Blog']];
 
   return (
     <div className="dash">
@@ -173,6 +213,7 @@ export default function Admin() {
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-ghost btn-sm" onClick={refreshAll}><RefreshCw size={14} /> Refresh</button>
           {tab === 'plans' && <button className="btn btn-sm" onClick={startNew}>+ New plan</button>}
+          {tab === 'blog' && <button className="btn btn-sm" onClick={startNewPost}>+ New post</button>}
         </div>
       </div>
 
@@ -321,7 +362,10 @@ export default function Admin() {
             <div className="admin-row admin-row-subs admin-row-head"><span>User</span><span>Plan</span><span>Status</span><span>Since</span><span>Actions</span></div>
             {subs.map((s) => (
               <div className="admin-row admin-row-subs" key={s.$id}>
-                <span title={s.userId}>{emailFor(s.userId)}</span>
+                <span title={s.userId} className="admin-sub-user">
+                  <span className="admin-sub-name">{nameFor(s.userId) || '(no name)'}</span>
+                  <span className="admin-sub-email muted">{emailFor(s.userId)}</span>
+                </span>
                 <span>{s.planName}{s.comp && <span className="pill pill-plan" style={{ marginLeft: 6 }}>comp</span>}</span>
                 <span><span className={`status-dot ${s.status}`}>{s.status}</span></span>
                 <span className="mono">{s.expiresAt ? `until ${new Date(s.expiresAt).toLocaleDateString()}` : new Date(s.$createdAt).toLocaleDateString()}</span>
@@ -337,6 +381,52 @@ export default function Admin() {
           </div>
         </>
       )}
+      {/* BLOG */}
+      {tab === 'blog' && (
+        <>
+          {error && <div className="auth-error" style={{ marginBottom: 16 }}>{error}</div>}
+          {postEditing && (
+            <form className="admin-form" onSubmit={savePost}>
+              <h3>{postEditing === 'new' ? 'New post' : 'Edit post'}</h3>
+              <div className="admin-grid">
+                <label>Title<input value={postForm.title} onChange={(e) => setPostTitle(e.target.value)} required /></label>
+                <label>Slug (URL)<input value={postForm.slug} onChange={(e) => { setSlugTouched(true); setPostForm({ ...postForm, slug: e.target.value }); }} placeholder="auto from title" /></label>
+                <label>Type
+                  <Select value={postForm.type} onChange={(v) => setPostForm({ ...postForm, type: v as 'announcement' | 'blog' })}
+                    options={[{ value: 'announcement', label: 'Announcement' }, { value: 'blog', label: 'Blog post' }]} />
+                </label>
+                <label>Author<input value={postForm.authorName} onChange={(e) => setPostForm({ ...postForm, authorName: e.target.value })} /></label>
+              </div>
+              <label>Cover image URL <span className="muted">(optional)</span><input value={postForm.coverImage} onChange={(e) => setPostForm({ ...postForm, coverImage: e.target.value })} placeholder="https://…" /></label>
+              <label>Excerpt <span className="muted">(short summary shown in lists)</span><input value={postForm.excerpt} onChange={(e) => setPostForm({ ...postForm, excerpt: e.target.value })} /></label>
+              <label>Body<textarea rows={10} value={postForm.body} onChange={(e) => setPostForm({ ...postForm, body: e.target.value })} placeholder="Write your post. Leave a blank line between paragraphs." /></label>
+              <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap' }}>
+                <div className="admin-check"><Checkbox checked={postForm.published} onChange={(v) => setPostForm({ ...postForm, published: v })} label="Published" /></div>
+                <div className="admin-check"><Checkbox checked={postForm.pinned} onChange={(v) => setPostForm({ ...postForm, pinned: v })} label="Pin to top" /></div>
+              </div>
+              <div className="admin-actions"><button className="btn" type="submit" disabled={postBusy}>{postBusy ? 'Saving…' : 'Save post'}</button><button className="btn btn-ghost" type="button" onClick={cancelPost}>Cancel</button></div>
+            </form>
+          )}
+          <div className="admin-table">
+            <div className="admin-row admin-row-blog admin-row-head"><span>Title</span><span>Type</span><span>Status</span><span>Date</span><span>Actions</span></div>
+            {posts.map((p) => (
+              <div className="admin-row admin-row-blog" key={p.$id}>
+                <span>{p.pinned && <Megaphone size={12} style={{ verticalAlign: -1, marginRight: 5, color: 'var(--color-accent-bright)' }} />}{p.title}</span>
+                <span className="muted">{p.type === 'blog' ? 'Blog' : 'Announcement'}</span>
+                <span><span className={`status-dot ${p.published ? 'active' : 'cancelled'}`}>{p.published ? 'published' : 'draft'}</span></span>
+                <span className="mono">{new Date(p.$createdAt).toLocaleDateString()}</span>
+                <span className="admin-row-actions">
+                  <button className="btn btn-ghost btn-sm" onClick={() => togglePublish(p)}>{p.published ? 'Unpublish' : 'Publish'}</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => startEditPost(p)}>Edit</button>
+                  <button className="btn btn-ghost btn-sm danger" onClick={() => removePost(p)}><Trash2 size={13} /></button>
+                </span>
+              </div>
+            ))}
+            {posts.length === 0 && <div className="admin-row"><span className="muted">No posts yet — create one.</span></div>}
+          </div>
+        </>
+      )}
+
       {/* GRANT PLAN MODAL */}
       {grantUser && (
         <div className="admin-modal-overlay" onClick={() => !grantBusy && setGrantUser(null)}>

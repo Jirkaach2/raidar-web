@@ -42,6 +42,7 @@ export default function Footer() {
           <div className="footer-col">
             <h4>Resources</h4>
             <Link to="/docs#getting-started">Getting started</Link>
+            <Link to="/blog">Blog &amp; news</Link>
             <Link to="/docs#discord-bot">Discord bot</Link>
             <a href="mailto:support@raidar.tech">Support</a>
           </div>

@@ -18,6 +18,8 @@ import PrivacyPolicy from './pages/legal/PrivacyPolicy';
 import TermsOfService from './pages/legal/TermsOfService';
 import RefundPolicy from './pages/legal/RefundPolicy';
 import CookiePolicy from './pages/legal/CookiePolicy';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
 
 /** Scroll to top (or to the #hash target) on every navigation. */
 function ScrollManager() {
@@ -44,6 +46,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/docs" element={<Docs />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify" element={<Verify />} />

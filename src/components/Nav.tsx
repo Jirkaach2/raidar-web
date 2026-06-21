@@ -31,6 +31,8 @@ export default function Nav() {
   };
 
   const initial = (user?.name || user?.email || 'R')[0].toUpperCase();
+  const prefs = (user?.prefs || {}) as Record<string, unknown>;
+  const avatarUrl = (typeof prefs.avatarUrl === 'string' && prefs.avatarUrl) || (typeof prefs.steamAvatar === 'string' ? prefs.steamAvatar : '');
 
   return (
     <nav className={`nav ${scrolled ? 'scrolled' : ''}`}>
@@ -47,6 +49,7 @@ export default function Nav() {
           <div className="nav-primary">
             <NavLink to="/" end onClick={close}>Home</NavLink>
             <NavLink to="/docs" onClick={close}>Docs</NavLink>
+            <NavLink to="/blog" onClick={close}>Blog</NavLink>
             <NavLink to="/#pricing" onClick={close}>Pricing</NavLink>
             {user && <NavLink to="/dashboard" onClick={close}><LayoutDashboard size={14} /> Dashboard</NavLink>}
             {user && <NavLink to="/settings" onClick={close}><SettingsIcon size={14} /> Settings</NavLink>}
@@ -58,7 +61,7 @@ export default function Nav() {
           {user ? (
             <div className="nav-account">
               <span className="nav-user" title={user.email}>
-                <span className="nav-avatar">{initial}</span>
+                <span className="nav-avatar">{avatarUrl ? <img src={avatarUrl} alt="" /> : initial}</span>
                 <span className="nav-user-name">{user.name || user.email}</span>
               </span>
               <button className="btn btn-ghost btn-sm" onClick={onLogout}><LogOut size={14} /> Sign out</button>
