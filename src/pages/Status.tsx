@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, Server, MessageSquare, Download, CheckCircle2, AlertCircle, XCircle, Activity, Clock, Cpu, ShieldCheck, FileCheck, ExternalLink, Copy } from 'lucide-react';
+import { RefreshCw, Server, MessageSquare, Download, CheckCircle2, AlertCircle, XCircle, Activity, Clock, ShieldCheck, FileCheck, ExternalLink, Copy } from 'lucide-react';
 import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, functions, ExecutionMethod } from '../lib/appwrite';
 
 interface BotHealth {
@@ -328,12 +328,6 @@ export default function Status() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--color-text-dim)' }}>
                   <Clock size={12} style={{ color: 'var(--color-accent)' }} />
                   <span>Uptime: <strong style={{ color: 'var(--color-text)' }}>{formatUptime(botHealth.uptime)}</strong></span>
-                </div>
-              )}
-              {botHealth.memory && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--color-text-dim)' }}>
-                  <Cpu size={12} style={{ color: 'var(--color-accent)' }} />
-                  <span>Heap: <strong style={{ color: 'var(--color-text)' }}>{botHealth.memory.heapUsed}/{botHealth.memory.heapTotal} MB</strong></span>
                 </div>
               )}
               {botHealth.version && (
