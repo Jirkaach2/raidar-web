@@ -207,7 +207,7 @@ export default function AppWindow() {
   return (
     <div className="aw bracketed">
       <div className="aw-bar">
-        <div className="aw-bar-left"><span className="aw-bar-logo"><Logo size={14} /></span><span className="aw-bar-title">RAIDAR</span><span className="aw-bar-ver">v1.0.0</span></div>
+        <div className="aw-bar-left"><span className="aw-bar-logo"><Logo size={14} /></span><span className="aw-bar-title">RAIDAR</span><span className="aw-bar-ver">v1.0.1</span></div>
         <div className="aw-win"><span>–</span><span>▢</span><span className="aw-win-close">✕</span></div>
       </div>
 

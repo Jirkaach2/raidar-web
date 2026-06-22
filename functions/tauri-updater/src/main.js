@@ -25,7 +25,7 @@ export default async ({ req, res, log, error }) => {
   const action = query.action;
 
   // Determine current host and scheme to construct URLs
-  const proto = req.headers['x-forwarded-proto'] || 'https';
+  const proto = 'https';
   const host = req.headers['host'];
   const path = (req.path || '/').split('?')[0];
   const selfBase = `${proto}://${host}`;

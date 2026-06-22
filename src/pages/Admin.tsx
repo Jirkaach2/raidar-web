@@ -55,7 +55,7 @@ export default function Admin() {
   const [busyUser, setBusyUser] = useState<string | null>(null);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [copied, setCopied] = useState('');
-  const [latestVersion, setLatestVersion] = useState<string>('v1.0.0');
+  const [latestVersion, setLatestVersion] = useState<string>('v1.0.1');
 
   useEffect(() => {
     async function fetchVersion() {

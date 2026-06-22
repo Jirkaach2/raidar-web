@@ -8,7 +8,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
   const [webStatus, setWebStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [botStatus, setBotStatus] = useState<'checking' | 'online' | 'offline'>('checking');
-  const [latestVersion, setLatestVersion] = useState<string>('v1.0.0');
+  const [latestVersion, setLatestVersion] = useState<string>('v1.0.1');
 
   useEffect(() => {
     let active = true;
