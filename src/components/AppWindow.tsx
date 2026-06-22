@@ -4,6 +4,8 @@ import {
   ToggleRight, ToggleLeft, BellRing, Database, Trash2, Edit2, Zap as ZapIc, Moon, Siren, Power,
   Home, Clock, Lock, Flame, RefreshCw, DollarSign, Calculator, Compass, Video, Activity, Shield,
   ArrowUpDown, MapPin, Info, ExternalLink, Trophy, X,
+  BarChart3, ArrowDown, ArrowUp, Minus, Terminal, Target,
+  Dna, Sprout, Fish, Check, Crown, Waves, Gauge, Hammer,
 } from 'lucide-react';
 import Logo from './Logo';
 
@@ -59,8 +61,10 @@ const BEST = [
 
 const TOOL_GROUPS: Array<{ label: string; tools: Array<[string, string, typeof Home]> }> = [
   { label: 'BASE & DEFENSE', tools: [['cupboard', 'Cupboard', Home], ['decay', 'Decay', Clock]] },
-  { label: 'RAIDING', tools: [['crates', 'Locked Crates', Lock], ['raidcost', 'Raid Cost', Flame], ['loadout', 'Loadout Lab', Shield], ['recycler', 'Recycler', RefreshCw]] },
-  { label: 'INTEL', tools: [['pricewatch', 'Price Watch', DollarSign], ['profit', 'Profit Scan', Calculator], ['richbase', 'Rich Bases', Compass], ['cctv', 'CCTV Codes', Video], ['activity', 'Activity', Activity], ['lookup', 'Player Lookup', Search]] },
+  { label: 'COMBAT & RAIDING', tools: [['raidcost', 'Raid Cost', Flame], ['loadout', 'Loadout Lab', Shield], ['crates', 'Locked Crates', Lock]] },
+  { label: 'MARKET & ECONOMY', tools: [['pricewatch', 'Price Watch', DollarSign], ['marketindex', 'Market Index', BarChart3], ['profit', 'Profit Scan', Calculator], ['recycler', 'Recycler', RefreshCw]] },
+  { label: 'RECON & INTEL', tools: [['lookup', 'Player Lookup', Search], ['richbase', 'Rich Bases', Compass], ['activity', 'Activity', Activity], ['combatlog', 'Combat Log', Terminal], ['cctv', 'CCTV Codes', Video]] },
+  { label: 'SURVIVAL', tools: [['fishing', 'Fishing Guide', Fish], ['farming', 'Farming Solver', Sprout]] },
 ];
 const CCTV: Array<[string, string]> = [
   ['Large Oil Rig', 'OILRIG1L'], ['Small Oil Rig', 'OILRIG1S'], ['Dome', 'DOME1'], ['Airfield', 'AIRFIELDHELi'],
@@ -136,6 +140,69 @@ const LO_ARMOR: Record<string, { name: string; head: number; chest: number; legs
   hazzy: { name: 'Hazmat Suit', head: 0.2, chest: 0.2, legs: 0.2 },
 };
 
+// ── Raid cost (real verified placement counts & sulfur) ──
+const RC_TARGETS: Array<{ key: string; name: string; icon: string; hp: number; methods: Array<{ key: string; name: string; icon: string; count: number; sulfur: number }> }> = [
+  { key: 'sheet_wall', name: 'Sheet Metal Wall', icon: 'wall', hp: 1000, methods: [
+    { key: 'c4', name: 'C4', icon: 'explosive.timed', count: 4, sulfur: 8800 },
+    { key: 'explo', name: 'Explo 5.56', icon: 'ammo.rifle.explosive', count: 400, sulfur: 10000 },
+    { key: 'satchel', name: 'Satchel', icon: 'explosive.satchel', count: 23, sulfur: 11040 },
+    { key: 'rocket', name: 'Rocket', icon: 'ammo.rocket.basic', count: 8, sulfur: 11200 },
+    { key: 'hv', name: 'HV Rocket', icon: 'ammo.rocket.hv', count: 67, sulfur: 13400 },
+  ] },
+  { key: 'armored_door', name: 'Armored Door', icon: 'door.hinged.toptier', hp: 1000, methods: [
+    { key: 'c4', name: 'C4', icon: 'explosive.timed', count: 4, sulfur: 8800 },
+    { key: 'satchel', name: 'Satchel', icon: 'explosive.satchel', count: 19, sulfur: 9120 },
+    { key: 'rocket', name: 'Rocket', icon: 'ammo.rocket.basic', count: 7, sulfur: 9800 },
+  ] },
+  { key: 'garage_door', name: 'Garage Door', icon: 'wall.frame.garagedoor', hp: 600, methods: [
+    { key: 'rocket', name: 'Rocket', icon: 'ammo.rocket.basic', count: 3, sulfur: 4200 },
+    { key: 'satchel', name: 'Satchel', icon: 'explosive.satchel', count: 9, sulfur: 4320 },
+    { key: 'c4', name: 'C4', icon: 'explosive.timed', count: 2, sulfur: 4400 },
+  ] },
+];
+
+// ── Market index ──
+const MKT_SOLD: Array<[string, string, number]> = [
+  ['scrap', 'Scrap', 4820], ['cloth', 'Cloth', 3110], ['gunpowder', 'Gun Powder', 2640],
+  ['lowgradefuel', 'Low Grade Fuel', 1980], ['metal.fragments', 'Metal Frags', 1450], ['sulfur', 'Sulfur', 920],
+];
+const MKT_PRICES: Array<{ icon: string; name: string; cur: string; low: number; avg: number; high: number; last: number }> = [
+  { icon: 'explosive.timed', name: 'C4', cur: 'Scrap', low: 420, avg: 480, high: 560, last: 450 },
+  { icon: 'rifle.ak', name: 'Assault Rifle', cur: 'Scrap', low: 230, avg: 265, high: 320, last: 240 },
+  { icon: 'metal.refined', name: 'HQM', cur: 'Scrap', low: 70, avg: 82, high: 95, last: 75 },
+  { icon: 'sulfur', name: 'Sulfur', cur: 'Scrap', low: 80, avg: 92, high: 110, last: 90 },
+  { icon: 'lowgradefuel', name: 'Low Grade Fuel', cur: 'Scrap', low: 4, avg: 6, high: 9, last: 5 },
+];
+
+// ── Combat log (parsed PVP sample) ──
+const CL_METRICS = { dealt: 290, taken: 145, kills: 1, deaths: 1, accuracy: 100, headshot: 50, invalid: 0 };
+const CL_HITS: Array<[string, number, string]> = [['Head', 50, 'head'], ['Chest', 33, 'chest'], ['Stomach', 17, 'stomach'], ['Limbs', 0, 'limbs']];
+const CL_EVENTS: Array<{ time: string; label: string; tone: string; weapon: string; area: string; desc: string }> = [
+  { time: '00:01', label: 'HIT', tone: 'dealt', weapon: 'AK-47', area: 'head', desc: 'Player_Ninja · 18m · −35' },
+  { time: '00:01', label: 'HIT', tone: 'dealt', weapon: 'AK-47', area: 'chest', desc: 'Player_Ninja · 18m · −25' },
+  { time: '00:01', label: 'TOOK', tone: 'taken', weapon: 'MP5', area: 'chest', desc: 'Player_Ninja · 18m · −20' },
+  { time: '00:02', label: 'KILL', tone: 'kill', weapon: 'AK-47', area: 'chest', desc: 'Player_Ninja · 18m' },
+  { time: '00:02', label: 'DEATH', tone: 'death', weapon: 'Bolt AR', area: 'head', desc: 'by Player_Sniper · 115m' },
+];
+
+// ── Fishing ──
+const FISH_BAITS: Array<{ name: string; lvl: number; stack: number; max: number; tier: string }> = [
+  { name: 'Grub', lvl: 3.5, stack: 3, max: 10.5, tier: 'S' },
+  { name: 'Worm', lvl: 2.5, stack: 3, max: 7.5, tier: 'S' },
+  { name: 'Raw Bear Meat', lvl: 10, stack: 1, max: 10, tier: 'A' },
+  { name: 'Anchovy', lvl: 2, stack: 2, max: 4, tier: 'B' },
+  { name: 'Raw Fish Meat', lvl: 0.5, stack: 10, max: 5, tier: 'A' },
+];
+
+// ── Farming genetic solver (solved example) ──
+const FARM_TARGET = ['Y', 'Y', 'Y', 'Y', 'G', 'G'];
+const FARM_GOOD = new Set(['G', 'Y', 'H']);
+const FARM_GRID: Array<{ label: string; genes: string; type: 'clone' | 'target' } | null> = [
+  { label: 'Clone A', genes: 'GYYYYX', type: 'clone' }, null, { label: 'Clone B', genes: 'GGYYXX', type: 'clone' },
+  null, { label: 'CROSSBREED', genes: 'YYYYGG', type: 'target' }, null,
+  { label: 'Clone C', genes: 'HHYYGG', type: 'clone' }, null, { label: 'Clone A', genes: 'GYYYYX', type: 'clone' },
+];
+
 function bucket(seed: number, d: number, h: number): number {
   const peak = ((seed * 7) % 6) + 18;
   const dist = Math.min(Math.abs(h - peak), Math.abs(h - peak + 24));
@@ -179,6 +246,7 @@ export default function AppWindow() {
   const [loWeapon, setLoWeapon] = useState('rifle.ak');
   const [loArmor, setLoArmor] = useState('metal');
   const [cupSel, setCupSel] = useState('tc');
+  const [rcTarget, setRcTarget] = useState('sheet_wall');
 
   // Live status bar.
   const [time, setTime] = useState(clock());
@@ -207,7 +275,7 @@ export default function AppWindow() {
   return (
     <div className="aw bracketed">
       <div className="aw-bar">
-        <div className="aw-bar-left"><span className="aw-bar-logo"><Logo size={14} /></span><span className="aw-bar-title">RAIDAR</span><span className="aw-bar-ver">v1.0.1</span></div>
+        <div className="aw-bar-left"><span className="aw-bar-logo"><Logo size={14} /></span><span className="aw-bar-title">RAIDAR</span><span className="aw-bar-ver">v1.1.3</span></div>
         <div className="aw-win"><span>–</span><span>▢</span><span className="aw-win-close">✕</span></div>
       </div>
 
@@ -574,7 +642,119 @@ export default function AppWindow() {
                   </div>
                   <div className="aw-lk-stats"><div><span className="l">K/D</span><span className="v" style={{ color: '#ce422b' }}>7.41</span></div><div><span className="l">HEADSHOT</span><span className="v" style={{ color: '#e8a838' }}>61%</span></div><div><span className="l">ACCURACY</span><span className="v" style={{ color: '#06b6d4' }}>44%</span></div><div><span className="l">BANNED FRIENDS</span><span className="v" style={{ color: '#ce422b' }}>6/14</span></div></div>
                 </>}
-                {!['cctv', 'recycler', 'pricewatch', 'cupboard', 'decay', 'crates', 'profit', 'richbase', 'activity', 'loadout', 'lookup'].includes(tool) && (
+                {tool === 'raidcost' && (() => {
+                  const t = RC_TARGETS.find((x) => x.key === rcTarget) || RC_TARGETS[0];
+                  const sorted = [...t.methods].sort((a, b) => a.sulfur - b.sulfur);
+                  const best = sorted[0];
+                  const maxS = Math.max(...sorted.map((m) => m.sulfur));
+                  return <>
+                    <div className="aw-tool-h"><Flame size={14} /> RAID COST CALCULATOR</div>
+                    <div className="aw-rc-tabs">{RC_TARGETS.map((x) => <button key={x.key} className={rcTarget === x.key ? 'on' : ''} onClick={() => setRcTarget(x.key)}><img src={icon(x.icon)} onError={hideErr} alt="" />{x.name}</button>)}</div>
+                    <div className="aw-rc-best">
+                      <div className="aw-rc-best-h"><span className="aw-rc-best-tag"><Crown size={12} /> CHEAPEST</span><span className="aw-rc-best-hp">{t.hp.toLocaleString()} HP</span></div>
+                      <div className="aw-rc-best-body">
+                        <span className="aw-rc-best-cost"><img src={icon('sulfur')} onError={hideErr} alt="" /><b>{best.sulfur.toLocaleString()}</b> sulfur</span>
+                        <span className="aw-rc-chip"><img src={icon(best.icon)} onError={hideErr} alt="" /><b>{best.count}×</b> {best.name}</span>
+                      </div>
+                    </div>
+                    <div className="aw-tool-h" style={{ marginTop: 12 }}><Trophy size={13} /> RANKED METHODS</div>
+                    {sorted.map((m, i) => (
+                      <div className={`aw-rc-m ${i === 0 ? 'best' : ''}`} key={m.key}>
+                        <span className={`aw-rc-rank ${i < 3 ? `r${i + 1}` : ''}`}>{i + 1}</span>
+                        <img src={icon(m.icon)} onError={hideErr} alt="" />
+                        <span className="aw-rc-mname">{m.name}{i === 0 && <span className="aw-rc-pill">BEST</span>}</span>
+                        <div className="aw-rc-bar"><span style={{ width: `${(m.sulfur / maxS) * 100}%` }} /></div>
+                        <span className="aw-rc-count">{m.count}×</span>
+                        <span className="aw-rc-sulfur"><img src={icon('sulfur')} onError={hideErr} alt="" />{(m.sulfur / 1000).toFixed(1)}k</span>
+                      </div>
+                    ))}
+                  </>;
+                })()}
+                {tool === 'marketindex' && (() => {
+                  const maxU = MKT_SOLD[0][2];
+                  return <>
+                    <div className="aw-tool-h"><BarChart3 size={14} /> MARKET INDEX</div>
+                    <p className="aw-tool-p">What's selling most + the low / avg / high prices recorded across every shop while connected.</p>
+                    <div className="aw-mkt-sub"><Flame size={11} /> MOST SOLD ITEMS</div>
+                    {MKT_SOLD.map(([ic, name, units], i) => (
+                      <div className="aw-mkt-sold" key={ic}>
+                        <span className={`aw-mkt-rank ${i < 3 ? `r${i + 1}` : ''}`}>{i + 1}</span>
+                        <img src={icon(ic)} onError={hideErr} alt="" />
+                        <span className="aw-mkt-name">{name}</span>
+                        <div className="aw-mkt-bar"><span style={{ width: `${(units / maxU) * 100}%` }} /></div>
+                        <b className="aw-mkt-units">{(units / 1000).toFixed(1)}k</b>
+                      </div>
+                    ))}
+                    <div className="aw-mkt-sub" style={{ marginTop: 12 }}><BarChart3 size={11} /> PRICE INDEX</div>
+                    <div className="aw-mkt-tbl">
+                      <div className="aw-mkt-row aw-mkt-row-h"><span>Item</span><span><ArrowDown size={9} /> Low</span><span><Minus size={9} /> Avg</span><span><ArrowUp size={9} /> High</span></div>
+                      {MKT_PRICES.map((p) => (
+                        <div className="aw-mkt-row" key={p.name}>
+                          <span className="aw-mkt-item"><img src={icon(p.icon)} onError={hideErr} alt="" /><span>{p.name}<small>{p.cur}</small></span></span>
+                          <span className="aw-mkt-low">{p.low}</span><span className="aw-mkt-avg">{p.avg}</span><span className="aw-mkt-high">{p.high}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>;
+                })()}
+                {tool === 'combatlog' && <>
+                  <div className="aw-tool-h"><Terminal size={14} /> COMBAT LOG ANALYZER</div>
+                  <p className="aw-tool-p">Paste your in-game <code>combatlog</code> output for damage, accuracy & hit telemetry.</p>
+                  <div className="aw-cl-metrics">
+                    <div className="aw-cl-metric dealt"><span>Dealt</span><b>{CL_METRICS.dealt}</b></div>
+                    <div className="aw-cl-metric taken"><span>Taken</span><b>{CL_METRICS.taken}</b></div>
+                    <div className="aw-cl-metric"><span>K / D</span><b>{CL_METRICS.kills}/{CL_METRICS.deaths}</b></div>
+                    <div className="aw-cl-metric"><span>Acc</span><b>{CL_METRICS.accuracy}%</b></div>
+                    <div className="aw-cl-metric"><span>HS</span><b>{CL_METRICS.headshot}%</b></div>
+                  </div>
+                  <div className="aw-cl-sub"><Target size={11} /> HIT DISTRIBUTION</div>
+                  {CL_HITS.map(([label, pct, k]) => (
+                    <div className="aw-cl-hit" key={k as string}><span className="aw-cl-hl">{label}</span><div className="aw-cl-track"><div className={`aw-cl-fill ${k}`} style={{ width: `${pct}%` }} /></div><span className="aw-cl-hp">{pct as number}%</span></div>
+                  ))}
+                  <div className="aw-cl-sub" style={{ marginTop: 12 }}><Activity size={11} /> EVENT TIMELINE</div>
+                  <div className="aw-cl-tl">{CL_EVENTS.map((e, i) => (
+                    <div className={`aw-cl-ev ${e.tone}`} key={i}><span className="aw-cl-time">{e.time}</span><span className="aw-cl-evdot" /><span className="aw-cl-label">{e.label}</span><span className="aw-cl-weapon">{e.weapon}</span><span className={`aw-cl-evarea ${e.area}`}>{e.area}</span><span className="aw-cl-desc">{e.desc}</span></div>
+                  ))}</div>
+                </>}
+                {tool === 'fishing' && <>
+                  <div className="aw-tool-h"><Fish size={14} /> FISHING & FISH TRAPS</div>
+                  <div className="aw-fish-facts">
+                    <div className="aw-fish-fact"><Hammer size={13} /><div><span>Craft cost</span><b>200 Wood · 5 Cloth</b></div></div>
+                    <div className="aw-fish-fact"><Gauge size={13} /><div><span>Durability</span><b>−10 / catch</b></div></div>
+                    <div className="aw-fish-fact"><Waves size={13} /><div><span>Depth</span><b>Acts as 5m</b></div></div>
+                  </div>
+                  <div className="aw-tool-h" style={{ marginTop: 12 }}>BAIT REFERENCE</div>
+                  <div className="aw-fish-tbl">
+                    <div className="aw-fish-row aw-fish-row-h"><span>Bait</span><span>Lvl</span><span>Stack</span><span>Max</span></div>
+                    {FISH_BAITS.map((b) => (
+                      <div className="aw-fish-row" key={b.name}><span className="aw-fish-bait"><span className={`aw-fish-tier t${b.tier}`}>{b.tier}</span>{b.name}</span><span>{b.lvl}</span><span>{b.stack}</span><span className="aw-fish-max">{b.max}</span></div>
+                    ))}
+                  </div>
+                  <div className="aw-fish-calc"><Calculator size={12} /> <span>30× Grub → effective level <b>10.5</b> · likely catch <b>Salmon &amp; Catfish</b></span></div>
+                </>}
+                {tool === 'farming' && <>
+                  <div className="aw-tool-h"><Dna size={14} /> FARMING GENETIC SOLVER</div>
+                  <p className="aw-tool-p">Find the planting grid that crossbreeds your clones into a target genotype.</p>
+                  <div className="aw-farm-target">
+                    <span className="aw-farm-lbl">TARGET</span>
+                    {FARM_TARGET.map((g, i) => <span key={i} className={`aw-farm-pill ${FARM_GOOD.has(g) ? 'good' : 'bad'}`}>{g}</span>)}
+                  </div>
+                  <div className="aw-farm-banner"><Check size={13} /> Exact match — plant 3 neighbours</div>
+                  <div className="aw-farm-grid">
+                    {FARM_GRID.map((c, i) => {
+                      if (!c) return <div className="aw-farm-cell empty" key={i} />;
+                      const cls = c.type === 'target' ? 'center' : 'clone';
+                      return (
+                        <div className={`aw-farm-cell ${cls}`} key={i}>
+                          <span className="aw-farm-cl">{c.label}</span>
+                          <div className="aw-farm-seq">{c.genes.split('').map((g, j) => <span key={j} className={`aw-farm-pill sm ${FARM_GOOD.has(g) ? 'good' : 'bad'}`}>{g}</span>)}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <ol className="aw-farm-steps"><li>Plant the surrounding neighbour clones.</li><li>Let them reach the sapling stage, then plant the centre.</li><li>It absorbs the winning genes — take cuttings immediately.</li></ol>
+                </>}
+                {!['cctv', 'recycler', 'pricewatch', 'cupboard', 'decay', 'crates', 'profit', 'richbase', 'activity', 'loadout', 'lookup', 'raidcost', 'marketindex', 'combatlog', 'fishing', 'farming'].includes(tool) && (
                   <div className="aw-tool-generic">
                     <div className="aw-tg-ico"><ToolIcon size={26} /></div>
                     <h3>{toolMeta?.[1]}</h3>
