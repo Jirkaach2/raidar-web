@@ -22,6 +22,7 @@ const UPDATER_BASE = 'https://tauri-updater.appwrite.network';
 
 interface ScanResult {
   found?: boolean;
+  submitted?: boolean;
   detections?: number;
   total?: number;        // VirusTotal engine total
   totalEngines?: number; // MetaDefender engine total
@@ -55,8 +56,9 @@ type VerdictTone = 'clean' | 'flag' | 'muted';
 function verdictFor(key: 'virustotal' | 'metadefender', result: ScanResult | undefined, loading: boolean): { text: string; tone: VerdictTone } {
   if (loading) return { text: 'Checking…', tone: 'muted' };
   if (!result || result.error === 'not_configured') return { text: 'Live scan not configured', tone: 'muted' };
+  if (result.submitted) return { text: 'Submitted — analyzing…', tone: 'muted' };
   if (result.error) return { text: 'Live lookup unavailable', tone: 'muted' };
-  if (result.found === false) return { text: 'Not yet submitted', tone: 'muted' };
+  if (result.found === false) return { text: 'Submitting for analysis…', tone: 'muted' };
   const detections = result.detections || 0;
   const total = (key === 'virustotal' ? result.total : result.totalEngines) || 0;
   if (detections === 0) return { text: `Clean — 0 / ${total} engines`, tone: 'clean' };
@@ -194,7 +196,14 @@ export default function Status() {
         const data = JSON.parse(exec.responseBody || '{}');
         if (data && (data.virustotal || data.metadefender)) {
           setScan(data as ScanData);
-          try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch { /* quota */ }
+          // Only cache terminal results. If a scan is still submitting/analyzing,
+          // skip the cache so the next visit re-polls and picks up the verdict.
+          const vt = data.virustotal || {};
+          const md = data.metadefender || {};
+          const settled = vt.found === true && md.found === true;
+          if (settled) {
+            try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch { /* quota */ }
+          }
         }
       }
     } catch (err) {
