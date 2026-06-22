@@ -8,10 +8,11 @@
 //   VIRUSTOTAL_API_KEY    — VirusTotal v3 API key
 //   METADEFENDER_API_KEY  — OPSWAT MetaDefender Cloud API key
 //   GITHUB_PAT            — token with read access to the release repo (for auto-submit)
-//   DEFAULT_HASH         — installer SHA-256 (used when no ?hash= is given AND as the
-//                          guard that decides whether auto-submit is allowed)
+//   DEFAULT_HASH         — installer SHA-256 used only when no ?hash= is given
 // Optional:
 //   REPO_OWNER (default JirkaachS), REPO_NAME (default raidar-app)
+
+import { createHash } from 'node:crypto';
 
 const SHA256_RE = /^[a-fA-F0-9]{64}$/;
 
@@ -141,21 +142,27 @@ export default async ({ req, res, log }) => {
     mdLookup(hash, MD_KEY, log),
   ]);
 
-  // Auto-submit the installer if a provider has no report yet. Only do this for the
-  // known release hash, and only if we can pull the file from GitHub.
+  // Auto-submit the installer if a provider has no report yet. We pull the latest
+  // release installer and only submit it once we've verified its SHA-256 matches the
+  // requested hash — so we never push the wrong file through the API keys, and no
+  // per-release env change is needed.
   const needVt = virustotal.found === false && VT_KEY;
   const needMd = metadefender.found === false && MD_KEY;
-  const allowSubmit = hash === defaultHash && PAT;
 
-  if ((needVt || needMd) && allowSubmit) {
+  if ((needVt || needMd) && PAT) {
     try {
       const { buffer, filename } = await getInstaller(PAT, owner, repo, log);
-      const submits = await Promise.all([
-        needVt ? vtSubmit(buffer, filename, VT_KEY, log) : Promise.resolve(null),
-        needMd ? mdSubmit(buffer, filename, MD_KEY, log) : Promise.resolve(null),
-      ]);
-      if (submits[0]) virustotal = submits[0];
-      if (submits[1]) metadefender = submits[1];
+      const actual = createHash('sha256').update(Buffer.from(buffer)).digest('hex').toLowerCase();
+      if (actual !== hash) {
+        log(`Installer hash ${actual} != requested ${hash}; not submitting.`);
+      } else {
+        const submits = await Promise.all([
+          needVt ? vtSubmit(buffer, filename, VT_KEY, log) : Promise.resolve(null),
+          needMd ? mdSubmit(buffer, filename, MD_KEY, log) : Promise.resolve(null),
+        ]);
+        if (submits[0]) virustotal = submits[0];
+        if (submits[1]) metadefender = submits[1];
+      }
     } catch (e) {
       log(`Auto-submit skipped: ${e.message}`);
     }
