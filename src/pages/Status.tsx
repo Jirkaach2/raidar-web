@@ -167,19 +167,35 @@ export default function Status() {
       console.error('Version fetch failed:', err);
     }
 
-    // 4. Live malware scan results (keys stay server-side in the function)
+    // 4. Live malware scan results (keys stay server-side in the function).
+    // Cache per browser session for 15 min to stay within free-tier API limits.
     setScanLoading(true);
     try {
-      const exec = await functions.createExecution(
-        'security-scan',
-        '',
-        false,
-        `/?hash=${INSTALLER_SHA256}`,
-        ExecutionMethod.GET
-      );
-      const data = JSON.parse(exec.responseBody || '{}');
-      if (data && (data.virustotal || data.metadefender)) {
-        setScan(data as ScanData);
+      const CACHE_KEY = `raidar_scan_${INSTALLER_SHA256}`;
+      const cachedRaw = sessionStorage.getItem(CACHE_KEY);
+      let used = false;
+      if (cachedRaw) {
+        try {
+          const cached = JSON.parse(cachedRaw);
+          if (cached && cached.ts && Date.now() - cached.ts < 15 * 60 * 1000 && cached.data) {
+            setScan(cached.data as ScanData);
+            used = true;
+          }
+        } catch { /* ignore corrupt cache */ }
+      }
+      if (!used) {
+        const exec = await functions.createExecution(
+          'security-scan',
+          '',
+          false,
+          `/?hash=${INSTALLER_SHA256}`,
+          ExecutionMethod.GET
+        );
+        const data = JSON.parse(exec.responseBody || '{}');
+        if (data && (data.virustotal || data.metadefender)) {
+          setScan(data as ScanData);
+          try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch { /* quota */ }
+        }
       }
     } catch (err) {
       console.error('Scan fetch failed:', err);
