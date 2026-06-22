@@ -2257,14 +2257,15 @@ img { display: block; max-width: 100%; }
 .security-scanner-ext { color: var(--color-text-dim); }
 .security-scanner:hover .security-scanner-ext { color: var(--color-accent-bright); }
 .security-scanner-desc { margin: 0; font-size: 11.5px; line-height: 1.45; color: var(--color-text-muted); flex: 1; }
-.security-scanner-verdict {
+.security-scanner-cta {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--color-success);
+  color: var(--color-accent-bright);
 }
+.security-scanner:hover .security-scanner-cta { color: var(--color-text); }
 
 .security-note { font-size: 11.5px; line-height: 1.55; margin: 0; }
 .security-note code {

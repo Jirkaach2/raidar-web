@@ -15,39 +15,46 @@ interface BotHealth {
 // Update this whenever a new release is published so the scan links stay accurate.
 const INSTALLER_SHA256 = '2c4d7083ec8723ab42563826303b2ae2172344e54145398eb10db03159b1759d';
 
+// Public domain of the tauri-updater Appwrite function. Used to build a correct
+// download URL — the manifest's own url is rewritten from the request host, which
+// is wrong when the function is invoked via the SDK rather than hit directly.
+const UPDATER_BASE = 'https://tauri-updater.appwrite.network';
+
 interface ScanService {
   name: string;
   desc: string;
   url: string;
-  verdict: string;
+  cta: string;
 }
 
-// Independent multi-engine scanners. VirusTotal links directly to the file
-// report by hash; the others let visitors run / view their own scan.
+// Independent multi-engine scanners. VirusTotal links to the file report by hash;
+// the others let visitors look up or submit the installer themselves. We intentionally
+// do NOT assert a verdict here — the report only exists once the file has been
+// submitted, so we link out rather than claim a result we haven't verified.
 const SCAN_SERVICES: ScanService[] = [
   {
     name: 'VirusTotal',
     desc: 'Aggregates 70+ antivirus engines and sandbox detonation.',
     url: `https://www.virustotal.com/gui/file/${INSTALLER_SHA256}`,
-    verdict: 'Clean · 0 detections',
+    cta: 'View report by hash',
   },
   {
     name: 'Hybrid Analysis',
     desc: 'CrowdStrike Falcon Sandbox behavioural analysis.',
     url: `https://www.hybrid-analysis.com/search?query=${INSTALLER_SHA256}`,
-    verdict: 'No malicious indicators',
+    cta: 'Search this hash',
   },
   {
     name: 'MetaDefender',
     desc: 'OPSWAT multiscanning across 30+ engines.',
-    url: `https://metadefender.com/results/file/hash/${INSTALLER_SHA256}`,
-    verdict: 'Clean',
+    url: `https://metadefender.com/results/file/hash/${INSTALLER_SHA256}/regular`,
+    cta: 'Look up this hash',
   },
   {
     name: 'Jotti Malware Scan',
     desc: 'Independent multi-engine community scanner.',
     url: 'https://virusscan.jotti.org/',
-    verdict: 'Submit to verify',
+    cta: 'Submit to scan',
   },
 ];
 
@@ -139,10 +146,15 @@ export default function Status() {
         setLatestVersion(`v${data.version}`);
       }
       // The updater manifest carries a proxied, auth-backed download URL that works
-      // even though the release repo is private — use it for the download button.
-      const winUrl = data?.platforms?.['windows-x86_64']?.url;
-      if (typeof winUrl === 'string' && winUrl) {
-        setDownloadUrl(winUrl);
+      // even though the release repo is private. Its host is rewritten from the
+      // request and is unreliable via the SDK, so rebuild it against UPDATER_BASE
+      // using only the asset_id.
+      const winUrl: string | undefined = data?.platforms?.['windows-x86_64']?.url;
+      if (typeof winUrl === 'string' && winUrl.includes('asset_id=')) {
+        const assetId = winUrl.split('asset_id=')[1].split('&')[0];
+        if (assetId) {
+          setDownloadUrl(`${UPDATER_BASE}/?action=download&asset_id=${assetId}`);
+        }
       }
     } catch (err) {
       console.error('Version fetch failed:', err);
@@ -316,11 +328,11 @@ export default function Status() {
           <div className="security-intro">
             <span className="status-card-icon security-shield"><ShieldCheck size={20} /></span>
             <div>
-              <h4>Independently scanned &amp; code-signed</h4>
+              <h4>Code-signed &amp; independently verifiable</h4>
               <p className="muted">
-                Every Raidar release is an open, code-signed Windows installer. We publish the
-                exact file hash so anyone can verify the download they receive matches the
-                build we shipped — and confirm it against independent malware scanners.
+                Every Raidar release is a code-signed Windows installer. We publish the
+                exact file hash so anyone can confirm the download they receive matches the
+                build we shipped, and look it up on independent malware scanners below.
               </p>
             </div>
           </div>
@@ -351,18 +363,20 @@ export default function Status() {
                   <ExternalLink size={12} className="security-scanner-ext" />
                 </div>
                 <p className="security-scanner-desc">{svc.desc}</p>
-                <span className="security-scanner-verdict">
-                  <CheckCircle2 size={11} /> {svc.verdict}
+                <span className="security-scanner-cta">
+                  {svc.cta} <ExternalLink size={10} />
                 </span>
               </a>
             ))}
           </div>
 
           <p className="security-note muted">
-            Some engines may flag new, low-reputation executables as "unknown" until enough
-            users have run them — this is heuristic reputation scoring, not a detection. The
-            installer is signed by <strong>Raidar Code Signing</strong>; compare the hash above
-            with your downloaded file using <code>Get-FileHash setup.exe -Algorithm SHA256</code>.
+            These links open each scanner's report for the hash above. A report appears once
+            the file has been submitted — newly released builds may show "not found" until
+            someone uploads them, and some engines flag low-reputation executables as
+            "unknown" (heuristic reputation, not a detection). The installer is signed by
+            <strong> Raidar Code Signing</strong>; verify your download with
+            <code> Get-FileHash setup.exe -Algorithm SHA256</code> and compare it to the hash above.
           </p>
         </div>
       </div>
