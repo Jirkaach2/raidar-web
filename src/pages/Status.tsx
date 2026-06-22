@@ -81,6 +81,7 @@ export default function Status() {
   const [botHealth, setBotHealth] = useState<BotHealth | null>(null);
   const [latestVersion, setLatestVersion] = useState<string>('v1.0.2');
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [msiUrl, setMsiUrl] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const [copiedHash, setCopiedHash] = useState(false);
   const [scan, setScan] = useState<ScanData | null>(null);
@@ -163,6 +164,15 @@ export default function Status() {
         const assetId = winUrl.split('asset_id=')[1].split('&')[0];
         if (assetId) {
           setDownloadUrl(`${UPDATER_BASE}/?action=download&asset_id=${assetId}`);
+        }
+      }
+      // The function also lists every installer (exe + msi) so we can offer both.
+      if (Array.isArray(data?.downloads)) {
+        for (const d of data.downloads) {
+          if (!d?.asset_id) continue;
+          const url = `${UPDATER_BASE}/?action=download&asset_id=${d.asset_id}`;
+          if (d.kind === 'msi') setMsiUrl(url);
+          else if (d.kind === 'exe') setDownloadUrl(url);
         }
       }
     } catch (err) {
@@ -358,7 +368,7 @@ export default function Status() {
           </div>
           <div className="version-actions" style={{ borderTop: '1px solid rgba(255,255,255,0.04)', marginTop: 14, paddingTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
             <span className="text-dim" style={{ fontSize: '11px' }}>Signature signed by: <strong>Raidar Code Signing</strong></span>
-            <div style={{ display: 'flex', gap: 10 }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {downloadUrl ? (
                 <a href={downloadUrl} className="btn btn-xs" style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                   <Download size={12} /> Download {latestVersion} (Setup.exe)
@@ -367,6 +377,11 @@ export default function Status() {
                 <span className="btn btn-xs" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, opacity: 0.6, pointerEvents: 'none' }}>
                   <Download size={12} /> Preparing download…
                 </span>
+              )}
+              {msiUrl && (
+                <a href={msiUrl} className="btn btn-xs btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: '1px solid rgba(255,255,255,0.1)' }} title="MSI installer — useful if antivirus heuristics flag the NSIS build">
+                  <Download size={12} /> Installer.msi
+                </a>
               )}
             </div>
           </div>

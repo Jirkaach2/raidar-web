@@ -142,6 +142,18 @@ export default async ({ req, res, log, error }) => {
       }
     }
 
+    // Expose all user-downloadable installers (exe + msi, excluding signatures) so
+    // the website can offer every installer. We pass asset_id so the client can build
+    // a correct proxied URL regardless of the host this function saw.
+    const installerAssets = assets.filter(
+      (a) => /\.(exe|msi)$/i.test(a.name) && !/\.sig$/i.test(a.name)
+    );
+    manifest.downloads = installerAssets.map((a) => ({
+      name: a.name,
+      kind: /\.msi$/i.test(a.name) ? 'msi' : 'exe',
+      asset_id: a.id,
+    }));
+
     return res.json(manifest);
   } catch (err) {
     error(`Unexpected error in updater function: ${err.message}`);
