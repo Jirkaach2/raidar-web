@@ -20,43 +20,48 @@ const INSTALLER_SHA256 = '2c4d7083ec8723ab42563826303b2ae2172344e54145398eb10db0
 // is wrong when the function is invoked via the SDK rather than hit directly.
 const UPDATER_BASE = 'https://tauri-updater.appwrite.network';
 
-interface ScanService {
-  name: string;
-  desc: string;
-  url: string;
-  cta: string;
+interface ScanResult {
+  found?: boolean;
+  detections?: number;
+  total?: number;        // VirusTotal engine total
+  totalEngines?: number; // MetaDefender engine total
+  permalink?: string;
+  error?: string;
 }
 
-// Independent multi-engine scanners. VirusTotal links to the file report by hash;
-// the others let visitors look up or submit the installer themselves. We intentionally
-// do NOT assert a verdict here — the report only exists once the file has been
-// submitted, so we link out rather than claim a result we haven't verified.
-const SCAN_SERVICES: ScanService[] = [
+interface ScanData {
+  hash: string;
+  virustotal: ScanResult;
+  metadefender: ScanResult;
+}
+
+const SCANNERS = [
   {
+    key: 'virustotal' as const,
     name: 'VirusTotal',
     desc: 'Aggregates 70+ antivirus engines and sandbox detonation.',
-    url: `https://www.virustotal.com/gui/file/${INSTALLER_SHA256}`,
-    cta: 'View report by hash',
+    fallbackUrl: `https://www.virustotal.com/gui/file/${INSTALLER_SHA256}`,
   },
   {
-    name: 'Hybrid Analysis',
-    desc: 'CrowdStrike Falcon Sandbox behavioural analysis.',
-    url: `https://www.hybrid-analysis.com/search?query=${INSTALLER_SHA256}`,
-    cta: 'Search this hash',
-  },
-  {
+    key: 'metadefender' as const,
     name: 'MetaDefender',
     desc: 'OPSWAT multiscanning across 30+ engines.',
-    url: `https://metadefender.com/results/file/hash/${INSTALLER_SHA256}/regular`,
-    cta: 'Look up this hash',
-  },
-  {
-    name: 'Jotti Malware Scan',
-    desc: 'Independent multi-engine community scanner.',
-    url: 'https://virusscan.jotti.org/',
-    cta: 'Submit to scan',
+    fallbackUrl: `https://metadefender.com/results/file/hash/${INSTALLER_SHA256}/regular`,
   },
 ];
+
+type VerdictTone = 'clean' | 'flag' | 'muted';
+
+function verdictFor(key: 'virustotal' | 'metadefender', result: ScanResult | undefined, loading: boolean): { text: string; tone: VerdictTone } {
+  if (loading) return { text: 'Checking…', tone: 'muted' };
+  if (!result || result.error === 'not_configured') return { text: 'Live scan not configured', tone: 'muted' };
+  if (result.error) return { text: 'Live lookup unavailable', tone: 'muted' };
+  if (result.found === false) return { text: 'Not yet submitted', tone: 'muted' };
+  const detections = result.detections || 0;
+  const total = (key === 'virustotal' ? result.total : result.totalEngines) || 0;
+  if (detections === 0) return { text: `Clean — 0 / ${total} engines`, tone: 'clean' };
+  return { text: `${detections} / ${total} engines flagged`, tone: 'flag' };
+}
 
 function formatUptime(seconds: number): string {
   if (seconds < 60) return `${seconds}s`;
@@ -76,6 +81,8 @@ export default function Status() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const [copiedHash, setCopiedHash] = useState(false);
+  const [scan, setScan] = useState<ScanData | null>(null);
+  const [scanLoading, setScanLoading] = useState(true);
 
   const copyHash = async () => {
     try {
@@ -158,6 +165,26 @@ export default function Status() {
       }
     } catch (err) {
       console.error('Version fetch failed:', err);
+    }
+
+    // 4. Live malware scan results (keys stay server-side in the function)
+    setScanLoading(true);
+    try {
+      const exec = await functions.createExecution(
+        'security-scan',
+        '',
+        false,
+        `/?hash=${INSTALLER_SHA256}`,
+        ExecutionMethod.GET
+      );
+      const data = JSON.parse(exec.responseBody || '{}');
+      if (data && (data.virustotal || data.metadefender)) {
+        setScan(data as ScanData);
+      }
+    } catch (err) {
+      console.error('Scan fetch failed:', err);
+    } finally {
+      setScanLoading(false);
     }
 
     setChecking(false);
@@ -348,34 +375,40 @@ export default function Status() {
             </button>
           </div>
 
-          {/* Scanner grid */}
+          {/* Scanner grid — live results from the security-scan function */}
           <div className="security-scanners">
-            {SCAN_SERVICES.map((svc) => (
-              <a
-                key={svc.name}
-                href={svc.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="security-scanner"
-              >
-                <div className="security-scanner-top">
-                  <span className="security-scanner-name">{svc.name}</span>
-                  <ExternalLink size={12} className="security-scanner-ext" />
-                </div>
-                <p className="security-scanner-desc">{svc.desc}</p>
-                <span className="security-scanner-cta">
-                  {svc.cta} <ExternalLink size={10} />
-                </span>
-              </a>
-            ))}
+            {SCANNERS.map((svc) => {
+              const result = svc.key === 'virustotal' ? scan?.virustotal : scan?.metadefender;
+              const verdict = verdictFor(svc.key, result, scanLoading);
+              const link = result?.permalink || svc.fallbackUrl;
+              return (
+                <a
+                  key={svc.key}
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="security-scanner"
+                >
+                  <div className="security-scanner-top">
+                    <span className="security-scanner-name">{svc.name}</span>
+                    <ExternalLink size={12} className="security-scanner-ext" />
+                  </div>
+                  <p className="security-scanner-desc">{svc.desc}</p>
+                  <span className={`security-scanner-verdict security-verdict--${verdict.tone}`}>
+                    {verdict.tone === 'clean' && <CheckCircle2 size={11} />}
+                    {verdict.tone === 'flag' && <AlertCircle size={11} />}
+                    {verdict.text}
+                  </span>
+                </a>
+              );
+            })}
           </div>
 
           <p className="security-note muted">
-            These links open each scanner's report for the hash above. A report appears once
-            the file has been submitted — newly released builds may show "not found" until
-            someone uploads them, and some engines flag low-reputation executables as
-            "unknown" (heuristic reputation, not a detection). The installer is signed by
-            <strong> Raidar Code Signing</strong>; verify your download with
+            Results are pulled live from each provider's API for the hash above (API keys stay
+            server-side, never in your browser). "Not yet submitted" means the file hasn't been
+            uploaded to that service yet. The installer is signed by
+            <strong> Raidar Code Signing</strong>; verify your own download with
             <code> Get-FileHash setup.exe -Algorithm SHA256</code> and compare it to the hash above.
           </p>
         </div>

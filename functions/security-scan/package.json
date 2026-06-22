@@ -1,0 +1,8 @@
+{
+  "name": "raidar-security-scan",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Appwrite Function: fetch live VirusTotal & MetaDefender scan results for a file hash, keeping API keys server-side.",
+  "main": "src/main.js",
+  "dependencies": {}
+}
