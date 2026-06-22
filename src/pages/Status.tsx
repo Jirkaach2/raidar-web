@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, Server, MessageSquare, Download, CheckCircle2, AlertCircle, XCircle, Activity, Clock, Cpu, ShieldCheck, FileCheck, ExternalLink, Copy } from 'lucide-react';
-import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, ENDPOINT, PROJECT_ID, functions, ExecutionMethod } from '../lib/appwrite';
+import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, functions, ExecutionMethod } from '../lib/appwrite';
 
 interface BotHealth {
   ok: boolean;
@@ -11,9 +11,9 @@ interface BotHealth {
   timestamp?: string;
 }
 
-// SHA-256 of the current signed Windows installer (Raidar_1.0.1_x64-setup.exe).
+// SHA-256 of the current signed Windows installer (Raidar_1.0.2_x64-setup.exe).
 // Update this whenever a new release is published so the scan links stay accurate.
-const INSTALLER_SHA256 = 'de6ecb6fbd5dc232452d0308f09bff381f5bb852f8a5f7e6454c52390dc45383';
+const INSTALLER_SHA256 = '2c4d7083ec8723ab42563826303b2ae2172344e54145398eb10db03159b1759d';
 
 interface ScanService {
   name: string;
@@ -65,7 +65,8 @@ export default function Status() {
   const [botStatus, setBotStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [botLatency, setBotLatency] = useState<number | null>(null);
   const [botHealth, setBotHealth] = useState<BotHealth | null>(null);
-  const [latestVersion, setLatestVersion] = useState<string>('v1.0.1');
+  const [latestVersion, setLatestVersion] = useState<string>('v1.0.2');
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const [copiedHash, setCopiedHash] = useState(false);
 
@@ -136,6 +137,12 @@ export default function Status() {
       const data = JSON.parse(exec.responseBody || '{}');
       if (data && data.version) {
         setLatestVersion(`v${data.version}`);
+      }
+      // The updater manifest carries a proxied, auth-backed download URL that works
+      // even though the release repo is private — use it for the download button.
+      const winUrl = data?.platforms?.['windows-x86_64']?.url;
+      if (typeof winUrl === 'string' && winUrl) {
+        setDownloadUrl(winUrl);
       }
     } catch (err) {
       console.error('Version fetch failed:', err);
@@ -285,15 +292,18 @@ export default function Status() {
               <span className="version-status-text">Latest release</span>
             </div>
           </div>
-          <div className="version-actions" style={{ borderTop: '1px solid rgba(255,255,255,0.04)', marginTop: 14, paddingTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="version-actions" style={{ borderTop: '1px solid rgba(255,255,255,0.04)', marginTop: 14, paddingTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
             <span className="text-dim" style={{ fontSize: '11px' }}>Signature signed by: <strong>Raidar Code Signing</strong></span>
             <div style={{ display: 'flex', gap: 10 }}>
-              <a href={`${ENDPOINT}/storage/buckets/installers/files/setup/download?project=${PROJECT_ID}`} download className="btn btn-xs" style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Download size={12} /> Setup.exe
-              </a>
-              <a href={`${ENDPOINT}/storage/buckets/installers/files/installer/download?project=${PROJECT_ID}`} download className="btn btn-xs btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: '1px solid rgba(255,255,255,0.1)' }}>
-                <Download size={12} /> Installer.msi
-              </a>
+              {downloadUrl ? (
+                <a href={downloadUrl} className="btn btn-xs" style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  <Download size={12} /> Download {latestVersion} (Setup.exe)
+                </a>
+              ) : (
+                <span className="btn btn-xs" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, opacity: 0.6, pointerEvents: 'none' }}>
+                  <Download size={12} /> Preparing download…
+                </span>
+              )}
             </div>
           </div>
         </div>
