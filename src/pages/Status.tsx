@@ -13,7 +13,7 @@ interface BotHealth {
 
 // SHA-256 of the current signed Windows installer (Raidar_1.1.0_x64-setup.exe).
 // Update this whenever a new release is published so the scan links stay accurate.
-const INSTALLER_SHA256 = '02e214007b00a5a713cc0f1868a2aba8dad4d4d67c573140d08e6ba05fe16035';
+const INSTALLER_SHA256 = '249e466afcfa0fc08d90a987a822a0eeb3b66acd2a15c5ea57bed550d1fed32e';
 
 // Public domain of the tauri-updater Appwrite function. Used to build a correct
 // download URL — the manifest's own url is rewritten from the request host, which
