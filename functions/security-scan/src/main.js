@@ -103,7 +103,7 @@ async function mdLookup(hash, key, log) {
       found: true,
       detections: sr.total_detected_avs || 0,
       totalEngines: sr.total_avs || 0,
-      permalink: `https://metadefender.com/results/file/hash/${hash}/regular`,
+      permalink: `https://metadefender.com/results/hash/${hash}`,
     };
   } catch (e) { log(`MD lookup error: ${e.message}`); return { error: 'fetch_failed' }; }
 }

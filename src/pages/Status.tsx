@@ -47,7 +47,7 @@ const SCANNERS = [
     key: 'metadefender' as const,
     name: 'MetaDefender',
     desc: 'OPSWAT multiscanning across 30+ engines.',
-    fallbackUrl: `https://metadefender.com/results/file/hash/${INSTALLER_SHA256}/regular`,
+    fallbackUrl: `https://metadefender.com/results/hash/${INSTALLER_SHA256}`,
   },
 ];
 
