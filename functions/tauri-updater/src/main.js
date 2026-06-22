@@ -66,6 +66,52 @@ export default async ({ req, res, log, error }) => {
       return res.json({ error: `GitHub asset fetch failed with status ${status}` }, status);
     }
 
+    // ── ACTION: List all releases (incl. pre-releases) for the admin panel ──
+    if (action === 'releases') {
+      log(`Listing all releases for ${REPO_OWNER}/${REPO_NAME}`);
+
+      const listRes = await fetch(
+        `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases?per_page=30`,
+        {
+          headers: {
+            'Authorization': `token ${GITHUB_PAT}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'Appwrite-Function-Updater'
+          }
+        }
+      );
+
+      if (!listRes.ok) {
+        const status = listRes.status;
+        const text = await listRes.text();
+        error(`GitHub releases list returned status ${status}: ${text}`);
+        return res.json({ error: `Failed to list releases from GitHub (status ${status})` }, status);
+      }
+
+      const list = await listRes.json();
+      // Drop drafts (incomplete/unpublished); KEEP pre-releases so admins can grab them.
+      const releases = (Array.isArray(list) ? list : [])
+        .filter((r) => !r.draft)
+        .map((r) => {
+          const installers = (r.assets || []).filter(
+            (a) => /\.(exe|msi)$/i.test(a.name) && !/\.sig$/i.test(a.name)
+          );
+          return {
+            tag: r.tag_name,
+            name: r.name || r.tag_name,
+            prerelease: !!r.prerelease,
+            published_at: r.published_at,
+            downloads: installers.map((a) => ({
+              name: a.name,
+              kind: /\.msi$/i.test(a.name) ? 'msi' : 'exe',
+              asset_id: a.id,
+            })),
+          };
+        });
+
+      return res.json({ releases });
+    }
+
     // ── DEFAULT ACTION: Check for updates (Serve latest.json) ──
     log(`Checking latest release for ${REPO_OWNER}/${REPO_NAME}`);
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   databases, DB_ID, PLANS_COLLECTION_ID, SUBSCRIPTIONS_COLLECTION_ID, ANNOUNCEMENTS_COLLECTION_ID,
-  Query, ID, isConfigured, ENDPOINT, PROJECT_ID, type Plan, type Subscription, type Announcement,
+  Query, ID, isConfigured, type Plan, type Subscription, type Announcement,
   functions, ExecutionMethod
 } from '../lib/appwrite';
 import { listAll, slugify } from '../lib/announcements';
@@ -24,6 +24,13 @@ const EMPTY: PlanForm = { name: '', price: '0', tagline: '', features: '', serve
 
 interface PostForm { title: string; slug: string; excerpt: string; body: string; coverImage: string; type: 'announcement' | 'blog'; published: boolean; pinned: boolean; authorName: string; }
 const EMPTY_POST: PostForm = { title: '', slug: '', excerpt: '', body: '', coverImage: '', type: 'announcement', published: true, pinned: false, authorName: '' };
+
+/** Public domain of the tauri-updater function — used to build proxied download
+ * URLs that work even though the release repo is private (the function injects
+ * the GitHub PAT server-side). */
+const UPDATER_BASE = 'https://tauri-updater.appwrite.network';
+interface ReleaseDownload { name: string; kind: 'exe' | 'msi'; asset_id: number; }
+interface ReleaseInfo { tag: string; name: string; prerelease: boolean; published_at: string; downloads: ReleaseDownload[]; }
 function toForm(p: Plan): PlanForm {
   return { name: p.name, price: String(p.price), tagline: p.tagline || '', features: (p.features || []).join('\n'), servers: String(p.servers ?? 1), popular: !!p.popular, order: String(p.order ?? 0), stripePriceId: p.stripePriceId || '' };
 }
@@ -55,27 +62,31 @@ export default function Admin() {
   const [busyUser, setBusyUser] = useState<string | null>(null);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [copied, setCopied] = useState('');
-  const [latestVersion, setLatestVersion] = useState<string>('v1.0.1');
+  const [releases, setReleases] = useState<ReleaseInfo[]>([]);
+  const [releasesLoading, setReleasesLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchVersion() {
+    async function fetchReleases() {
+      setReleasesLoading(true);
       try {
         const exec = await functions.createExecution(
           'tauri-updater',
           '',
           false,
-          '/',
+          '/?action=releases',
           ExecutionMethod.GET
         );
         const data = JSON.parse(exec.responseBody || '{}');
-        if (data && data.version) {
-          setLatestVersion(`v${data.version}`);
+        if (Array.isArray(data?.releases)) {
+          setReleases(data.releases as ReleaseInfo[]);
         }
       } catch (err) {
-        console.error('Failed to fetch latest version:', err);
+        console.error('Failed to fetch releases:', err);
+      } finally {
+        setReleasesLoading(false);
       }
     }
-    fetchVersion();
+    fetchReleases();
   }, []);
 
   // Grant-plan modal
@@ -289,15 +300,47 @@ export default function Admin() {
 
           <section className="dash-section">
             <h2>Desktop App Installer Downloads</h2>
-            <p className="muted" style={{ marginBottom: 12 }}>Download the compiled Raidar desktop client installers directly from the app server (Admins only).</p>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <a href={`${ENDPOINT}/storage/buckets/installers/files/setup/download?project=${PROJECT_ID}`} download className="btn btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <Download size={14} /> Download Raidar_Setup_{latestVersion}.exe
-              </a>
-              <a href={`${ENDPOINT}/storage/buckets/installers/files/installer/download?project=${PROJECT_ID}`} download className="btn btn-sm btn-ghost" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid rgba(255,255,255,0.1)' }}>
-                <Download size={14} /> Download Raidar_Installer_{latestVersion}.msi
-              </a>
-            </div>
+            <p className="muted" style={{ marginBottom: 12 }}>
+              Every published GitHub release — including <strong>pre-releases</strong> — loaded automatically. Installers download through the app server, so the private release repo stays private (Admins only).
+            </p>
+            {releasesLoading ? (
+              <p className="muted">Loading releases…</p>
+            ) : releases.length === 0 ? (
+              <p className="muted">No releases found. Make sure the <code>tauri-updater</code> function is deployed and a release has been published.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {releases.map((rel, i) => (
+                  <div key={rel.tag} style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '12px 14px', background: 'rgba(255,255,255,0.02)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+                      <span className="mono" style={{ fontWeight: 600 }}>{rel.name || rel.tag}</span>
+                      {rel.prerelease
+                        ? <span className="pill" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.35)' }}>PRE-RELEASE</span>
+                        : i === releases.findIndex((r) => !r.prerelease)
+                          ? <span className="pill pill-owner">LATEST</span>
+                          : null}
+                      {rel.published_at && <span className="muted" style={{ fontSize: 12 }}>{new Date(rel.published_at).toLocaleDateString()}</span>}
+                    </div>
+                    {rel.downloads.length === 0 ? (
+                      <span className="muted" style={{ fontSize: 12 }}>No installer assets attached to this release.</span>
+                    ) : (
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        {rel.downloads.map((d) => (
+                          <a
+                            key={d.asset_id}
+                            href={`${UPDATER_BASE}/?action=download&asset_id=${d.asset_id}`}
+                            download
+                            className={`btn btn-sm ${d.kind === 'msi' ? 'btn-ghost' : ''}`}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, ...(d.kind === 'msi' ? { border: '1px solid rgba(255,255,255,0.1)' } : {}) }}
+                          >
+                            <Download size={14} /> {d.name}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         </>
       )}
