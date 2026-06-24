@@ -29,7 +29,7 @@ export default function Footer() {
 
     async function checkBot() {
       try {
-        const res = await fetch('https://92.5.73.207.nip.io/health');
+        const res = await fetch('https://salty-spire-70936-6c1b9945cfaf.herokuapp.com/health');
         if (res.ok) {
           const data = await res.json();
           if (data && data.ok) {
