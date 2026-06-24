@@ -11,9 +11,9 @@ interface BotHealth {
   timestamp?: string;
 }
 
-// SHA-256 of the current signed Windows installer (Raidar_1.1.8_x64-setup.exe).
+// SHA-256 of the current signed Windows installer (Raidar_1.1.9_x64-setup.exe).
 // Update this whenever a new release is published so the scan links stay accurate.
-const INSTALLER_SHA256 = 'd503243a76d2ef083a35b6bda7fe4aa2e9ae5cc10c92041c54a0e84992b053d8';
+const INSTALLER_SHA256 = '46fecbec2971935df42f51d500c347a9cfa511c135d0fb2e5530a726754ab43f';
 
 // Public domain of the tauri-updater Appwrite function. Used to build a correct
 // download URL — the manifest's own url is rewritten from the request host, which
@@ -79,7 +79,7 @@ export default function Status() {
   const [botStatus, setBotStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [botLatency, setBotLatency] = useState<number | null>(null);
   const [botHealth, setBotHealth] = useState<BotHealth | null>(null);
-  const [latestVersion, setLatestVersion] = useState<string>('v1.1.8');
+  const [latestVersion, setLatestVersion] = useState<string>('v1.1.9');
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [msiUrl, setMsiUrl] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
@@ -118,7 +118,7 @@ export default function Status() {
     // 2. Discord Bot check + latency (with rich health data)
     const botStart = performance.now();
     try {
-      const res = await fetch('https://92.5.73.207.nip.io/health', { cache: 'no-store', signal: AbortSignal.timeout(8000) });
+      const res = await fetch('https://salty-spire-70936-6c1b9945cfaf.herokuapp.com/health', { cache: 'no-store', signal: AbortSignal.timeout(8000) });
       if (res.ok) {
         const data: BotHealth = await res.json();
         if (data && data.ok) {
