@@ -11,9 +11,9 @@ interface BotHealth {
   timestamp?: string;
 }
 
-// SHA-256 of the current signed Windows installer (Raidar_1.0.0_x64-setup.exe).
+// SHA-256 of the current signed Windows installer (Raidar_1.1.0_x64-setup.exe).
 // Update this whenever a new release is published so the scan links stay accurate.
-const INSTALLER_SHA256 = '89070b1d22d8a752cec8f8942204c5e230b5f0005e39a8ec564c59e8acf731f7';
+const INSTALLER_SHA256 = 'e29c912726a25971271610f712cb9e261f75c9d48f39db989ec84056438ac400';
 
 // Public domain of the tauri-updater Appwrite function. Used to build a correct
 // download URL — the manifest's own url is rewritten from the request host, which
@@ -79,7 +79,7 @@ export default function Status() {
   const [botStatus, setBotStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [botLatency, setBotLatency] = useState<number | null>(null);
   const [botHealth, setBotHealth] = useState<BotHealth | null>(null);
-  const [latestVersion, setLatestVersion] = useState<string>('v1.0.0');
+  const [latestVersion, setLatestVersion] = useState<string>('v1.1.0');
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [msiUrl, setMsiUrl] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
