@@ -4,16 +4,31 @@
     <meta charset="UTF-8" />
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Raidar — Rust Intelligence App</title>
-    <meta name="description" content="Raidar brings your Rust+ server into a tactical overlay and Discord — live map, base alarms, device control, raid intel and more." />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta property="og:title" content="Raidar — Rust Intelligence App" />
-    <meta property="og:description" content="Live map, base alarms, device control and raid intel for Rust — on desktop and Discord." />
+    <title>Raidar — Real-time intelligence for survival games</title>
+    <meta name="description" content="Raidar is a desktop intelligence client and cloud telemetry platform for competitive multiplayer survival games — live tactical map, base automation, market intel and raid planning, mirrored into Discord." />
+
+    <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icon-512.svg" />
+    <link rel="mask-icon" href="/favicon.svg" color="#FF6A3D" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Raidar" />
+    <meta property="og:title" content="Raidar — Real-time intelligence for survival games" />
+    <meta property="og:description" content="Live tactical map, programmable base automation, market intel and raid planning for Rust — on desktop and in Discord." />
     <meta property="og:image" content="/raidar-banner.png" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#0b0d11" />
+
+    <!-- Fonts are preconnected AND preloaded here rather than @import-ed from
+         index.css: an @import inside the stylesheet serialises the request
+         behind the CSS download, delaying first text paint. `display=swap`
+         keeps text visible while the webfont loads. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600&family=Sora:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
   </head>
   <body>
     <div id="root"></div>

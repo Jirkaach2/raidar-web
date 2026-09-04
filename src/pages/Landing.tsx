@@ -2,17 +2,17 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Map, Siren, ToggleRight, Bot, Bomb, Radar, ShieldCheck,
-  Check, ChevronRight, Download, Wifi, Cpu, Zap, MousePointerClick,
+  Check, ChevronRight, Download, Wifi, Cpu, Zap, BookOpen, Activity,
+  Megaphone,
 } from 'lucide-react';
 import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, type Plan, type Announcement } from '../lib/appwrite';
 import { latestPublished } from '../lib/announcements';
 import { useAuth } from '../context/AuthContext';
 import Reveal from '../components/Reveal';
-import AppWindow from '../components/AppWindow';
-import { Megaphone } from 'lucide-react';
+import ProductShowcase from '../components/ProductShowcase';
+import Partners from '../components/Partners';
+import { DOWNLOAD_URL } from '../lib/download';
 
-/** Where the desktop app download lives. Update to your releases URL. */
-const DOWNLOAD_URL = 'https://github.com/JirkaachS/raidar-app/releases/latest';
 
 const FEATURES = [
   { Icon: Map, title: 'Live Tactical Map', desc: 'Real-time team, monuments, caves, the travelling vendor and every world event — projected on in-game grids with click-through detail panels.' },
@@ -21,6 +21,14 @@ const FEATURES = [
   { Icon: ToggleRight, title: 'Device Control', desc: 'Toggle switches, watch alarms and read TC upkeep + storage from the app or Discord — even across multiple servers at once.' },
   { Icon: Bot, title: 'Discord Bot', desc: 'Link your server in seconds — status, team, events and alerts routed into dedicated channels with rich embeds and one-tap buttons.' },
   { Icon: Bomb, title: 'Raid Planning', desc: 'Raid cost calculator, profit scanner, loadout lab, recycler and price intel — know the cost of every door and the value behind it.' },
+];
+
+/** What the product is built on. Concrete stack, no marketing adjectives. */
+const STACK = [
+  { k: 'Client', v: 'Tauri v2 · Rust · React 19' },
+  { k: 'Backend', v: 'Appwrite · WebSockets' },
+  { k: 'Integrations', v: 'Rust+ API · Discord · FCM' },
+  { k: 'Platform', v: 'Windows, signed installer' },
 ];
 
 const STEPS = [
@@ -58,12 +66,16 @@ export default function Landing() {
         <div className="container">
           <div className="hero-kicker reveal reveal-fade in-view">
             <span className="dot" />
-            <span className="hud-label hud-label--accent">Rust Intelligence App</span>
+            <span className="hud-label hud-label--accent">Raidar · Tactical Gaming Intelligence</span>
           </div>
-          <h1 className="reveal reveal-up in-view">Win the wipe<br />with <span>Raidar</span></h1>
+          <h1 className="reveal reveal-up in-view">
+            Real-time intelligence<br />for <span>survival games</span>
+          </h1>
           <p className="lead reveal reveal-up in-view" style={{ transitionDelay: '70ms' }}>
-            A tactical overlay and Discord companion for Rust+. Live map, base alarms, programmable
-            switches, shop intel and raid planning — on your desktop and in your team's server.
+            Raidar is a desktop intelligence client and cloud telemetry platform for competitive
+            multiplayer survival games. It turns the Rust+ companion API into a live tactical map,
+            programmable base automation, market intel and raid planning — mirrored into Discord
+            for your whole squad.
           </p>
           <div className="hero-cta reveal reveal-up in-view" style={{ transitionDelay: '140ms' }}>
             {user
@@ -74,21 +86,60 @@ export default function Landing() {
           <div className="trust reveal reveal-up in-view" style={{ transitionDelay: '210ms' }}>
             <span><Radar size={14} /> Live Rust+ sync</span>
             <span><Wifi size={14} /> Instant alerts</span>
-            <span><ShieldCheck size={14} /> Per-member device control</span>
-            <span><Cpu size={14} /> No game files touched</span>
+            <span><ShieldCheck size={14} /> No game files touched</span>
+            <span><Cpu size={14} /> Signed Windows build</span>
           </div>
 
           <Reveal variant="rise" delay={120} className="hero-app">
-            <AppWindow />
-            <div className="demo-hint">
-              <MousePointerClick size={14} />
-              Live interactive preview — click the rail icons to switch screens, flip the switches, open the cupboard
-            </div>
+            <ProductShowcase />
           </Reveal>
         </div>
       </header>
 
-      <section className="section" id="features">
+      <Partners />
+
+      {/* ── What it is: scope, stated plainly ───────────────── */}
+      <section className="section" id="product">
+        <div className="container">
+          <div className="scope">
+            <Reveal className="scope-copy">
+              <span className="hud-label hud-label--accent">// The product</span>
+              <h2 className="section-title">One client, four surfaces</h2>
+              <p className="section-sub">
+                Raidar ships as a signed Windows desktop client, a web portal for accounts and
+                billing, a Discord bot for team-wide alerting, and a background notification
+                daemon for push. All four talk to the same cloud backend.
+              </p>
+              <ul className="scope-list">
+                <li><Check /> Desktop client — Tauri v2 shell over a Rust core, React 19 UI</li>
+                <li><Check /> Web portal — accounts, plans, server allowance, admin</li>
+                <li><Check /> Discord bot — per-feature channels, embeds, one-tap controls</li>
+                <li><Check /> Push daemon — mobile and Discord raid alerts</li>
+              </ul>
+              <div className="scope-actions">
+                <Link className="btn btn-ghost btn-sm" to="/docs"><BookOpen size={14} /> Documentation</Link>
+                <Link className="btn btn-ghost btn-sm" to="/changelog"><Activity size={14} /> Changelog</Link>
+                <Link className="btn btn-ghost btn-sm" to="/security"><ShieldCheck size={14} /> Security</Link>
+              </div>
+            </Reveal>
+            <Reveal variant="rise" delay={100} className="scope-stack">
+              <div className="stack-card bracketed">
+                <span className="hud-label">// Stack</span>
+                <dl className="stack-list">
+                  {STACK.map((s) => (
+                    <div className="stack-row" key={s.k}>
+                      <dt>{s.k}</dt>
+                      <dd className="mono">{s.v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      <section className="section section-alt" id="features">
         <div className="container">
           <Reveal className="section-head">
             <span className="hud-label hud-label--accent">// Capabilities</span>
@@ -109,7 +160,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="section section-alt" id="how">
+      <section className="section" id="how">
         <div className="container">
           <Reveal className="section-head">
             <span className="hud-label hud-label--accent">// Deployment</span>
@@ -131,7 +182,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="section" id="pricing">
+      <section className="section section-alt" id="pricing">
         <div className="container">
           <Reveal className="section-head">
             <span className="hud-label hud-label--accent">// Pricing</span>
@@ -187,7 +238,7 @@ export default function Landing() {
             </Reveal>
             <Reveal variant="rise">
               <Link to={`/blog/${latest.slug}`} className="latest-card bracketed">
-                {latest.coverImage && <div className="latest-cover"><img src={latest.coverImage} alt="" /></div>}
+                {latest.coverImage && <div className="latest-cover"><img src={latest.coverImage} alt="" loading="lazy" decoding="async" /></div>}
                 <div className="latest-body">
                   <div className="blog-card-meta">
                     <span className="blog-tag"><Megaphone size={12} /> {latest.type === 'blog' ? 'Blog' : 'Announcement'}</span>

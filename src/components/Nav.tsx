@@ -49,8 +49,11 @@ export default function Nav() {
           <div className="nav-primary">
             <NavLink to="/" end onClick={close}>Home</NavLink>
             <NavLink to="/docs" onClick={close}>Docs</NavLink>
+            <NavLink to="/changelog" onClick={close}>Changelog</NavLink>
             <NavLink to="/blog" onClick={close}>Blog</NavLink>
-            <NavLink to="/#pricing" onClick={close}>Pricing</NavLink>
+            {/* Plain anchor, not NavLink: `/#pricing` resolves to path "/" so
+                NavLink lit it active simultaneously with Home on the homepage. */}
+            <Link to="/#pricing" onClick={close}>Pricing</Link>
             {user && <NavLink to="/dashboard" onClick={close}><LayoutDashboard size={14} /> Dashboard</NavLink>}
             {user && <NavLink to="/settings" onClick={close}><SettingsIcon size={14} /> Settings</NavLink>}
             {isAdmin && <NavLink to="/admin" onClick={close}><ShieldCheck size={14} /> Admin</NavLink>}

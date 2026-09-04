@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Raidar app icon, LARGE (512).
+       Dark tile + orange mark, matching favicon.svg so the identity is
+       consistent across every size. Mark occupies the inner ~62% of the canvas,
+       which keeps it inside the Android maskable inner-80%-circle safe zone
+       (OEM squircle and teardrop masks cut deeper than a plain circle, so
+       fitting the full circle is not sufficient). -->
+  <rect width="512" height="512" rx="114" fill="#0B0D11"/>
+  <rect x="10" y="10" width="492" height="492" rx="106" fill="none" stroke="#FF6A3D" stroke-width="8" opacity="0.22"/>
+
+  <g stroke="#FF6A3D" stroke-width="34" stroke-linecap="square" stroke-linejoin="miter" fill="none">
+    <path d="M148 196v-48h48"/>
+    <path d="M316 148h48v48"/>
+    <path d="M364 316v48h-48"/>
+    <path d="M196 364h-48v-48"/>
+  </g>
+  <circle cx="256" cy="256" r="62" fill="#FF6A3D"/>
+</svg>
