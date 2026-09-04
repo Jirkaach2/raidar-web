@@ -23,45 +23,42 @@ import path from 'node:path';
 const SRC = path.resolve('../branding/mockups');
 const OUT = path.resolve('public/shots');
 
-/** Full screens. `raidar_hud_screen_*` files are excluded: they render as
- *  near-empty black frames with only a header bar. */
+/** Full screens — LIVE captures taken from the running v1.1.0 client while
+ *  connected to a real server (SURVIVORS.GG, 171/200 players), so every number
+ *  on screen is genuine game state rather than mock data.
+ *
+ *  Superseded the old `raidar_actual_app_screen_*` mockups, which had ~2% ink
+ *  density, an untextured map, overlapping teammate tooltips and a raid-cost
+ *  total that contradicted its own table. The live client computes it correctly
+ *  (4x C4 = 8,800 sulfur across six ranked methods).
+ *
+ *  `raidar_hud_screen_*` and the 11 `mockup_slide_*` / `pitch_slide1` files stay
+ *  excluded: the former render as empty black frames, the latter are investor
+ *  deck pages carrying marketing headlines, a CONFIDENTIAL marking, a
+ *  fundraising ask and an unverified NVIDIA partnership claim. */
 const FULL = [
-  ['raidar_actual_app_screen_map.png', 'map'],
-  ['raidar_actual_app_screen_devices.png', 'devices'],
-  ['raidar_actual_app_screen_raidcost.png', 'raidcost'],
-  ['raidar_actual_app_screen_vending.png', 'vending'],
+  ['live_map.png', 'map'],
+  ['live_raidcost.png', 'raidcost'],
+  ['live_loadout.png', 'loadout'],
+  ['live_recycler.png', 'recycler'],
 ];
 
 /** Detail crops: [outSlug, sourceFile, {left, top, width, height}]
  *
- *  IMPORTANT: these rects are measured, not guessed. An ink-density scan of the
- *  four captures (see git history for scripts/_probe.mjs) showed every screen is
- *  content-dense only in the TOP HALF — row bands below y≈675 carry ~0% ink, and
- *  on the map/vending screens the middle column bands are near-empty too. Earlier
- *  hand-picked rects landed in that dead space and produced crops that were 75%
- *  flat background. Keep every rect inside y < 660, and prefer the dense column
- *  bands: x<480 (nav/sidebar) and x>1440 (right status column). */
-const DETAILS = [
-  // Map screen: right status column is the densest region (bands 1440-1920 ≈ 2.0-2.3%)
-  ['detail-compound', 'raidar_actual_app_screen_map.png', { left: 1470, top: 80, width: 450, height: 470 }],
-  ['detail-events',   'raidar_actual_app_screen_map.png', { left: 1030, top: 105, width: 520, height: 210 }],
-
-  // Devices: dense bands are 0-240 (rail+nav) and 1680-1920; rows 0-270 and 540-675
-  ['detail-devices',  'raidar_actual_app_screen_devices.png', { left: 260, top: 120, width: 940, height: 300 }],
-
-  // Raid cost: the richest screen overall (rows 0-540, cols 240-720 at 4.2%)
-  ['detail-raidcost', 'raidar_actual_app_screen_raidcost.png', { left: 300, top: 150, width: 1120, height: 330 }],
-  ['detail-raidtable','raidar_actual_app_screen_raidcost.png', { left: 300, top: 440, width: 1120, height: 230 }],
-
-  // Vending / market intel: rows 270-405 are the table body (4.2%)
-  ['detail-market',   'raidar_actual_app_screen_vending.png', { left: 260, top: 200, width: 1180, height: 340 }],
-];
+ *  DISABLED. The zoomed panel crops were removed from the site: eleven images
+ *  in the hero meant the visitor scanned a mosaic of unreadable fragments
+ *  instead of the product. The full screens carry the proof on their own, shown
+ *  large in a framed app window. The crop rects and the ink-density guard below
+ *  are kept so the set can be reinstated for docs pages if ever needed — just
+ *  repopulate this array. */
+const DETAILS = [];
 
 const FULL_WIDTHS = [1920, 1440, 960];
-/* 900/600 for wide crops, plus 440 so NARROW crops (e.g. the map's 450px-wide
-   right status column) still emit at least one file. Without the small step a
-   narrow rect silently produced nothing, because every width exceeded it. */
-const DETAIL_WIDTHS = [900, 600, 440];
+/* Descending steps down to 220 so even a narrow rect (a 230px sidebar column)
+   still emits a file. Each crop only renders the steps that fit within its own
+   width — a rect narrower than every step would silently produce nothing, which
+   is why the smallest step has to be genuinely small. */
+const DETAIL_WIDTHS = [900, 600, 440, 220];
 
 await mkdir(OUT, { recursive: true });
 
@@ -80,8 +77,17 @@ for (const [file, slug] of FULL) {
   const buf = await readFile(src);
   const meta = await sharp(buf).metadata();
 
+  /* Native first, un-resized — the captures are 1438-1456px wide, so the 1440
+     step was being skipped as "too large" and the sharpest version never
+     shipped. Display DPI scaling means these are all the real pixels there are. */
+  const nativeW = meta.width || 0;
+  const fullNative = await sharp(buf)
+    .webp({ quality: 88, effort: 6 })
+    .toFile(path.join(OUT, `${slug}-${nativeW}.webp`));
+  console.log(`${slug}-${nativeW}.webp`.padEnd(28), `${(fullNative.size / 1024).toFixed(0)} KB`, `${fullNative.width}x${fullNative.height}`, '(native)');
+
   for (const w of FULL_WIDTHS) {
-    if (w > (meta.width || 0)) continue; // never upscale
+    if (w >= nativeW) continue; // never upscale, never duplicate native
     const info = await sharp(buf)
       .resize({ width: w, withoutEnlargement: true })
       .webp({ quality: 84, effort: 6 })
@@ -91,7 +97,7 @@ for (const [file, slug] of FULL) {
 
   manifest[slug] = {
     w: meta.width, h: meta.height,
-    widths: FULL_WIDTHS.filter((w) => w <= (meta.width || 0)),
+    widths: [...FULL_WIDTHS.filter((w) => w < nativeW), nativeW].sort((a, b) => a - b),
     lqip: await lqip(sharp(buf)),
   };
 }
@@ -125,9 +131,21 @@ for (const [slug, file, rect] of DETAILS) {
   }
   console.log(`  (${slug} density ${density.toFixed(2)}%)`);
 
+  /* Emit the crop at its NATIVE width first, un-resized. Downscaling every crop
+     to a fixed step was what made the map-body text soft and unreadable — a
+     520px region rendered at 440px throws away 15% of the pixels for no reason.
+     The display is DPI-scaled (1920 physical -> 1440 logical), so these native
+     pixels are all the detail that exists; resampling only loses it. */
   let emitted = 0;
+  const nativeInfo = await cropped
+    .clone()
+    .webp({ quality: 90, effort: 6 })
+    .toFile(path.join(OUT, `${slug}-${width}.webp`));
+  emitted++;
+  console.log(`${slug}-${width}.webp`.padEnd(28), `${(nativeInfo.size / 1024).toFixed(0)} KB`, `${nativeInfo.width}x${nativeInfo.height}`, '(native)');
+
   for (const w of DETAIL_WIDTHS) {
-    if (w > width) continue;
+    if (w >= width) continue;
     const info = await cropped
       .clone()
       .resize({ width: w, withoutEnlargement: true })
@@ -145,7 +163,8 @@ for (const [slug, file, rect] of DETAILS) {
 
   manifest[slug] = {
     w: width, h: height,
-    widths: DETAIL_WIDTHS.filter((w) => w <= width),
+    // Native width included so srcSet can offer the sharpest variant.
+    widths: [...DETAIL_WIDTHS.filter((w) => w < width), width].sort((a, b) => a - b),
     lqip: await lqip(cropped),
   };
 }

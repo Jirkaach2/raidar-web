@@ -803,8 +803,8 @@ img { display: block; max-width: 100%; }
   overflow: hidden;
   background: var(--color-bg-deep);
   box-shadow: var(--shadow-panel);
-  /* Reserve the 16:9 box up front so switching tabs never shifts layout. */
-  aspect-ratio: 16 / 9;
+  /* Ratio is set inline per active capture (they differ: 1.68:1 map vs 1.40:1
+     tool screens), so no fixed aspect-ratio here. */
 }
 .showcase-img {
   position: absolute; inset: 0;
@@ -3039,3 +3039,17 @@ img { display: block; max-width: 100%; }
   .hero--split { padding: 52px 0 48px; }
   .hero--split h1 { font-size: clamp(32px, 9vw, 42px); }
 }
+
+/* Reveal fail-safe.
+   `.reveal` starts at opacity:0 and depends on JS adding `.in-view`. If that
+   never happens the content is invisible AND unclickable — which is what hid
+   the hero product showcase (a tall element never met threshold: 0.12).
+   This animation guarantees the element becomes visible regardless of JS: it
+   runs once on load and holds the revealed state. `.in-view` still drives the
+   nice transition when the observer does its job. */
+@keyframes reveal-failsafe { to { opacity: 1; transform: none; filter: none; } }
+.reveal {
+  animation: reveal-failsafe 1ms linear 2s forwards;
+}
+.reveal.in-view { animation: none; }
+@media (prefers-reduced-motion: reduce) { .reveal { animation: none; } }

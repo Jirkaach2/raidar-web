@@ -2,99 +2,40 @@
 export interface ShotMeta { w: number; h: number; widths: number[]; lqip: string }
 export const SHOTS: Record<string, ShotMeta> = {
   "map": {
-    "w": 1920,
-    "h": 1080,
+    "w": 1456,
+    "h": 865,
     "widths": [
-      1920,
+      960,
       1440,
-      960
+      1456
     ],
-    "lqip": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADwAgCdASoYAA4APu1iqU2ppaQiMAgBMB2JZQC06DDkYAD+8G/TUQsLtfQyLY5O1tVmYAAA"
-  },
-  "devices": {
-    "w": 1920,
-    "h": 1080,
-    "widths": [
-      1920,
-      1440,
-      960
-    ],
-    "lqip": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAAAQAwCdASoYAA4APu1kqU2ppaQiMAgBMB2JaQAAettbQAAA/vCEH/S6dIYm6jpgAAA="
+    "lqip": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAADQAwCdASoYAA4APu1iqU2ppaOiMAgBMB2JQBOgBDv4eDvsoeoF5gAA/vKrZIkybqBZ9GHLf+Vo7oLODGTw90b7ZGPMwyNtpR/O0yPGGgAAAA=="
   },
   "raidcost": {
-    "w": 1920,
-    "h": 1080,
+    "w": 1438,
+    "h": 1030,
     "widths": [
-      1920,
-      1440,
-      960
+      960,
+      1438
     ],
-    "lqip": "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAADQAgCdASoYAA4APu1iqU2tJaOiMAgBoB2JaQAAfj4AAP7wiq0/tXaxgX5gAA=="
+    "lqip": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADwAgCdASoYABEAPu1wsFKppiSiqAgBMB2JaQAAPbY4AAD+8EBONxUUc9bU7VNpPonqsUAA"
   },
-  "vending": {
-    "w": 1920,
-    "h": 1080,
+  "loadout": {
+    "w": 1438,
+    "h": 1030,
     "widths": [
-      1920,
-      1440,
-      960
+      960,
+      1438
     ],
-    "lqip": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAAAwAwCdASoYAA4APu1iqU2ppaOiMAgBMB2JZwDKAC0HlvkAAP7wsmXrulde1f2MuRQo2HEAAAA="
+    "lqip": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAAAQAwCdASoYABEAPu1srFEppaSiqAqpMB2JaQDQkBWcOQAA/vBAtfl9UnarwLr9d090dJvUC9AAAA=="
   },
-  "detail-compound": {
-    "w": 450,
-    "h": 470,
+  "recycler": {
+    "w": 1438,
+    "h": 1030,
     "widths": [
-      440
+      960,
+      1438
     ],
-    "lqip": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAADQAwCdASoYABkAPu1srVCppiQiqAqpMB2JZ2eeXAyJVoOb0KxuiEAA/vAgtPjz/ArLVfNFjmRbg3a4nAEnNz4oHbld06FaWAA="
-  },
-  "detail-events": {
-    "w": 520,
-    "h": 210,
-    "widths": [
-      440
-    ],
-    "lqip": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAABwAwCdASoYAAoAPu1kq04ppaQiMAgBMB2JZQDCgDBhpGX7CAAA/vBvxxf9HWWfF5J7mEmbAr20p6rXHAA="
-  },
-  "detail-devices": {
-    "w": 940,
-    "h": 300,
-    "widths": [
-      900,
-      600,
-      440
-    ],
-    "lqip": "data:image/webp;base64,UklGRjYAAABXRUJQVlA4ICoAAADQAgCdASoYAAgAPu1iqk2ppaQiMAgBMB2JaQAAe/QAAP7whOjI/JDAAAA="
-  },
-  "detail-raidcost": {
-    "w": 1120,
-    "h": 330,
-    "widths": [
-      900,
-      600,
-      440
-    ],
-    "lqip": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAADQAgCdASoYAAcAPu1iqU2ppaOjMAgBMB2JZwAAe/QAAP7wWVMQjH0Yei+R5gegAAA="
-  },
-  "detail-raidtable": {
-    "w": 1120,
-    "h": 230,
-    "widths": [
-      900,
-      600,
-      440
-    ],
-    "lqip": "data:image/webp;base64,UklGRjYAAABXRUJQVlA4ICoAAACwAgCdASoYAAUAPu1iqU2ppaOiMAgBMB2JaQAAeyAA/vCKZlh4Kt8AAAA="
-  },
-  "detail-market": {
-    "w": 1180,
-    "h": 340,
-    "widths": [
-      900,
-      600,
-      440
-    ],
-    "lqip": "data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAADQAgCdASoYAAcAPu1iqU2ppaQiMAgBMB2JaQAAfj4AAP7wspNqimO5qvCauDwA"
+    "lqip": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAADwAgCdASoYABEAPu1uqlGtJiOiqAqpoB2JaQAAO30sQAD+8HCaL4P80attwEOTBZYQAA=="
   }
 };
