@@ -62,35 +62,39 @@ export default function Landing() {
 
   return (
     <>
-      <header className="hero">
-        <div className="container">
-          <div className="hero-kicker reveal reveal-fade in-view">
-            <span className="dot" />
-            <span className="hud-label hud-label--accent">Raidar · Tactical Gaming Intelligence</span>
-          </div>
-          <h1 className="reveal reveal-up in-view">
-            Real-time intelligence<br />for <span>survival games</span>
-          </h1>
-          <p className="lead reveal reveal-up in-view" style={{ transitionDelay: '70ms' }}>
-            Raidar is a desktop intelligence client and cloud telemetry platform for competitive
-            multiplayer survival games. It turns the Rust+ companion API into a live tactical map,
-            programmable base automation, market intel and raid planning — mirrored into Discord
-            for your whole squad.
-          </p>
-          <div className="hero-cta reveal reveal-up in-view" style={{ transitionDelay: '140ms' }}>
-            {user
-              ? <a className="btn btn-lg" href={DOWNLOAD_URL} target="_blank" rel="noreferrer"><Download size={17} /> Download Raidar</a>
-              : <Link className="btn btn-lg" to="/register"><Download size={17} /> Start free</Link>}
-            <Link className="btn btn-ghost btn-lg" to="/docs">Read the docs <ChevronRight size={16} /></Link>
-          </div>
-          <div className="trust reveal reveal-up in-view" style={{ transitionDelay: '210ms' }}>
-            <span><Radar size={14} /> Live Rust+ sync</span>
-            <span><Wifi size={14} /> Instant alerts</span>
-            <span><ShieldCheck size={14} /> No game files touched</span>
-            <span><Cpu size={14} /> Signed Windows build</span>
+      {/* Hero: left-aligned copy beside the product, not a centred funnel.
+          The previous centred stack narrowed 870px -> 690px -> 385px and left
+          both lower quadrants empty, with no product visible above the fold —
+          on a page whose whole claim is a live tactical map. Copy is also cut
+          to two lines and leads with Rust+ and Discord, the concrete part. */}
+      <header className="hero hero--split">
+        <div className="container hero-grid">
+          <div className="hero-copy">
+            <h1 className="reveal reveal-up in-view">
+              Your Rust server,<br />as a <span>command center</span>
+            </h1>
+            <p className="lead reveal reveal-up in-view" style={{ transitionDelay: '70ms' }}>
+              Raidar turns the official Rust+ API into a live tactical map, programmable base
+              automation and raid intel — on your desktop and mirrored into your squad's Discord.
+            </p>
+            <div className="hero-cta reveal reveal-up in-view" style={{ transitionDelay: '140ms' }}>
+              {user
+                ? <a className="btn btn-lg" href={DOWNLOAD_URL} target="_blank" rel="noreferrer"><Download size={17} /> Download for Windows</a>
+                : <Link className="btn btn-lg" to="/register"><Download size={17} /> Get Raidar free</Link>}
+              <Link className="btn btn-ghost btn-lg" to="/docs">Read the docs <ChevronRight size={16} /></Link>
+            </div>
+            {/* Promoted from the old muted chip row: these answer the actual
+                objection for this category — is it a cheat, will I get banned,
+                is the binary safe — so they sit next to the CTA, not below it
+                in 11px tracked grey. */}
+            <ul className="hero-assure reveal reveal-up in-view" style={{ transitionDelay: '210ms' }}>
+              <li><ShieldCheck size={15} /> No game files touched — official Rust+ API only</li>
+              <li><Cpu size={15} /> Code-signed Windows build, hash published</li>
+              <li><Radar size={14} /> Live sync · <Wifi size={14} /> instant raid alerts</li>
+            </ul>
           </div>
 
-          <Reveal variant="rise" delay={120} className="hero-app">
+          <Reveal variant="rise" delay={120} className="hero-visual">
             <ProductShowcase />
           </Reveal>
         </div>

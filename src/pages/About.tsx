@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Mail, Building2, Cpu, Users, Milestone } from 'lucide-react';
+import { Mail, Linkedin, Building2, Cpu, Users, Milestone } from 'lucide-react';
 
 /**
  * Company page. Exists because credit/startup program reviewers look for a
@@ -11,8 +11,8 @@ import { Mail, Building2, Cpu, Users, Milestone } from 'lucide-react';
  */
 
 const FACTS = [
-  { Icon: Building2, k: 'Entity', v: 'Independent, bootstrapped software venture' },
-  { Icon: Users, k: 'Team', v: 'Founder-led — Jiří Š., lead developer' },
+  { Icon: Building2, k: 'Industry', v: 'Computer games · independent, bootstrapped' },
+  { Icon: Users, k: 'Team', v: 'Founder-led — Jiří Achilles, 2–10 people' },
   { Icon: Cpu, k: 'Product', v: 'Desktop client, web portal, Discord bot, push daemon' },
   { Icon: Milestone, k: 'Status', v: 'In production, publicly released' },
 ];
@@ -85,14 +85,19 @@ export default function About() {
       <section className="doc-section">
         <h2>Contact</h2>
         <div className="about-contact">
-          <a className="btn btn-ghost btn-sm" href="mailto:team@raidar.tech">
-            <Mail size={14} /> team@raidar.tech
+          <a className="btn btn-ghost btn-sm" href="mailto:info@raidar.tech">
+            <Mail size={14} /> info@raidar.tech
           </a>
-          <a className="btn btn-ghost btn-sm" href="mailto:support@raidar.tech">
-            <Mail size={14} /> support@raidar.tech
+          <a className="btn btn-ghost btn-sm" href="mailto:jirkaach@raidar.tech">
+            <Mail size={14} /> jirkaach@raidar.tech
           </a>
-          <a className="btn btn-ghost btn-sm" href="mailto:security@raidar.tech">
-            <Mail size={14} /> security@raidar.tech
+          <a
+            className="btn btn-ghost btn-sm"
+            href="https://www.linkedin.com/company/raidar1"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Linkedin size={14} /> LinkedIn
           </a>
         </div>
         <p className="muted" style={{ marginTop: 18, fontSize: 13 }}>

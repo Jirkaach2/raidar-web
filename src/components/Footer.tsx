@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, Mail } from 'lucide-react';
+import { MessageCircle, Mail, Linkedin } from 'lucide-react';
 import Logo from './Logo';
 import { databases, DB_ID, PLANS_COLLECTION_ID, Query, isConfigured, functions, ExecutionMethod } from '../lib/appwrite';
 
@@ -116,10 +116,12 @@ export default function Footer() {
             </Link>
             {/* No GitHub link: the account holding the repo is shadow-flagged,
                 so a linked org a reviewer cannot reach reads as an empty/dead
-                org — worse than omitting it. Restore once the flag clears. */}
+                org — worse than omitting it. Restore once the flag clears.
+                LinkedIn carries the required public-presence signal instead. */}
             <div className="footer-social">
+              <a href="https://www.linkedin.com/company/raidar1" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={17} /></a>
               <a href="https://discord.gg/raidar" target="_blank" rel="noreferrer" aria-label="Discord"><MessageCircle size={17} /></a>
-              <a href="mailto:support@raidar.tech" aria-label="Email"><Mail size={17} /></a>
+              <a href="mailto:info@raidar.tech" aria-label="Email"><Mail size={17} /></a>
             </div>
           </div>
 
@@ -142,10 +144,11 @@ export default function Footer() {
           <div className="footer-col">
             <h4>Company</h4>
             <Link to="/about">About</Link>
+            <a href="https://www.linkedin.com/company/raidar1" target="_blank" rel="noreferrer">LinkedIn</a>
             <Link to="/security">Security</Link>
             <Link to="/status">System status</Link>
             <Link to="/blog">Blog &amp; news</Link>
-            <a href="mailto:support@raidar.tech">Support</a>
+            <a href="mailto:info@raidar.tech">Support</a>
           </div>
 
           <div className="footer-col">
@@ -167,32 +170,44 @@ export default function Footer() {
             logo itself. The stacked card also stops the section divider from
             running visually into the logo baseline. */}
         <div className="footer-partners">
-          <span className="footer-partners-label">Backed &amp; supported by</span>
-          <div className="footer-partners-row">
-            <a
-              className="footer-partner"
-              href="https://elevenlabs.io/startup-grants"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="ElevenLabs Grants program"
-            >
-              <span className="footer-partner-mark">
-                <img src="/partners/elevenlabs.svg" alt="ElevenLabs" width={112} height={20} loading="lazy" decoding="async" />
-              </span>
-              <span className="footer-partner-role">Grants Program</span>
-            </a>
-            <a
-              className="footer-partner"
-              href="https://www.braintrust.dev"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Braintrust — AI evaluation tooling"
-            >
-              <span className="footer-partner-mark">
-                <img src="/partners/braintrust.svg" alt="Braintrust" width={98} height={16} loading="lazy" decoding="async" />
-              </span>
-              <span className="footer-partner-role">AI Evaluation</span>
-            </a>
+          <div className="footer-partners-group">
+            <span className="footer-partners-label">Backed by</span>
+            <div className="footer-partners-row">
+              <a
+                className="footer-partner"
+                href="https://elevenlabs.io/startup-grants"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="ElevenLabs Grants program"
+              >
+                <span className="footer-partner-mark">
+                  <img src="/partners/elevenlabs.svg" alt="ElevenLabs" width={112} height={20} loading="lazy" decoding="async" />
+                </span>
+                <span className="footer-partner-role">Grants Program</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Braintrust is factual attribution, NOT a partnership claim.
+              Braintrust publishes no brand/trademark page (verified 404s on
+              /brand, /press, /trademark), so there is no documented permission
+              to assert endorsement — "Built with" states only what we use. */}
+          <div className="footer-partners-group">
+            <span className="footer-partners-label">Built with</span>
+            <div className="footer-partners-row">
+              <a
+                className="footer-partner"
+                href="https://www.braintrust.dev"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Braintrust — AI evaluation tooling"
+              >
+                <span className="footer-partner-mark">
+                  <img src="/partners/braintrust.svg" alt="Braintrust" width={98} height={16} loading="lazy" decoding="async" />
+                </span>
+                <span className="footer-partner-role">AI Evaluation</span>
+              </a>
+            </div>
           </div>
         </div>
 

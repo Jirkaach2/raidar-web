@@ -28,7 +28,7 @@ const PARTNERS: Partner[] = [
   {
     slug: 'braintrust',
     name: 'Braintrust',
-    role: 'AI Evaluation Partner',
+    role: 'AI Evaluation',
     href: 'https://www.braintrust.dev',
     width: 122,
   },
@@ -39,7 +39,7 @@ export default function Partners() {
     <section className="partners" aria-labelledby="partners-heading">
       <div className="container">
         <p className="partners-eyebrow" id="partners-heading">
-          Backed &amp; supported by
+          Backed by ElevenLabs Grants · Built with Braintrust
         </p>
         <ul className="partners-row">
           {PARTNERS.map((p) => (

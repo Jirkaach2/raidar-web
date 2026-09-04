@@ -44,7 +44,7 @@ export default function CookiePolicy() {
       <p>We may update this policy over time. Material changes will be announced in-app or by email.</p>
 
       <h2>7. Contact</h2>
-      <p>Questions about cookies? Email <a href="mailto:support@raidar.tech">support@raidar.tech</a>.</p>
+      <p>Questions about cookies? Email <a href="mailto:info@raidar.tech">info@raidar.tech</a>.</p>
     </LegalLayout>
   );
 }

@@ -31,7 +31,7 @@ export default function LegalLayout({ title, updated, active, children }: Props)
           </nav>
           <div className="legal-side-help">
             <p>Questions about these terms?</p>
-            <a href="mailto:support@raidar.tech">support@raidar.tech</a>
+            <a href="mailto:info@raidar.tech">info@raidar.tech</a>
           </div>
         </aside>
 

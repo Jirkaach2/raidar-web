@@ -31,7 +31,7 @@ export default function RefundPolicy() {
 
       <h2>4. How to request a refund</h2>
       <p>
-        Email <a href="mailto:support@raidar.tech">support@raidar.tech</a> from the address on your account with your
+        Email <a href="mailto:info@raidar.tech">info@raidar.tech</a> from the address on your account with your
         order details. Approved refunds are issued to your original payment method via Stripe and typically appear
         within 5–10 business days, depending on your bank.
       </p>
@@ -50,7 +50,7 @@ export default function RefundPolicy() {
       </p>
 
       <h2>7. Contact</h2>
-      <p>Need help? Email <a href="mailto:support@raidar.tech">support@raidar.tech</a>.</p>
+      <p>Need help? Email <a href="mailto:info@raidar.tech">info@raidar.tech</a>.</p>
     </LegalLayout>
   );
 }

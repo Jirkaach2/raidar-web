@@ -73,7 +73,7 @@ export default function TermsOfService() {
       </p>
 
       <h2>10. Contact</h2>
-      <p>Questions about these Terms? Email <a href="mailto:support@raidar.tech">support@raidar.tech</a>.</p>
+      <p>Questions about these Terms? Email <a href="mailto:info@raidar.tech">info@raidar.tech</a>.</p>
     </LegalLayout>
   );
 }

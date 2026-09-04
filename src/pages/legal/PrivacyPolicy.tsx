@@ -44,7 +44,7 @@ export default function PrivacyPolicy() {
       <p>
         Depending on your location you may have the right to access, correct, export, or delete your personal
         data, and to object to or restrict certain processing. To exercise these rights, contact us at
-        <a href="mailto:support@raidar.tech"> support@raidar.tech</a>.
+        <a href="mailto:info@raidar.tech"> info@raidar.tech</a>.
       </p>
 
       <h2>6. Security</h2>
@@ -64,7 +64,7 @@ export default function PrivacyPolicy() {
       </p>
 
       <h2>9. Contact</h2>
-      <p>Questions? Reach us at <a href="mailto:support@raidar.tech">support@raidar.tech</a>.</p>
+      <p>Questions? Reach us at <a href="mailto:info@raidar.tech">info@raidar.tech</a>.</p>
     </LegalLayout>
   );
 }

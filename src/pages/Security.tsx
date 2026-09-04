@@ -94,13 +94,13 @@ export default function Security() {
         <h2>Reporting a vulnerability</h2>
         <p>
           If you find a security issue, email{' '}
-          <a href="mailto:security@raidar.tech">security@raidar.tech</a> with enough detail to
+          <a href="mailto:jirkaach@raidar.tech">jirkaach@raidar.tech</a> with enough detail to
           reproduce it. Please don't open a public issue for anything exploitable. We'll
           acknowledge reports and keep you updated while we work on a fix.
         </p>
         <div className="about-contact">
-          <a className="btn btn-ghost btn-sm" href="mailto:security@raidar.tech">
-            <Mail size={14} /> security@raidar.tech
+          <a className="btn btn-ghost btn-sm" href="mailto:jirkaach@raidar.tech">
+            <Mail size={14} /> jirkaach@raidar.tech
           </a>
           <Link className="btn btn-ghost btn-sm" to="/status">
             <ExternalLink size={14} /> Live scan results
